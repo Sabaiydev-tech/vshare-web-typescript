@@ -46,12 +46,12 @@ import {
   removeFileNameOutOfPath,
 } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
-import * as MUI from "./styles/fileUploader.style";
-import "./styles/fileUploader.style.css";
+import * as MUI from "../file-uploader/styles/fileUploader.style";
+import "../file-uploader/styles/fileUploader.style.css";
 import ListFolderData from "components/presentation/ListFolderData";
 import BaseNormalButton from "components/BaseNormalButton";
 
-function FileUploader() {
+function ExtendFolder() {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [checkConfirmPassword, setConfirmPassword] = useState(false);
@@ -1471,7 +1471,7 @@ function FileUploader() {
         />
 
         <Box sx={{ backgroundColor: "#ECF4F3", padding: "3rem 1rem" }}>
-          {/* <Advertisement /> */}
+          <Advertisement />
 
           <MUI.FileListContainer>
             <Box>
@@ -1660,6 +1660,7 @@ function FileUploader() {
         <Button
           sx={{ padding: "0.6rem", borderRadius: "30px" }}
           fullWidth={true}
+          size="small"
           variant="contained"
           disabled={
             multipleIds.length > 0 ||
@@ -1676,6 +1677,7 @@ function FileUploader() {
             sx={{ padding: "0.6rem", borderRadius: "30px" }}
             onClick={handleOpenApplication}
             fullWidth={true}
+            size="small"
             variant="contained"
           >
             Open app
@@ -1688,13 +1690,6 @@ function FileUploader() {
         isOpen={previewOpen}
         onClose={previewHandleClose}
       />
-
-      {/* <DeepLink
-        showBottom={showBottomDeep}
-        platform={platform}
-        scriptScheme={appScheme}
-        onClose={() => setShowBottomDeep(false)}
-      /> */}
 
       <DialogConfirmQRCode
         isOpen={isVerifyQrCode}
@@ -1709,4 +1704,4 @@ function FileUploader() {
   );
 }
 
-export default FileUploader;
+export default ExtendFolder;

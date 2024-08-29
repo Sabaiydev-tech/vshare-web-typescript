@@ -271,6 +271,8 @@ export default function CustomizedDialogs(props) {
             createdBy: userId > 0 && folderId > 0 ? String(userId) : "0",
           };
 
+          // console.log({ headers });
+
           const encryptedData = encryptDownloadData(headers);
           const blob = new Blob([dataFile[i]], {
             type: dataFile[i].type,
@@ -360,7 +362,7 @@ export default function CustomizedDialogs(props) {
         setUploadSpeed(0);
         setOverallProgress(0);
         setIsUploading(false);
-        errorMessage("Something Wrong Please Try Again Later!", 3000);
+        errorMessage(cutError, 3000);
       }
     }
   };

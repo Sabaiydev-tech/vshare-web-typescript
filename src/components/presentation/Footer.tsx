@@ -3,17 +3,14 @@ import React from "react";
 import * as MUI from "styles/presentation/presentation.style";
 
 // material ui icons and component
-import ChatIcon from "@mui/icons-material/Chat";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import { IconButton, Link, Typography, useMediaQuery } from "@mui/material";
+import { IconButton, Link, Typography } from "@mui/material";
 import { FaLine } from "react-icons/fa6";
 import { NavLink } from "react-router-dom";
 
 function Footer() {
-  const isMobile = useMediaQuery("(max-width: 600px)");
-
   return (
     <React.Fragment>
       <MUI.BoxFooter>

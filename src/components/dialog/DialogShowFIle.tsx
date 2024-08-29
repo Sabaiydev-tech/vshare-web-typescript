@@ -458,7 +458,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
               totalUploadFile: totalFile,
               urlAll: String(urlAllFile),
               createdBy: 0,
-              device: result.os.name ?? "" + result.os.version ?? "",
+              device: result.os.name || "" + result.os.version || "",
               country: country,
             },
           },
@@ -563,7 +563,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
           /(ApolloError: )?Error: /,
           "",
         );
-        errorMessage(cutDataError ?? "", 10000);
+        errorMessage(cutDataError || "", 10000);
         handleCloseModal();
       }
     }

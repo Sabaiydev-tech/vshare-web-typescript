@@ -195,7 +195,7 @@ function Feedback() {
               firstName: isAnonymous ? "" : values.firstname,
               lastName: isAnonymous ? "" : values.lastname,
               comment: editorRef.current.getContent(),
-              rating: rating?.toString() ?? "",
+              rating: rating?.toString() || "",
               designComment: designComment,
               designRating: designRating.toString(),
               performanceComment: performanceComment,

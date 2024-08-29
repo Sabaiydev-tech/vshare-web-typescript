@@ -11,6 +11,7 @@ import { convertBytetoMBandGB } from "utils/storage.util";
 import QrCode from "@mui/icons-material/QrCode";
 import DownloadIcon from "@mui/icons-material/Download";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
+import NormalButton from "components/NormalButton";
 
 type Props = {
   queryFile?: any[];
@@ -18,11 +19,14 @@ type Props = {
   isSuccess?: any;
   isHide?: any;
   isMobile?: boolean;
+  multipleIds: any[];
 
   setSelectedRow?: (id: string | number) => void;
-  setMultiId?: (id: string | number) => void;
+  setMultiId?: (id: string | number | any) => void;
   handleQrCode?: (id: string | number, preview: string) => void;
   handleDownloadFile?: (value: any, index: number, data: any) => void;
+  handleMultipleDownloadFiles?: () => void;
+  handleClearSelection?: () => void;
 };
 
 function DropGridData(props: Props) {
@@ -197,18 +201,22 @@ function DropGridData(props: Props) {
           "& .MuiDataGrid-cell:focus": {
             outline: "none",
           },
+          "& .MuiDataGrid-virtualScroller": {
+            overflowX: "scroll",
+          },
         }}
         autoHeight
         getRowId={(row) => row?._id}
         rows={queryFile || []}
         columns={columns}
-        checkboxSelection={dataFromUrl?.allowMultiples ? true : false}
+        selectionModel={props.multipleIds || []}
+        checkboxSelection={dataFromUrl?.allowDownload ? true : false}
         disableSelectionOnClick
         disableColumnFilter
         disableColumnMenu
         hideFooter
         onSelectionModelChange={(ids: any) => {
-          if (dataFromUrl?.allowMultiples) {
+          if (dataFromUrl?.allowDownload) {
             setSelectedRow?.(ids);
             setMultiId?.(ids);
           }
@@ -235,7 +243,60 @@ function DropGridData(props: Props) {
               padding: (theme) => theme.spacing(4),
               flex: "1 1 0%",
             }}
-          ></Box>
+          />
+        </Box>
+      )}
+
+      {dataFromUrl?.allowDownload && (
+        <Box
+          sx={{
+            my: 4,
+            mr: 5,
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "1.5rem",
+          }}
+        >
+          <NormalButton
+            sx={{
+              padding: (theme) => `${theme.spacing(1.5)} ${theme.spacing(3)}`,
+              borderRadius: (theme) => theme.spacing(2),
+              color: "#828282 !important",
+              fontWeight: "bold",
+              backgroundColor: "#fff",
+              border: "2px solid #DCEAE9",
+              width: "inherit",
+
+              ":disabled": {
+                border: "2px solid #ddd",
+                cursor: "not-allowed",
+              },
+            }}
+            disabled={props?.multipleIds?.length > 0 ? false : true}
+            onClick={props?.handleMultipleDownloadFiles}
+          >
+            Download
+          </NormalButton>
+
+          <NormalButton
+            sx={{
+              padding: (theme) => `${theme.spacing(1.5)} ${theme.spacing(3)}`,
+              borderRadius: (theme) => theme.spacing(2),
+              color: "#828282 !important",
+              fontWeight: "bold",
+              backgroundColor: "#fff",
+              border: "2px solid #DCEAE9",
+              width: "inherit",
+
+              ":disabled": {
+                border: "2px solid #ddd",
+                cursor: "not-allowed",
+              },
+            }}
+            onClick={props?.handleClearSelection}
+          >
+            Cancel
+          </NormalButton>
         </Box>
       )}
     </Fragment>

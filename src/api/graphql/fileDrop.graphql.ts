@@ -32,6 +32,7 @@ export const QUERY_FILE_DROP_PUBLIC = gql`
         urlAll
         ip
         dropUrl
+        longUrl
         dropStatus
         updatedAt
         createdBy {
