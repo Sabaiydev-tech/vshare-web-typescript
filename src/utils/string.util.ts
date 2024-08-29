@@ -11,6 +11,23 @@ export const createShortcut = (text: string, limit: number) => {
   return text;
 };
 
+export const cutStringWithEllipsis = (
+  inputString,
+  maxLength,
+  cutSpecificLength = 0,
+) => {
+  if (inputString) {
+    const givenLength = cutSpecificLength || maxLength;
+
+    const subString = inputString.substring(0, givenLength);
+
+    return subString.length === inputString.length
+      ? inputString
+      : subString + "...";
+  }
+  return;
+};
+
 export function limitContent(fileName: string, maxLength: number) {
   let truncatedText = "";
   if (fileName.length > maxLength) {

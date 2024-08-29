@@ -1,10 +1,12 @@
 // src/app/store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import paymentSlice from "./features/paymentSlice";
+import selectorSlice from "./features/selectorSlice";
 
 const store = configureStore({
   reducer: {
     payment: paymentSlice,
+    selectorSlice,
   },
 });
 

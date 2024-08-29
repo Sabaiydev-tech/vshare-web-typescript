@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export function calculateTime(time) {
   const seconds = time / 1000;
   if (seconds < 60) {
@@ -12,4 +14,9 @@ export function calculateTime(time) {
       remainingMinutes !== 1 ? "s" : ""
     }`;
   }
+}
+
+export function formatDate(date: string): string {
+  const dateString = moment(date).format("DD-MM-YYYY");
+  return dateString;
 }

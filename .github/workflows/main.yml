@@ -3,7 +3,6 @@ name: Deploy to Linode
 on:
   push:
     branches:
-      - deploy-coding
       - deploy-staging
       - deploy-production
 

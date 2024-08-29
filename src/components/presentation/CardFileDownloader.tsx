@@ -108,7 +108,7 @@ function CardFileDownloader(props) {
                         dataFile?.newFilename,
                         dataFile?.filename,
                         dataFile?.filePassword,
-                        dataFile?.newPath ?? "",
+                        dataFile?.newPath || "",
                         dataFile?.createdBy,
                         dataFile,
                       );
@@ -176,7 +176,7 @@ function CardFileDownloader(props) {
                           dataFile?.newFilename,
                           dataFile?.filename,
                           dataFile?.filePassword,
-                          dataFile?.newPath ?? "",
+                          dataFile?.newPath || "",
                           dataFile?.createdBy,
                           dataFile,
                         );

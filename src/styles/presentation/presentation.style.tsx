@@ -909,6 +909,37 @@ export const BoxLiveChat = styled(Box)({
   },
 });
 
+export const BoxBottomDownload = styled(Box)({
+  display: "flex",
+  justifyContent: "flex-end",
+  gap: "3.5rem",
+  padding: "1rem 2rem 0.5rem 2rem",
+
+  [theme.breakpoints.down("md")]: {
+    display: "none",
+  },
+});
+
 export const BoxMultipleFolder = styled("div")({
   marginBottom: "20px",
+});
+
+export const BoxAdsContainer = styled("div")({
+  position: "absolute",
+  top: -10,
+  right: 0,
+  zIndex: 999,
+});
+
+export const BoxAdsAction = styled("button")({
+  padding: "5px 14px",
+  color: "#FFF",
+  fontSize: "0.8rem",
+  backgroundColor: "#EA5455",
+  border: "none",
+  outline: "none",
+  borderTopLeftRadius: "5px",
+  borderTopRightRadius: "5px",
+  borderBottomRightRadius: "5px",
+  transition: "2s all",
 });

@@ -3,16 +3,10 @@ import { gql } from "@apollo/client";
 export const QUERY_FOLDER = gql`
   query Data(
     $where: FoldersWhereInput
-    $orderBy: OrderByInput
-    $limit: Int
-    $skip: Int
     $noLimit: Boolean
   ) {
     folders(
       where: $where
-      orderBy: $orderBy
-      limit: $limit
-      skip: $skip
       noLimit: $noLimit
     ) {
       total
@@ -25,26 +19,18 @@ export const QUERY_FOLDER = gql`
         newFolder_name
         access_password
         shortUrl
+        longUrl
         url
         path
         newPath
-        pin
         createdBy {
           _id
-          email
           username
           newName
-        }
-        file_id {
-          _id
-          filename
-          size
-          status
         }
         parentkey {
           _id
         }
-        updatedAt
       }
     }
   }
@@ -103,22 +89,16 @@ export const QUERY_FOLDER_PUBLICV1 = gql`
         newPath
         is_public
         checkFolder
-        restore
         access_password
-        show_download_link
         status
         path
         url
-        expired
+        shortUrl
+        longUrl
         createdBy {
           _id
           newName
         }
-        permissionSharePublic
-        aproveDownloadPublic
-        pin
-        createdAt
-        updatedAt
       }
       total
     }
@@ -131,6 +111,7 @@ export const QUERY_FOLDER_PUBLIC_LINK = gql`
       total
       data {
         _id
+        # uid
         folder_name
         total_size
         access_password
@@ -141,11 +122,11 @@ export const QUERY_FOLDER_PUBLIC_LINK = gql`
         status
         path
         newPath
+        longUrl
+        shortUrl
         pin
         createdBy {
           _id
-          email
-          username
           newName
         }
         updatedAt

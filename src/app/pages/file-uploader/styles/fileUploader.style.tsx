@@ -60,7 +60,7 @@ export const DivdownloadFile = styled("div")({
   alignItems: "center",
   justifyContent: "center",
   // minHeight: "50vh",
-  margin: '3rem 0',
+  margin: "3rem 0",
 
   [theme.breakpoints.down("sm")]: {
     paddingLeft: "1rem",
@@ -913,3 +913,133 @@ export const BoxLiveChat = styled(Box)({
 export const BoxMultipleFolder = styled("div")({
   marginBottom: "20px",
 });
+
+////display files zone
+export const FileListContainer = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gridTemplateColumns: "1.6fr 1fr",
+  gap: "1.2rem",
+
+  [theme.breakpoints.down("md")]: {
+    gridTemplateColumns: "1fr",
+  },
+
+  [theme.breakpoints.down("sm")]: {
+    flexDirection: "column",
+  },
+
+  [theme.breakpoints.down(997)]: {
+    ".box-download": {
+      width: "100%",
+    },
+
+    ".box-social": {
+      // display: "none",
+    },
+  },
+}));
+
+export const FileBoxDownload = styled("div")({
+  overflow: "hidden",
+});
+
+export const FileBoxToggle = styled("div")({
+  display: "flex",
+  justifyContent: "flex-end",
+  marginBottom: "1.2rem",
+  gap: "0.7rem",
+  alignItems: "center",
+});
+
+export const FileBoxSocial = styled("div")({
+  // width: "35%",
+  borderRadius: 1.5,
+  boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+  overflow: "hidden",
+
+  ".button-ads": {
+    [theme.breakpoints.down("md")]: {
+      display: "none",
+    },
+  },
+});
+
+export const FilBoxBottomContainer = styled("div")({
+  display: "none",
+  position: "fixed",
+  // left: 0,
+  bottom: 0,
+  padding: "1rem",
+  width: "100%",
+  zIndex: 999,
+  borderRadius: "30px",
+
+
+  marginRight: "2rem",
+  gap: "1rem",
+  justifyContent: "center",
+  backgroundColor: "#fff",
+  boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+
+  [theme.breakpoints.down(997)]: {
+    display: "flex",
+  },
+});
+
+////Ads
+export const AdsContainer = styled(Box)(({ theme }) => ({
+  background: "#fff",
+  display: "flex",
+  flex: 1,
+  flexDirection: "row",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "50%",
+  margin: "0 auto",
+  padding: ".5rem",
+  [theme.breakpoints.down("sm")]: {
+    width: "100%",
+    padding: "0",
+  },
+  marginBottom: "3rem",
+}));
+
+export const AdsContent = styled(Box)(({ theme }) => ({
+  padding: "1rem",
+  background: "#ECF4F3",
+  width: "100%",
+  [theme.breakpoints.down("sm")]: {
+    padding: "8px",
+  },
+}));
+
+export const AdsCard = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  boxShadow: "rgba(0, 0, 0, 0.05) 0px 0px 5px",
+  margin: "0 auto",
+  width: "80%",
+  padding: ".5rem 1rem",
+  background: "#fafafa",
+  borderRadius: ".3rem",
+  h4: { margin: "0.5rem 0", color: "#4B465C" },
+  p: {
+    color: "#6F6B7D",
+    fontSize: "0.8rem",
+    fontWeight: "600",
+    marginBottom: "1.5rem",
+    opacity: 0.9,
+  },
+  button: {
+    padding: ".2rem 2rem",
+  },
+  [theme.breakpoints.down("sm")]: {
+    width: "100%",
+    h1: {
+      fontSize: "18px",
+    },
+  },
+}));
+
+////display files zone

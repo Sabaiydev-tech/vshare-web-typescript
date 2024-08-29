@@ -384,8 +384,8 @@ function AuthProvider() {
       await adminLogin({
         variables: {
           where: {
-            username: username ?? "",
-            password: password ?? "",
+            username: username || "",
+            password: password || "",
           },
         },
         onCompleted: async (data) => {
@@ -432,9 +432,9 @@ function AuthProvider() {
       const signInUser = await userLogin({
         variables: {
           where: {
-            username: username ?? "",
-            password: password ?? "",
-            ip: responseIp.data ?? "",
+            username: username || "",
+            password: password || "",
+            ip: responseIp.data || "",
           },
         },
       });
@@ -690,7 +690,7 @@ function AuthProvider() {
         resetForgetPassword,
         authentication2FA,
         permission:
-          permissionData?.role_staffs?.data[0]?.permision ?? localPermission,
+          permissionData?.role_staffs?.data[0]?.permision || localPermission,
       }}
     >
       <Outlet />

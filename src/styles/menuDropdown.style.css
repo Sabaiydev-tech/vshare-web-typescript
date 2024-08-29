@@ -1,0 +1,18 @@
+.MuiMenu-list {
+  padding: 0;
+}
+
+.menu-item {
+  column-gap: 10px;
+  font-size: 14px;
+}
+
+.menu-item svg {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.menu-item:hover {
+  color: #17766b;
+  background-color: rgba(22, 118, 107, 0.04);
+}

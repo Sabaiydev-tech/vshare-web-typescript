@@ -38,7 +38,6 @@ import { errorMessage, successMessage } from "utils/alert.util";
 
 import useManageFiles from "hooks/useManageFile";
 import DialogPreviewQRcode from "components/dialog/DialogPreviewQRCode";
-import NormalButton from "components/NormalButton";
 import DropGridData from "./DropGridData";
 import DeepLink from "components/presentation/DeepLink";
 
@@ -141,6 +140,7 @@ function FileDropDownloader() {
   const [timeLeft, setTimeLeft] = useState("");
   const [multiId, setMultiId] = useState<any>([]);
   const [platform, setPlatform] = useState("");
+  const [isMultiple, setIsMultiple] = useState(false);
   // const [selectedRow, setSelectedRow] = React.useState([]);
   const [getDataButtonDownload, { data: getDataButtonDL }] = useLazyQuery(
     QUERY_SETTING,
@@ -158,7 +158,9 @@ function FileDropDownloader() {
     },
   );
 
-  const [getFileDrop, { refetch }] = useLazyQuery(QUERY_FILE_DROP_PUBLIC);
+  const [getFileDrop] = useLazyQuery(QUERY_FILE_DROP_PUBLIC, {
+    fetchPolicy: "no-cache",
+  });
 
   const [getUserByDropUrl, { data: dropData }] = useLazyQuery(
     QUERY_FILE_DROP_PUBLIC_URL,
@@ -312,34 +314,7 @@ function FileDropDownloader() {
         }
       } else {
         if (getAdvertisemment.length) {
-          const availableAds: any[] = getAdvertisemment.filter(
-            (ad) => !usedAds.includes(ad._id),
-          );
-          if (availableAds.length === 0) {
-            setUsedAds([]);
-            return;
-          }
-          const randomIndex = Math.floor(Math.random() * availableAds.length);
-          const randomAd: any = availableAds[randomIndex];
-          setUsedAds([...usedAds, randomAd._id]);
-          try {
-            const responseIp = await axios.get(LOAD_GET_IP_URL);
-            const _createDetailAdvertisement = await createDetailAdvertisement({
-              variables: {
-                data: {
-                  ip: String(responseIp?.data),
-                  advertisementsID: randomAd?._id,
-                },
-              },
-            });
-            if (
-              _createDetailAdvertisement?.data?.createDetailadvertisements?._id
-            ) {
-              window.open(randomAd.url, "_blank");
-            }
-          } catch (error) {
-            errorMessage("Something wrong try again later!", 2000);
-          }
+          handleAdvertisementPopup();
         } else {
           e.preventDefault();
           try {
@@ -476,27 +451,7 @@ function FileDropDownloader() {
   }, [currentUrl, dropData]);
 
   React.useEffect(() => {
-    getFileDrop({
-      variables: {
-        where: {
-          dropUrl: currentUrl,
-          ip: dataIp,
-          status: "active",
-        },
-      },
-      onCompleted: (data) => {
-        if (data?.getFileDrop?.total == null) {
-          setQueryFile([]);
-        } else {
-          const datas = data?.getFileDrop?.data?.map((value, index) => ({
-            ...value,
-            no: index + 1,
-          }));
-
-          setQueryFile(datas || []);
-        }
-      },
-    });
+    queryGetFileDropUrl();
   }, [currentUrl]);
 
   const handleClose = () => {
@@ -506,7 +461,36 @@ function FileDropDownloader() {
   const handleRemoveAll = () => {
     setFiles([]);
     handleClose();
-    refetch();
+    // refetch();
+    queryGetFileDropUrl();
+  };
+
+  const queryGetFileDropUrl = async () => {
+    try {
+      getFileDrop({
+        variables: {
+          where: {
+            dropUrl: currentUrl,
+            ip: dataIp,
+            status: "active",
+          },
+        },
+        onCompleted: (data) => {
+          if (data?.getFileDrop?.total == null) {
+            setQueryFile([]);
+          } else {
+            const datas = data?.getFileDrop?.data?.map((value, index) => ({
+              ...value,
+              no: index + 1,
+            }));
+
+            setQueryFile(datas || []);
+          }
+        },
+      });
+    } catch (error) {
+      //
+    }
   };
 
   const handleDelete = (index) => {
@@ -530,6 +514,50 @@ function FileDropDownloader() {
     }
   };
 
+  const handleAdvertisementPopup = async () => {
+    const availableAds = getAdvertisemment.filter(
+      (ad) => !usedAds.includes(ad._id),
+    );
+    if (availableAds.length === 0) {
+      setUsedAds([]);
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * availableAds.length);
+    const randomAd = availableAds[randomIndex];
+    setUsedAds([...usedAds, randomAd._id]);
+    try {
+      const responseIp = await axios.get(LOAD_GET_IP_URL);
+      const _createDetailAdvertisement = await createDetailAdvertisement({
+        variables: {
+          data: {
+            ip: String(responseIp?.data),
+            advertisementsID: randomAd?._id,
+          },
+        },
+      });
+      if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
+        let httpData = "";
+        if (!randomAd.url.match(/^https?:\/\//i || /^http?:\/\//i)) {
+          httpData = "http://" + randomAd.url;
+        } else {
+          httpData = randomAd.url;
+        }
+
+        const newWindow = window.open(httpData, "_blank");
+        if (
+          !newWindow ||
+          newWindow.closed ||
+          typeof newWindow.closed == "undefined"
+        ) {
+          window.location.href = httpData;
+        }
+      }
+    } catch (error: any) {
+      errorMessage(error, 3000);
+    }
+  };
+
   const handleMultipleDownloadFiles = () => {
     const newModelData = multiId.map((index) => {
       const options = queryFile.find((file) => file._id === index);
@@ -548,30 +576,42 @@ function FileDropDownloader() {
         checkType: "file",
         newPath: file?.newPath,
         createdBy: file?.createdBy,
+        isPublic: userId > 0 && folderId! > 0 ? false : true,
       };
     });
 
-    manageFile.handleDownloadFile(
-      { multipleData },
-      {
-        onSuccess: () => {
-          console.log("ok");
+    setTotalClickCount((prevCount) => prevCount + 1);
+    if (totalClickCount >= getActionButton) {
+      setTotalClickCount(0);
+      manageFile.handleDownloadFile(
+        { multipleData },
+        {
+          onSuccess: () => {},
+          onFailed: () => {},
         },
-
-        onFailed: () => {
-          console.log("failed error");
-        },
-      },
-    );
+      );
+    } else {
+      if (getAdvertisemment?.length) {
+        handleAdvertisementPopup();
+      } else {
+        manageFile.handleDownloadFile(
+          { multipleData },
+          {
+            onSuccess: () => {},
+            onFailed: () => {},
+          },
+        );
+      }
+    }
   };
 
-  // const handleClearSelectDataGrid = () => {
-  //   setMultiId([]);
-  //   setSelectedRow([]);
-  // };
+  const handleClearSelectDataGrid = () => {
+    setMultiId([]);
+  };
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
+    multiple: isMultiple,
   });
 
   useEffect(() => {
@@ -603,6 +643,9 @@ function FileDropDownloader() {
 
   useEffect(() => {
     if (dataFromUrl) {
+      if (dataFromUrl?.allowMultiples) {
+        setIsMultiple(true);
+      }
       const operation = navigator.userAgent;
 
       if (operation.match(/iPhone|iPad|iPod/i)) {
@@ -815,11 +858,16 @@ function FileDropDownloader() {
                           <DropGridData
                             queryFile={queryFile}
                             dataFromUrl={dataFromUrl}
+                            multipleIds={multiId}
                             isHide={isHide}
                             isSuccess={isSuccess}
                             isMobile={isMobile}
                             setMultiId={setMultiId}
                             handleDownloadFile={handleDownloadFile}
+                            handleMultipleDownloadFiles={
+                              handleMultipleDownloadFiles
+                            }
+                            handleClearSelection={handleClearSelectDataGrid}
                             handleQrCode={(data, action) => {
                               setDataForEvent({
                                 data,
@@ -828,54 +876,6 @@ function FileDropDownloader() {
                             }}
                           />
                         </CardContent>
-
-                        {dataFromUrl?.allowDownload && (
-                          <Box
-                            sx={{
-                              mb: 4,
-                              mr: 5,
-                              display: "flex",
-                              justifyContent: "flex-end",
-                              gap: "1.5rem",
-                            }}
-                          >
-                            <NormalButton
-                              sx={{
-                                padding: (theme) =>
-                                  `${theme.spacing(1.5)} ${theme.spacing(3)}`,
-                                borderRadius: (theme) => theme.spacing(2),
-                                color: "#828282 !important",
-                                fontWeight: "bold",
-                                backgroundColor: "#fff",
-                                border: "2px solid #DCEAE9",
-                                width: "inherit",
-
-                                ":disabled": {
-                                  border: "2px solid #ddd",
-                                  cursor: "not-allowed",
-                                },
-                              }}
-                              disabled={multiId?.length > 0 ? false : true}
-                              onClick={handleMultipleDownloadFiles}
-                            >
-                              Download
-                            </NormalButton>
-                            {/* <NormalButton
-                              sx={{
-                                padding: (theme) =>
-                                  `${theme.spacing(1.5)} ${theme.spacing(3)}`,
-                                borderRadius: (theme) => theme.spacing(2),
-                                color: "#828282 !important",
-                                fontWeight: "bold",
-                                backgroundColor: "#fff",
-                                border: "2px solid #DCEAE9",
-                                width: "inherit",
-                              }}
-                            >
-                              Cancel
-                            </NormalButton> */}
-                          </Box>
-                        )}
                       </Card>
                     </Box>
                   </FileListContainer>
@@ -887,7 +887,7 @@ function FileDropDownloader() {
       {showQrCode && (
         <DialogPreviewQRcode
           isOpen={showQrCode}
-          data={dataForEvent.data?.dropUrl || ""}
+          data={dataForEvent.data?.longUrl || ""}
           onClose={handleClosePreviewQR}
         />
       )}
