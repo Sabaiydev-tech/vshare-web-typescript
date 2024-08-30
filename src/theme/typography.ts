@@ -1,5 +1,6 @@
 const typography = {
   fontFamily: [
+    'Noto Sans Lao Looped',
     "Inter",
     "-apple-system",
     "BlinkMacSystemFont",

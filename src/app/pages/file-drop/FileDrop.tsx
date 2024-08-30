@@ -261,7 +261,7 @@ function FileDrop() {
             sx={{ margin: "1rem 0" }}
             disabled={captchaKey}
           >
-            Generate nows
+            Generate now
           </Button>
         </Fragment>
         <FileDropLinkArea>

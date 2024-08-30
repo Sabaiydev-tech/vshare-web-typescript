@@ -35,13 +35,9 @@ export const QUERY_FILE = gql`
         newPath
         urlAll
         url
-        dropUrl
-        actionStatus
-        actionDate
         createdBy {
           _id
           newName
-          lastName
         }
         getLinkBy
         shortUrl
@@ -77,16 +73,12 @@ export const QUERY_FILE_PUBLIC = gql`
         fileType
         size
         newPath
-        totalDownload
         status
         isPublic
         checkFile
         path
-        detail
         urlAll
         url
-        permissionSharePublic
-        aproveDownloadPublic
         ip
         folder_id {
           _id
@@ -99,12 +91,6 @@ export const QUERY_FILE_PUBLIC = gql`
         }
         shortUrl
         longUrl
-        favorite
-        actionStatus
-        expired
-        createdAt
-        updatedAt
-        actionDate
       }
     }
   }
@@ -178,6 +164,39 @@ export const QUERY_FILE_GET_LINK = gql`
           _id
           newName
         }
+      }
+      total
+    }
+  }
+`;
+
+export const QUERY_SUB_FILE = gql`
+  query GetFileByUID(
+    $where: FilesWhereInput
+    $noLimit: Boolean
+  ) {
+    filesByUID(
+      where: $where
+      noLimit: $noLimit
+    ) {
+      data {
+        _id
+        filename
+        newFilename
+        filePassword
+        fileType
+        size
+        status
+        isPublic
+        path
+        newPath
+        url
+        createdBy {
+          _id
+          newName
+        }
+        shortUrl
+        longUrl
       }
       total
     }

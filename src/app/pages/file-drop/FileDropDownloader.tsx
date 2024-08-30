@@ -117,6 +117,7 @@ function FileDropDownloader() {
   const [newPath, setNewPath] = useState("");
   const [folderNewName, setFolderNewName] = useState("");
   const [status, setStatus] = useState("");
+  const [isUploadMultiples, setIsUploadMultiples] = useState(false);
   const [getActionButton, setGetActionButton] = useState<any>();
   const [getAdvertisemment, setGetAvertisement] = useState<any>([]);
   const [usedAds, setUsedAds] = useState<any[]>([]);
@@ -140,7 +141,6 @@ function FileDropDownloader() {
   const [timeLeft, setTimeLeft] = useState("");
   const [multiId, setMultiId] = useState<any>([]);
   const [platform, setPlatform] = useState("");
-  const [isMultiple, setIsMultiple] = useState(false);
   // const [selectedRow, setSelectedRow] = React.useState([]);
   const [getDataButtonDownload, { data: getDataButtonDL }] = useLazyQuery(
     QUERY_SETTING,
@@ -394,7 +394,6 @@ function FileDropDownloader() {
 
   useEffect(() => {
     if (dataForEvent.action) {
-      console.log(dataForEvent.data);
       menuOnClick(dataForEvent.action);
     }
   }, [dataForEvent.action]);
@@ -425,6 +424,11 @@ function FileDropDownloader() {
       onError: (err) => {
         setStatus("expired");
         const cutErr = err?.message?.replace(/(ApolloError: )?Error: /, "");
+        
+        if(err?.message === 'Url not allow to upload'){
+          setStatus('locked');
+        }
+
         errorMessage(
           manageGraphqlError.handleErrorMessage(
             cutErr || err?.message || "Something went wrong, Please try again",
@@ -446,6 +450,16 @@ function FileDropDownloader() {
           setNewPath(item?.folderId?.newPath);
           setFolderNewName(item?.folderId?.newFolder_name);
         }
+
+        ///check permission allow to upload/upload multi
+        if(!item?.allowUpload){
+          setStatus('locked');
+        }
+
+        if(item?.allowMultiples){
+          setIsUploadMultiples(item?.allowMultiples);
+        }
+
       },
     });
   }, [currentUrl, dropData]);
@@ -611,7 +625,7 @@ function FileDropDownloader() {
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    multiple: isMultiple,
+    multiple: isUploadMultiples
   });
 
   useEffect(() => {
@@ -643,9 +657,6 @@ function FileDropDownloader() {
 
   useEffect(() => {
     if (dataFromUrl) {
-      if (dataFromUrl?.allowMultiples) {
-        setIsMultiple(true);
-      }
       const operation = navigator.userAgent;
 
       if (operation.match(/iPhone|iPad|iPod/i)) {
@@ -666,7 +677,7 @@ function FileDropDownloader() {
 
   return (
     <React.Fragment>
-      {status == "expired" ? (
+      {status == "expired" || status === 'locked' ? (
         <ExpiredArea>
           <Box
             sx={{
@@ -697,7 +708,7 @@ function FileDropDownloader() {
                 </text>
               </svg>
             </Typography>
-            Unfortunately, the link was expired.
+            {`Unfortunately, the link was ${status === 'locked' ? status+' by the owner' : status}.`}
           </Box>
           <Box
             sx={{
@@ -864,9 +875,7 @@ function FileDropDownloader() {
                             isMobile={isMobile}
                             setMultiId={setMultiId}
                             handleDownloadFile={handleDownloadFile}
-                            handleMultipleDownloadFiles={
-                              handleMultipleDownloadFiles
-                            }
+                            handleMultipleDownloadFiles={handleMultipleDownloadFiles}
                             handleClearSelection={handleClearSelectDataGrid}
                             handleQrCode={(data, action) => {
                               setDataForEvent({

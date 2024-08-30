@@ -823,7 +823,7 @@ export default function CustomizedDialogs(props) {
       );
     };
   }, [fileStates]);
-
+  
   return (
     <React.Fragment>
       {!isUploading ? (

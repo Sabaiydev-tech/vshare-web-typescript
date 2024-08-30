@@ -15,7 +15,7 @@ const FileCardContainerStyled = muiStyled("div")({
 
 export default function FileCardContainer({ ...props }) {
   return (
-    <FileCardContainerStyled>
+    <FileCardContainerStyled style={props?.style}>
       <Box sx={{ flexGrow: 1 }}>
         <Grid container spacing={5}>
           {props.children}
