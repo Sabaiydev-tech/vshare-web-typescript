@@ -1,23 +1,32 @@
-import { Fragment } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Fragment, useState } from "react";
+import { Box, Button, Tooltip, Typography } from "@mui/material";
 import { FileBoxSocial } from "app/pages/file-uploader/styles/fileUploader.style";
 
 // Icons
-import facebookIcon from "assets/images/facebook-icon.png";
-import messagerIcon from "assets/images/messager-icon.png";
-import whatsappIcon from "assets/images/what-app-icon.png";
-import twitterIcon from "assets/images/twitter-icon.png";
+import {
+  FacebookIcon,
+  FacebookShareButton,
+  FacebookMessengerIcon,
+  FacebookMessengerShareButton,
+  TwitterIcon,
+  TwitterShareButton,
+  WhatsappIcon,
+  WhatsappShareButton,
+} from "react-share";
 import dottIcon from "assets/images/dott-icon.png";
 import QRCode from "react-qr-code";
 import {
   BoxAdsAction,
   BoxAdsContainer,
 } from "styles/presentation/presentation.style";
+import { ShareSocial } from "components/social-media";
+import { ENV_KEYS } from "constants/env.constant";
 
 type Props = {
   _description?: string;
   countAction: number;
   isFile?: boolean;
+  longUrl?: string;
 
   handleDownloadAsZip?: () => void;
   handleDownloadFolderAsZip?: () => void;
@@ -25,87 +34,7 @@ type Props = {
 
 function BoxSocialShare(props: Props) {
   const currentUrl = window.location.href;
-
-  const arrayMedias = [
-    {
-      id: 1,
-      title: "Facebook",
-      link: "",
-      icon: (
-        <img
-          src={facebookIcon}
-          alt="facebook-icon"
-          style={{
-            width: "32px",
-            objectFit: "cover",
-            height: "32px",
-          }}
-        />
-      ),
-    },
-    {
-      id: 2,
-      title: "Messager",
-      link: "",
-      icon: (
-        <img
-          src={messagerIcon}
-          alt="messager-icon"
-          style={{
-            width: "32px",
-            objectFit: "cover",
-            height: "32px",
-          }}
-        />
-      ),
-    },
-    {
-      id: 3,
-      title: "WhatsApp",
-      link: "",
-      icon: (
-        <img
-          src={whatsappIcon}
-          alt="whatsapp-icon"
-          style={{
-            width: "32px",
-            objectFit: "cover",
-            height: "32px",
-          }}
-        />
-      ),
-    },
-    {
-      id: 4,
-      title: "Twitter",
-      link: "",
-      icon: (
-        <img
-          src={twitterIcon}
-          alt="twitter-icon"
-          style={{
-            width: "32px",
-            objectFit: "cover",
-            height: "32px",
-          }}
-        />
-      ),
-    },
-    {
-      id: 99,
-      title: "...",
-      link: "",
-      icon: (
-        <img
-          src={dottIcon}
-          alt="dott-icon"
-          style={{
-            objectFit: "cover",
-          }}
-        />
-      ),
-    },
-  ];
+  const [isMore, setIsMore] = useState(false);
 
   return (
     <Fragment>
@@ -157,20 +86,140 @@ function BoxSocialShare(props: Props) {
               mt: 7,
             }}
           >
-            {arrayMedias.map((item, index) => (
-              <Button
-                key={index}
-                sx={{
-                  width: "60px",
-                  height: "60px",
-                  borderRadius: "100%",
-                  background: "rgb(221, 221, 221,0.8)",
-                  fontSize: "2rem",
-                }}
-              >
-                {item.icon}
-              </Button>
-            ))}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 3,
+                mt: 7,
+              }}
+            >
+              <Tooltip title="Facebook" placement="top">
+                <FacebookShareButton
+                  url={currentUrl || ""}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "60px",
+                    height: "60px",
+                    borderRadius: "100%",
+                    background: "rgb(221, 221, 221,0.8)",
+                    fontSize: "2rem",
+                  }}
+                >
+                  <FacebookIcon size={40} round />
+                </FacebookShareButton>
+              </Tooltip>
+              <Tooltip title="Messenger" placement="top">
+                <FacebookMessengerShareButton
+                  url={currentUrl || ""}
+                  appId={ENV_KEYS.VITE_APP_FACEBOOk_APP_ID}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "60px",
+                    height: "60px",
+                    borderRadius: "100%",
+                    background: "rgb(221, 221, 221,0.8)",
+                    fontSize: "2rem",
+                  }}
+                >
+                  <FacebookMessengerIcon size={40} round />
+                </FacebookMessengerShareButton>
+              </Tooltip>
+              <Tooltip title={"WhatsApp"}>
+                <WhatsappShareButton
+                  url={currentUrl || ""}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "60px",
+                    height: "60px",
+                    borderRadius: "100%",
+                    background: "rgb(221, 221, 221,0.8)",
+                    fontSize: "2rem",
+                  }}
+                >
+                  <WhatsappIcon size={40} round />
+                </WhatsappShareButton>
+              </Tooltip>
+              <Tooltip title={"Twitter"}>
+                <TwitterShareButton
+                  url={currentUrl || ""}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "60px",
+                    height: "60px",
+                    borderRadius: "100%",
+                    background: "rgb(221, 221, 221,0.8)",
+                    fontSize: "2rem",
+                  }}
+                >
+                  <TwitterIcon size={40} round />
+                </TwitterShareButton>
+              </Tooltip>
+              <Box sx={{ position: "relative" }}>
+                <Button
+                  sx={{
+                    position: "relative",
+                    width: "60px",
+                    height: "60px",
+                    borderRadius: "100%",
+                    background: "rgb(221, 221, 221,0.8)",
+                    fontSize: "2rem",
+                  }}
+                  onClick={() => {
+                    setIsMore(!isMore);
+                  }}
+                >
+                  <img
+                    src={dottIcon}
+                    alt="dott-icon"
+                    style={{
+                      objectFit: "cover",
+                    }}
+                  />
+                </Button>
+                {isMore && (
+                  <Typography
+                    component={"div"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsMore(!isMore);
+                    }}
+                  >
+                    <ShareSocial
+                      title="More Media"
+                      socialTypes={[
+                        "copy",
+                        "facebook",
+                        "twitter",
+                        "line",
+                        "linkedin",
+                        "whatsapp",
+                        "viber",
+                        "telegram",
+                        "reddit",
+                        "instapaper",
+                        "livejournal",
+                        "mailru",
+                        "ok",
+                        "hatena",
+                        "email",
+                        "workspace",
+                      ]}
+                      url={currentUrl || ""}
+                    />
+                  </Typography>
+                )}
+              </Box>
+            </Box>
           </Box>
         </Box>
         <Box

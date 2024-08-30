@@ -1,14 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const QUERY_FOLDER = gql`
-  query Data(
-    $where: FoldersWhereInput
-    $noLimit: Boolean
-  ) {
-    folders(
-      where: $where
-      noLimit: $noLimit
-    ) {
+  query Data($where: FoldersWhereInput, $noLimit: Boolean) {
+    folders(where: $where, noLimit: $noLimit) {
       total
       data {
         _id
@@ -25,7 +19,6 @@ export const QUERY_FOLDER = gql`
         newPath
         createdBy {
           _id
-          username
           newName
         }
         parentkey {
@@ -124,12 +117,37 @@ export const QUERY_FOLDER_PUBLIC_LINK = gql`
         newPath
         longUrl
         shortUrl
-        pin
         createdBy {
           _id
           newName
         }
         updatedAt
+      }
+    }
+  }
+`;
+
+export const QUERY_SUB_FOLDER = gql`
+  query GetFolderByUID($where: FoldersWhereInput, $noLimit: Boolean) {
+    foldersByUID(where: $where, noLimit: $noLimit) {
+      total
+      data {
+        _id
+        folder_name
+        total_size
+        folder_type
+        checkFolder
+        newFolder_name
+        access_password
+        longUrl
+        shortUrl
+        url
+        path
+        newPath
+        createdBy {
+          _id
+          newName
+        }
       }
     }
   }

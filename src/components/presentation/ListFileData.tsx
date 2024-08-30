@@ -45,12 +45,14 @@ type Props = {
   setMultipleIds?: (value: any[]) => void;
   handleQRGeneration?: (e: any, file: any, longUrl: string) => void;
   handleDownloadFileGetLink?: () => void;
-  handleClearGridSelection?: () => void;
   handleDownloadAsZip?: () => void;
 
   handleDownloadFolderAsZip?: () => void;
   handleDownloadFolder?: () => void;
   handleDoubleClick?: (data: any) => void;
+
+  handleClearGridSelection?: () => void;
+  handleClearFileSelection?: () => void;
 };
 
 function ListFileData(props: Props) {
@@ -155,6 +157,12 @@ function ListFileData(props: Props) {
       },
     },
   ];
+
+  function handleClearSelection() {
+    if (props.isFile) {
+      props.handleClearFileSelection?.();
+    }
+  }
 
   useEffect(() => {
     if (props?.dataLinks?.[0]?.expired) {
@@ -320,7 +328,7 @@ function ListFileData(props: Props) {
                   </NormalButton>
                 </Box>
                 <NormalButton
-                  onClick={props?.handleClearGridSelection}
+                  onClick={handleClearSelection}
                   sx={{
                     padding: (theme) =>
                       `${theme.spacing(1.6)} ${theme.spacing(5)}`,

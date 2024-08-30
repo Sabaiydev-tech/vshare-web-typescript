@@ -930,7 +930,7 @@ export const FileListContainer = styled(Box)(({ theme }) => ({
 
   [theme.breakpoints.down(997)]: {
     ".box-download": {
-      width: "100%",
+      gridColumn: "1 / -1",
     },
 
     ".box-social": {
