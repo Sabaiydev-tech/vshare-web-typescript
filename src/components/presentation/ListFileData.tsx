@@ -11,6 +11,9 @@ import { DataGrid } from "@mui/x-data-grid";
 import { FileBoxDownload } from "app/pages/file-uploader/styles/fileUploader.style";
 import NormalButton from "components/NormalButton";
 
+import ResponsivePagination from "react-responsive-pagination";
+import "styles/pagination.style.css";
+
 // Icons
 import InfoIcon from "@mui/icons-material/Info";
 
@@ -40,6 +43,12 @@ type Props = {
   countAction: number;
   isFile?: boolean;
   toggle?: string;
+  total?: number;
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    setCurrentPage: (index) => void;
+  };
 
   setToggle?: () => void;
   setMultipleIds?: (value: any[]) => void;
@@ -242,6 +251,19 @@ function ListFileData(props: Props) {
             }}
           />
 
+          {props.total! > 10 && (
+            <Box
+              sx={{ my: 2, mx: 4, display: "flex", justifyContent: "flex-end" }}
+            >
+              <ResponsivePagination
+                current={props.pagination?.currentPage || 1}
+                total={props.pagination?.totalPages || 10}
+                onPageChange={(index) => {
+                  props.pagination?.setCurrentPage?.(index);
+                }}
+              />
+            </Box>
+          )}
           {props?.dataLinks!.length > 0 && (
             <Fragment>
               <Box

@@ -55,6 +55,44 @@ export const QUERY_MANAGE_LINK_DETAIL = gql`
         _id
         fileId
         folderId
+        fileData {
+          _id
+          filename
+          newFilename
+          filePassword
+          fileType
+          size
+          status
+          isPublic
+          longUrl
+          shortUrl
+          newPath
+          path
+          fileType
+          url
+          createdBy {
+            _id
+            newName
+          }
+        }
+        folderData {
+          _id
+          folder_type
+          folder_name
+          newPath
+          newFolder_name
+          path
+          total_size
+          access_password
+          status
+          shortUrl
+          longUrl
+          url
+          createdBy {
+            _id
+            newName
+          }
+        }
         type
       }
       total

@@ -2,7 +2,13 @@ import React, { Fragment, useEffect, useRef, useState } from "react";
 
 //mui component and style
 import CheckBoxOutlineBlankRoundedIcon from "@mui/icons-material/CheckBoxOutlineBlankRounded";
-import { Box, Checkbox, IconButton, Tooltip } from "@mui/material";
+import {
+  Box,
+  Checkbox,
+  IconButton,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import { styled } from "@mui/material/styles";
@@ -40,7 +46,7 @@ const CustomCheckbox = styled(Checkbox)({
 
 const Item = styled(Paper)(({ theme, ...props }: any) => ({
   boxShadow: "rgb(0 0 0 / 9%) 0px 2px 8px",
-  borderRadius: "10px",
+  borderRadius: "6px",
   overflow: "hidden",
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "white",
   ...theme.typography.body2,
@@ -220,6 +226,10 @@ const FileCardItem: React.FC<any> = ({
   const itemRef = useRef(null);
   const isFileCardItemHover = useHover(itemRef);
   const isFileCardOuterClicked = useOuterClick(itemRef);
+
+  const isTablet = useMediaQuery("(max-width: 992px)");
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const {
     isNormalCard,
     sx,
@@ -282,7 +292,8 @@ const FileCardItem: React.FC<any> = ({
       item
       xs={6}
       sm={6}
-      lg={4}
+      md={4}
+      lg={3}
       sx={{
         width: "100%",
         height: "100%",
@@ -407,27 +418,45 @@ const FileCardItem: React.FC<any> = ({
                     {isContainFiles ? (
                       <FolderNotEmptyIcon
                         style={{
-                          width: "150px",
+                          width: isTablet
+                            ? "120px"
+                            : isMobile
+                            ? "50px"
+                            : "130px",
                         }}
                       />
                     ) : (
                       <FolderEmptyIcon
                         style={{
-                          width: "150px",
+                          width: isTablet
+                            ? "120px"
+                            : isMobile
+                            ? "50px"
+                            : "130px",
                         }}
                       />
                     )}
                   </Box>
                 )}
                 {fileType !== "folder" && (
-                  <FileIconContainer>
-                    <FileIcon
-                      extension={getFileType(props.name)}
-                      {...{
-                        ...defaultStyles[getFileType(props.name) as string],
-                      }}
-                    />
-                  </FileIconContainer>
+                  <Fragment>
+                    {props?.filePassword ? (
+                      <LockImage
+                        className="lock-icon-preview"
+                        src={lockIcon}
+                        alt={props.name}
+                      />
+                    ) : (
+                      <FileIconContainer>
+                        <FileIcon
+                          extension={getFileType(props.name)}
+                          {...{
+                            ...defaultStyles[getFileType(props.name) as string],
+                          }}
+                        />
+                      </FileIconContainer>
+                    )}
+                  </Fragment>
                 )}
               </React.Fragment>
             )}

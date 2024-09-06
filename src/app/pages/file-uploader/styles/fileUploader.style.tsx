@@ -945,14 +945,24 @@ export const FileBoxDownload = styled("div")({
 
 export const FileBoxToggle = styled("div")({
   display: "flex",
-  justifyContent: "flex-end",
+  justifyContent: "flex-start",
   marginBottom: "1.2rem",
   gap: "0.7rem",
   alignItems: "center",
 });
 
+export const FileBoxPopup = styled("div")({
+  position: "sticky",
+  top: 100,
+  right: 0,
+
+  [theme.breakpoints.down("md")]: {
+    position: "relative",
+    top: 0,
+  },
+});
+
 export const FileBoxSocial = styled("div")({
-  // width: "35%",
   borderRadius: 1.5,
   boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
   overflow: "hidden",
@@ -974,7 +984,6 @@ export const FilBoxBottomContainer = styled("div")({
   zIndex: 999,
   borderRadius: "30px",
 
-
   marginRight: "2rem",
   gap: "1rem",
   justifyContent: "center",
@@ -983,6 +992,15 @@ export const FilBoxBottomContainer = styled("div")({
 
   [theme.breakpoints.down(997)]: {
     display: "flex",
+  },
+});
+
+export const FileBoxHeader = styled("div")({
+  margin: "1rem 0",
+
+  h2: {
+    fontSize: "1.2rem",
+    fontWeight: "500",
   },
 });
 
