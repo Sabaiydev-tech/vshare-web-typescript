@@ -16,7 +16,6 @@ import { QUERY_SUB_FOLDER } from "api/graphql/folder.graphql";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
 import DialogConfirmPassword from "components/dialog/DialogConfirmPassword";
 import DialogPreviewQRcode from "components/dialog/DialogPreviewQRCode";
-import Advertisement from "components/presentation/Advertisement";
 import BoxSocialShare from "components/presentation/BoxSocialShare";
 import DialogConfirmQRCode from "components/presentation/DialogConfirmQRCode";
 import FileCardContainer from "components/presentation/FileCardContainer";
@@ -27,19 +26,17 @@ import CryptoJS from "crypto-js";
 import useManageFiles from "hooks/useManageFile";
 import useManageSetting from "hooks/useManageSetting";
 import Helmet from "react-helmet";
-import { FaTrash } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import * as selectorAction from "stores/features/selectorSlice";
 import { errorMessage, successMessage } from "utils/alert.util";
-import {
-  combineOldAndNewFileNames,
-  removeFileNameOutOfPath,
-} from "utils/file.util";
+import { getFileTypeName, removeFileNameOutOfPath } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "../file-uploader/styles/fileUploader.style";
 import "../file-uploader/styles/fileUploader.style.css";
 import ListFolderData from "components/presentation/ListFolderData";
 import BaseNormalButton from "components/BaseNormalButton";
+import ViewMoreAction from "components/presentation/ViewMoreAction";
 
 function ExtendFolder() {
   const location = useLocation();
@@ -66,15 +63,9 @@ function ExtendFolder() {
   const [getAdvertisemment, setGetAvertisement] = useState<any>([]);
 
   const [usedAds, setUsedAds] = useState<any[]>([]);
-  const [lastClickedButton, setLastClickedButton] = useState<any>([]);
   const [totalClickCount, setTotalClickCount] = useState(0);
   const [adAlive, setAdAlive] = useState(0);
 
-  const [isHide, setIsHide] = useState<any>(false);
-  const [isSuccess, setIsSuccess] = useState<any>(false);
-
-  const [isMultipleHide, setIsMultipleHide] = useState<any>(false);
-  const [isMultipleSuccess, setIsMultipleSuccess] = useState<any>(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dataValue, setDataValue] = useState<any>(null);
   const [platform, setPlatform] = useState("");
@@ -86,6 +77,17 @@ function ExtendFolder() {
 
   const [dataSubGetLink, setDataSubGetLink] = useState<any[]>([]);
   const [dataSubFolder, setDataSubFolder] = useState<any[]>([]);
+
+  const LIMIT_DATA_PAGE = 10;
+
+  const [totalFile, setTotalFile] = useState(0);
+  const [fileCurrentPage, setFileCurrentPage] = useState(1);
+
+  const [folderCurrentPage, setFolderCurrentPage] = useState(1);
+  const [totalFolder, setTotalFolder] = useState(0);
+
+  const [viewFileMore, setViewFileMore] = useState(10);
+  const [viewFolderMore, setViewFolderMore] = useState(10);
 
   const params = new URLSearchParams(location.search);
   const linkValue = params.get("l");
@@ -101,7 +103,6 @@ function ExtendFolder() {
   const [multipleIds, setMultipleIds] = useState<any[]>([]);
   const [multipleFolderIds, setMultipleFolderIds] = useState<any[]>([]);
 
-  const [index, setIndex] = useState<any>(null);
   const [hideDownload, seHideDownload] = useState(true);
 
   const dataSelector = useSelector(
@@ -188,6 +189,13 @@ function ExtendFolder() {
     }
   }
 
+  function handleViewMoreFolder() {
+    setViewFolderMore((prev) => prev + 10);
+  }
+  function handleViewMoreFile() {
+    setViewFileMore((prev) => prev + 10);
+  }
+
   // get Download button
   useEffect(() => {
     function getDataSetting() {
@@ -252,7 +260,7 @@ function ExtendFolder() {
   }, [getDataButtonDL, getDataAdvertisement]);
 
   useEffect(() => {
-    const getLinkData = async () => {
+    const getFileLinkData = async () => {
       try {
         if (linkClient?._id) {
           setIsLoading(true);
@@ -262,21 +270,55 @@ function ExtendFolder() {
               where: {
                 folder_id: linkClient?._id,
               },
+              limit: toggle === "list" ? LIMIT_DATA_PAGE : viewFileMore,
+              skip:
+                toggle === "list"
+                  ? LIMIT_DATA_PAGE * (fileCurrentPage - 1)
+                  : null,
             },
             onCompleted: (fileData) => {
               const response = fileData?.filesByUID?.data || [];
+              const total = fileData?.filesByUID?.total || 0;
+
+              setTotalFile(total);
               setDataSubGetLink(response);
             },
           });
 
-          await await getFolderLink({
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 500);
+        }
+      } catch (error: any) {
+        setIsLoading(false);
+        errorMessage(error);
+      }
+    };
+
+    getFileLinkData();
+  }, [linkValue, urlClient, fileCurrentPage, viewFileMore]);
+
+  useEffect(() => {
+    const getFolderLinkData = async () => {
+      try {
+        if (linkClient?._id) {
+          setIsLoading(true);
+
+          await getFolderLink({
             variables: {
               where: {
                 _id: linkClient?._id,
               },
+              limit: toggle === "list" ? LIMIT_DATA_PAGE : viewFolderMore,
+              skip:
+                toggle === "list"
+                  ? LIMIT_DATA_PAGE * (folderCurrentPage - 1)
+                  : null,
             },
             onCompleted: (values) => {
               const folderData = values?.foldersByUID?.data || [];
+              const total = values?.foldersByUID?.total || 0;
+              setTotalFolder(total);
               setDataSubFolder(folderData);
               if (folderData?.[0]?.status === "active") {
                 setGetDataRes(folderData || []);
@@ -292,6 +334,7 @@ function ExtendFolder() {
               }
             },
           });
+
           setTimeout(() => {
             setIsLoading(false);
           }, 500);
@@ -302,8 +345,8 @@ function ExtendFolder() {
       }
     };
 
-    getLinkData();
-  }, [linkValue, urlClient]);
+    getFolderLinkData();
+  }, [urlClient, folderCurrentPage, viewFolderMore, toggle]);
 
   useEffect(() => {
     if (getDataRes) {
@@ -679,208 +722,6 @@ function ExtendFolder() {
     }
   };
 
-  const _downloadFiles = async (
-    index,
-    fileId,
-    newFilename,
-    filename,
-    filePassword,
-    newPath,
-    createdBy,
-    dataFile,
-  ) => {
-    setTotalClickCount((prevCount) => prevCount + 1);
-    setFileDataSelect({ ...dataFile, newPath, createdBy });
-    setMultipleType("file");
-
-    if (totalClickCount >= getActionButton) {
-      setLastClickedButton([...lastClickedButton, fileId]);
-      setTotalClickCount(0);
-      const changeFilename = combineOldAndNewFileNames(filename, newFilename);
-
-      try {
-        setFilePasswords(filePassword);
-        setGetNewFileName(newFilename);
-        if (linkClient?._id) {
-          if (filePassword) {
-            handleClickOpen();
-          } else {
-            handleDoneDownloadFiles({
-              index,
-              filename,
-              newFilename,
-              createdBy,
-              dataFile,
-            });
-          }
-        } else {
-          if (filePassword) {
-            handleClickOpen();
-          } else {
-            handleDoneDownloadFilesOnPublic({
-              index,
-              changeFilename,
-              newFilename: dataFile?.newFilename,
-              dataFile,
-            });
-          }
-        }
-      } catch (error: any) {
-        errorMessage(error, 2000);
-      }
-    } else {
-      if (getAdvertisemment.length) {
-        handleAdvertisementPopup();
-      } else {
-        const changeFilename = combineOldAndNewFileNames(filename, newFilename);
-
-        try {
-          setFilePasswords(filePassword);
-          setGetNewFileName(newFilename);
-
-          if (filePassword) {
-            handleClickOpen();
-          } else {
-            if (linkClient?._id) {
-              handleDoneDownloadFiles({
-                index,
-                filename,
-                newFilename,
-                createdBy,
-                dataFile,
-              });
-            } else {
-              handleDoneDownloadFilesOnPublic({
-                index,
-                changeFilename,
-                newFilename,
-                dataFile,
-              });
-            }
-          }
-        } catch (error) {
-          errorMessage("Something wrong try again later!", 2000);
-        }
-      }
-    }
-  };
-
-  const handleDoneDownloadFiles = async ({
-    index,
-    filename,
-    newFilename,
-    createdBy,
-    dataFile,
-  }) => {
-    try {
-      setIsHide((prev) => ({
-        ...prev,
-        [index]: true,
-      }));
-      setIsSuccess((prev) => ({
-        ...prev,
-        [index]: false,
-      }));
-
-      const multipleData = [
-        {
-          id: dataFile._id,
-          name: filename,
-          newFilename: newFilename,
-          checkType: "file",
-          newPath: dataFile.newPath || "",
-          createdBy: createdBy,
-        },
-      ];
-
-      await manageFile.handleDownloadFile(
-        { multipleData },
-        {
-          onSuccess: () => {
-            setIsHide((prev) => ({
-              ...prev,
-              [index]: false,
-            }));
-            setIsSuccess((prev) => ({
-              ...prev,
-              [index]: true,
-            }));
-          },
-          onFailed: (error) => {
-            errorMessage(error, 3000);
-            setIsHide((prev) => ({
-              ...prev,
-              [index]: false,
-            }));
-            setIsSuccess((prev) => ({
-              ...prev,
-              [index]: false,
-            }));
-          },
-        },
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleDoneDownloadFilesOnPublic = async ({
-    index,
-    newFilename,
-    changeFilename,
-    dataFile,
-  }) => {
-    try {
-      setIsHide((prev) => ({
-        ...prev,
-        [index]: true,
-      }));
-      setIsSuccess((prev) => ({
-        ...prev,
-        [index]: false,
-      }));
-
-      const multipleData = [
-        {
-          id: dataFile._id,
-          name: changeFilename,
-          newFilename: newFilename,
-          checkType: "file",
-          newPath: "",
-        },
-      ];
-
-      await manageFile.handleDownloadPublicFile(
-        { multipleData },
-        {
-          onSuccess: () => {
-            setIsHide((prev) => ({
-              ...prev,
-              [index]: false,
-            }));
-            setIsSuccess((prev) => ({
-              ...prev,
-              [index]: true,
-            }));
-          },
-          onFailed: (error) => {
-            errorMessage(error, 3000);
-            setIsHide((prev) => ({
-              ...prev,
-              [index]: false,
-            }));
-            setIsSuccess((prev) => ({
-              ...prev,
-              [index]: false,
-            }));
-          },
-        },
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const _confirmPasword = async (password) => {
     if (!filePasswords) {
       const modifyPassword = CryptoJS.MD5(password).toString();
@@ -898,28 +739,11 @@ function ExtendFolder() {
 
       if (modifyPassword === getPassword) {
         setConfirmPassword(true);
-        setIsHide((prev) => ({
-          ...prev,
-          [index]: true,
-        }));
-        setIsSuccess((prev) => ({
-          ...prev,
-          [index]: false,
-        }));
 
         handleClose();
         if (linkClient?._id) {
           if (linkClient?.type === "multiple") {
             if (multipleType === "folder") {
-              setIsMultipleHide((prev) => ({
-                ...prev,
-                [index]: true,
-              }));
-              setIsMultipleSuccess((prev) => ({
-                ...prev,
-                [index]: false,
-              }));
-
               const path = folderDataSelect?.[0]?.newPath
                 ? folderDataSelect?.[0]?.newPath
                 : "";
@@ -935,26 +759,9 @@ function ExtendFolder() {
               await manageFile.handleDownloadFolder(
                 { multipleData },
                 {
-                  onSuccess: () => {
-                    setIsMultipleHide((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
-                    setIsMultipleSuccess((prev) => ({
-                      ...prev,
-                      [index]: true,
-                    }));
-                  },
+                  onSuccess: () => {},
                   onFailed: (error) => {
                     errorMessage(error);
-                    setIsMultipleHide((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
-                    setIsMultipleSuccess((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
                   },
                 },
               );
@@ -971,41 +778,15 @@ function ExtendFolder() {
               await manageFile.handleDownloadFile(
                 { multipleData },
                 {
-                  onSuccess: () => {
-                    setIsHide((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
-                    setIsSuccess((prev) => ({
-                      ...prev,
-                      [index]: true,
-                    }));
-                  },
+                  onSuccess: () => {},
                   onFailed: (error) => {
                     errorMessage(error);
-                    setIsHide((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
-                    setIsSuccess((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
                   },
                 },
               );
             }
           } else {
             if (linkClient?.type === "folder") {
-              setIsHide((prev) => ({
-                ...prev,
-                [index]: true,
-              }));
-              setIsSuccess((prev) => ({
-                ...prev,
-                [index]: false,
-              }));
-
               const path = folderDownload[0]?.newPath
                 ? folderDownload[0]?.newPath
                 : "";
@@ -1021,26 +802,9 @@ function ExtendFolder() {
               await manageFile.handleDownloadFolder(
                 { multipleData },
                 {
-                  onSuccess: () => {
-                    setIsHide((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
-                    setIsSuccess((prev) => ({
-                      ...prev,
-                      [index]: true,
-                    }));
-                  },
+                  onSuccess: () => {},
                   onFailed: (error) => {
                     errorMessage(error);
-                    setIsHide((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
-                    setIsSuccess((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
                   },
                 },
               );
@@ -1057,26 +821,9 @@ function ExtendFolder() {
               await manageFile.handleDownloadPublicFile(
                 { multipleData },
                 {
-                  onSuccess: () => {
-                    setIsHide((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
-                    setIsSuccess((prev) => ({
-                      ...prev,
-                      [index]: true,
-                    }));
-                  },
+                  onSuccess: () => {},
                   onFailed: (error) => {
                     errorMessage(error);
-                    setIsHide((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
-                    setIsSuccess((prev) => ({
-                      ...prev,
-                      [index]: false,
-                    }));
                   },
                 },
               );
@@ -1092,26 +839,9 @@ function ExtendFolder() {
           await manageFile.handleDownloadPublicFile(
             { multipleData },
             {
-              onSuccess: () => {
-                setIsHide((prev) => ({
-                  ...prev,
-                  [index]: false,
-                }));
-                setIsSuccess((prev) => ({
-                  ...prev,
-                  [index]: true,
-                }));
-              },
+              onSuccess: () => {},
               onFailed: (error) => {
                 errorMessage(error);
-                setIsHide((prev) => ({
-                  ...prev,
-                  [index]: false,
-                }));
-                setIsSuccess((prev) => ({
-                  ...prev,
-                  [index]: false,
-                }));
               },
             },
           );
@@ -1184,17 +914,20 @@ function ExtendFolder() {
           index,
         };
       });
-
+      const title = folderData?.[0]?.folder_name || "Folder";
+      document.title = title;
       return folderData || [];
     }
 
+    // document.title = "Folder";
+    // setDescription("Folder vshare.net");
     return [];
   }, [linkClient]);
 
   return (
     <React.Fragment>
       <Helmet>
-        <meta name="title" content={"seoTitle"} />
+        <meta name="title" content={"title"} />
         <meta name="description" content={_description} />
       </Helmet>
 
@@ -1212,50 +945,54 @@ function ExtendFolder() {
         />
 
         <Box sx={{ backgroundColor: "#ECF4F3", padding: "3rem 1rem" }}>
-          <Advertisement />
+          {/* <Advertisement /> */}
+
+          {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
+            <MUI.FileBoxToggle>
+              {!isMobileGrid && (
+                <Fragment>
+                  {toggle === "grid" && (
+                    <Fragment>
+                      <BaseNormalButton
+                        title="Download"
+                        disabled={
+                          dataSelector?.selectionFileAndFolderData?.length > 0
+                            ? false
+                            : true
+                        }
+                        handleClick={() => {
+                          if (
+                            dataSelector?.selectionFileAndFolderData?.length > 0
+                          ) {
+                            handleDownloadGridFileAndFolder();
+                          }
+                        }}
+                      />
+                      <BaseNormalButton
+                        title=""
+                        style={{ padding: "9px" }}
+                        disabled={
+                          dataSelector?.selectionFileAndFolderData?.length > 0
+                            ? false
+                            : true
+                        }
+                        handleClick={handleClearSelector}
+                      >
+                        <FaTimes fontSize={12} />
+                      </BaseNormalButton>
+                    </Fragment>
+                  )}
+                </Fragment>
+              )}
+
+              <IconButton size="small" onClick={handleToggle}>
+                {toggle === "list" ? <ListIcon /> : <GridIcon />}
+              </IconButton>
+            </MUI.FileBoxToggle>
+          )}
 
           <MUI.FileListContainer>
             <Box>
-              {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
-                <MUI.FileBoxToggle>
-                  {!isMobileGrid && (
-                    <Fragment>
-                      {toggle === "grid" && (
-                        <Fragment>
-                          <BaseNormalButton
-                            title="Download"
-                            disabled={
-                              dataSelector?.selectionFileAndFolderData?.length >
-                              0
-                                ? false
-                                : true
-                            }
-                            handleClick={() => {
-                              if (
-                                dataSelector?.selectionFileAndFolderData
-                                  ?.length > 0
-                              ) {
-                                handleDownloadGridFileAndFolder();
-                              }
-                            }}
-                          />
-                          <BaseNormalButton
-                            handleClick={handleClearSelector}
-                            title=""
-                          >
-                            <FaTrash fontSize={12} />
-                          </BaseNormalButton>
-                        </Fragment>
-                      )}
-                    </Fragment>
-                  )}
-
-                  <IconButton size="small" onClick={handleToggle}>
-                    {toggle === "list" ? <ListIcon /> : <GridIcon />}
-                  </IconButton>
-                </MUI.FileBoxToggle>
-              )}
-
               {toggle === "list" && (
                 <Fragment>
                   {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
@@ -1266,6 +1003,12 @@ function ExtendFolder() {
                       dataLinks={dataFolderLinkMemo}
                       multipleIds={multipleFolderIds}
                       countAction={adAlive}
+                      total={totalFolder}
+                      pagination={{
+                        currentPage: folderCurrentPage,
+                        totalPages: Math.ceil(totalFolder / LIMIT_DATA_PAGE),
+                        setCurrentPage: setFolderCurrentPage,
+                      }}
                       setMultipleIds={setMultipleFolderIds}
                       setToggle={handleToggle}
                       handleQRGeneration={handleQRGeneration}
@@ -1276,8 +1019,6 @@ function ExtendFolder() {
                     />
                   )}
 
-                  <br />
-
                   {dataLinkMemo && dataLinkMemo.length > 0 && (
                     <ListFileData
                       isFile={true}
@@ -1286,6 +1027,12 @@ function ExtendFolder() {
                       dataLinks={dataLinkMemo}
                       multipleIds={multipleIds}
                       countAction={adAlive}
+                      total={totalFile}
+                      pagination={{
+                        currentPage: fileCurrentPage,
+                        totalPages: Math.ceil(totalFile / LIMIT_DATA_PAGE),
+                        setCurrentPage: setFileCurrentPage,
+                      }}
                       setMultipleIds={setMultipleIds}
                       setToggle={handleToggle}
                       handleQRGeneration={handleQRGeneration}
@@ -1300,73 +1047,91 @@ function ExtendFolder() {
               {toggle === "grid" && (
                 <Fragment>
                   {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
-                    <FileCardContainer style={{ marginBottom: "1.5rem" }}>
-                      {dataFolderLinkMemo.map((item, index) => {
-                        return (
-                          <Fragment key={index}>
-                            <FileCardItem
-                              id={item._id}
-                              item={item}
-                              isContainFiles={
-                                item?.total_size > 0 ? true : false
-                              }
-                              user={item?.createdBy}
-                              path={item?.path}
-                              isCheckbox={true}
-                              filePassword={item?.access_password}
-                              fileType={"folder"}
-                              name={item?.folder_name}
-                              newName={item?.newFolder_name}
-                              cardProps={{
-                                onDoubleClick: () => {
-                                  handleOpenFolder(item);
-                                },
-                              }}
-                            />
-                          </Fragment>
-                        );
-                      })}
-                    </FileCardContainer>
+                    <Fragment>
+                      <FileCardContainer style={{ marginBottom: "1.5rem" }}>
+                        {dataFolderLinkMemo.map((item, index) => {
+                          return (
+                            <Fragment key={index}>
+                              <FileCardItem
+                                id={item._id}
+                                item={item}
+                                isContainFiles={
+                                  item?.total_size > 0 ? true : false
+                                }
+                                user={item?.createdBy}
+                                path={item?.path}
+                                isCheckbox={true}
+                                filePassword={item?.access_password}
+                                fileType={getFileTypeName(item?.folder_type)}
+                                name={item?.folder_name}
+                                newName={item?.newFolder_name}
+                                cardProps={{
+                                  onDoubleClick: () => {
+                                    handleOpenFolder(item);
+                                  },
+                                }}
+                              />
+                            </Fragment>
+                          );
+                        })}
+                      </FileCardContainer>
+
+                      {totalFolder > viewFolderMore ? (
+                        <ViewMoreAction handleViewMore={handleViewMoreFolder} />
+                      ) : (
+                        <Fragment></Fragment>
+                      )}
+                    </Fragment>
                   )}
 
                   {dataLinkMemo && dataLinkMemo.length > 0 && (
-                    <FileCardContainer>
-                      {dataLinkMemo.map((item, index) => {
-                        return (
-                          <Fragment key={index}>
-                            <FileCardItem
-                              id={item._id}
-                              item={item}
-                              imagePath={
-                                item?.createdBy?.newName +
-                                "-" +
-                                item?.createdBy?._id +
-                                "/" +
-                                (item.newPath
-                                  ? removeFileNameOutOfPath(item.newPath)
-                                  : "") +
-                                item.newFilename
-                              }
-                              user={item?.createdBy}
-                              path={item?.path}
-                              isCheckbox={true}
-                              filePassword={item?.filePassword}
-                              fileType={"image"}
-                              isPublic={
-                                item?.createdBy?._id === "0" ? true : false
-                              }
-                              name={item?.filename}
-                              newName={item?.newFilename}
-                              cardProps={{
-                                onDoubleClick: () => {
-                                  // console.log("first");
-                                },
-                              }}
-                            />
-                          </Fragment>
-                        );
-                      })}
-                    </FileCardContainer>
+                    <Fragment>
+                      <FileCardContainer>
+                        {dataLinkMemo.map((item, index) => {
+                          return (
+                            <Fragment key={index}>
+                              <FileCardItem
+                                id={item._id}
+                                item={item}
+                                imagePath={
+                                  item?.createdBy?.newName +
+                                  "-" +
+                                  item?.createdBy?._id +
+                                  "/" +
+                                  (item.newPath
+                                    ? removeFileNameOutOfPath(item.newPath)
+                                    : "") +
+                                  item.newFilename
+                                }
+                                user={item?.createdBy}
+                                path={item?.path}
+                                isCheckbox={true}
+                                filePassword={item?.filePassword}
+                                fileType={getFileTypeName(item?.fileType)}
+                                isPublic={
+                                  item?.createdBy?._id === "0" ? true : false
+                                }
+                                name={item?.filename}
+                                newName={item?.newFilename}
+                                cardProps={{
+                                  onDoubleClick: () => {
+                                    // console.log("first");
+                                  },
+                                }}
+                              />
+                            </Fragment>
+                          );
+                        })}
+                      </FileCardContainer>
+
+                      {totalFile > viewFileMore ? (
+                        <Box sx={{ mt: 5 }}>
+                          <ViewMoreAction handleViewMore={handleViewMoreFile} />
+                        </Box>
+                      ) : (
+                        <Fragment></Fragment>
+                      )}
+                    </Fragment>
                   )}
                 </Fragment>
               )}
@@ -1377,6 +1142,7 @@ function ExtendFolder() {
                   isFile={false}
                   _description={_description}
                   countAction={adAlive}
+                  isHide={hideDownload}
                   handleDownloadFolderAsZip={handleDownloadAsZip}
                 />
               )}

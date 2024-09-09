@@ -60,6 +60,7 @@
     "react-qr-code": "^2.0.14",
     "react-redux": "^9.1.2",
     "react-responsive-carousel": "^3.2.23",
+    "react-responsive-pagination": "^2.7.0",
     "react-router-dom": "^6.23.1",
     "react-share-social": "^0.1.60",
     "react-type-animation": "^3.2.0",

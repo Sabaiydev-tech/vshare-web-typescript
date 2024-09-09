@@ -424,9 +424,9 @@ function FileDropDownloader() {
       onError: (err) => {
         setStatus("expired");
         const cutErr = err?.message?.replace(/(ApolloError: )?Error: /, "");
-        
-        if(err?.message === 'Url not allow to upload'){
-          setStatus('locked');
+
+        if (err?.message === "Url not allow to upload") {
+          setStatus("locked");
         }
 
         errorMessage(
@@ -452,14 +452,13 @@ function FileDropDownloader() {
         }
 
         ///check permission allow to upload/upload multi
-        if(!item?.allowUpload){
-          setStatus('locked');
+        if (!item?.allowUpload) {
+          setStatus("locked");
         }
 
-        if(item?.allowMultiples){
+        if (item?.allowMultiples) {
           setIsUploadMultiples(item?.allowMultiples);
         }
-
       },
     });
   }, [currentUrl, dropData]);
@@ -625,7 +624,7 @@ function FileDropDownloader() {
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    multiple: isUploadMultiples
+    multiple: isUploadMultiples,
   });
 
   useEffect(() => {
@@ -677,7 +676,7 @@ function FileDropDownloader() {
 
   return (
     <React.Fragment>
-      {status == "expired" || status === 'locked' ? (
+      {status == "expired" || status === "locked" ? (
         <ExpiredArea>
           <Box
             sx={{
@@ -708,7 +707,9 @@ function FileDropDownloader() {
                 </text>
               </svg>
             </Typography>
-            {`Unfortunately, the link was ${status === 'locked' ? status+' by the owner' : status}.`}
+            {`Unfortunately, the link was ${
+              status === "locked" ? status + " by the owner" : status
+            }.`}
           </Box>
           <Box
             sx={{
@@ -875,7 +876,9 @@ function FileDropDownloader() {
                             isMobile={isMobile}
                             setMultiId={setMultiId}
                             handleDownloadFile={handleDownloadFile}
-                            handleMultipleDownloadFiles={handleMultipleDownloadFiles}
+                            handleMultipleDownloadFiles={
+                              handleMultipleDownloadFiles
+                            }
                             handleClearSelection={handleClearSelectDataGrid}
                             handleQrCode={(data, action) => {
                               setDataForEvent({

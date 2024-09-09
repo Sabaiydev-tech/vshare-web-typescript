@@ -5,6 +5,7 @@ type Props = {
   title?: string;
   disabled?: boolean;
   children?: React.ReactNode;
+  style?: any;
 
   handleClick?: () => void;
 };
@@ -26,6 +27,9 @@ function BaseNormalButton(props: Props) {
         width: "inherit",
         outline: "none",
         verticalAlign: "middle",
+        display: "flex",
+        alignItems: "center",
+        ...props.style,
 
         ":disabled": {
           cursor: "context-menu",
@@ -34,8 +38,8 @@ function BaseNormalButton(props: Props) {
         },
       }}
     >
-      {props.title}
       {props?.children}
+      {props.title}
     </NormalButton>
   );
 }

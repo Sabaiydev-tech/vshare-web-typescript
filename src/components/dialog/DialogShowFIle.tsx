@@ -496,6 +496,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
 
                 const currentTime = new Date().getTime();
                 const elapsedTime = (currentTime - startTime) / 1000;
+
                 if (!initialUploadSpeedCalculated && elapsedTime > 0) {
                   const initialUploadSpeed = (
                     progressEvent.loaded /
@@ -535,37 +536,40 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
       setCheckUpload(true);
       successMessage("Upload successful!!", 3000);
     } catch (error: any) {
-      const cutError = error.message?.replace(/(ApolloError: )?Error: /, "");
-      const fileUploadSize = dataMaxSize?.action?.split(".")[0];
-      if (
-        cutError ===
-        `This IP address has already saved ${dataUploadPerDay?.action} files today`
-      ) {
-        errorMessage(
-          `You have uploaded more than ${dataUploadPerDay?.action} files per day!`,
-          10000,
-        );
-        handleCloseModal();
-      } else if (
-        cutError ===
-        "THIS_IP_ADDRESS_HAS_ALREADY_SAVED ຈຳນວນໄຟລທີ່ກຳນົດໃນລະບົບ FILES_TODAY"
-      ) {
-        errorMessage("You have uploaded more than 20 GB per day!", 10000);
-        handleCloseModal();
-      } else if (
-        cutError ===
-        `THE_SIZE_OF_THIS_FILE_IS_GREATER_THAN ${fileUploadSize} GB`
-      ) {
-        errorMessage(`The file size is bigger than ${fileMaxSize}`, 10000);
-        handleCloseModal();
-      } else {
-        const cutDataError = error.message?.replace(
-          /(ApolloError: )?Error: /,
-          "",
-        );
-        errorMessage(cutDataError || "", 10000);
-        handleCloseModal();
-      }
+      handleUploadError(error);
+    }
+  };
+
+  const handleUploadError = (error: any) => {
+    const cutError = error.message?.replace(/(ApolloError: )?Error: /, "");
+    const fileUploadSize = dataMaxSize?.action?.split(".")[0];
+    if (
+      cutError ===
+      `This IP address has already saved ${dataUploadPerDay?.action} files today`
+    ) {
+      errorMessage(
+        `You have uploaded more than ${dataUploadPerDay?.action} files per day!`,
+        10000,
+      );
+      handleCloseModal();
+    } else if (
+      cutError ===
+      "THIS_IP_ADDRESS_HAS_ALREADY_SAVED ຈຳນວນໄຟລທີ່ກຳນົດໃນລະບົບ FILES_TODAY"
+    ) {
+      errorMessage("You have uploaded more than 20 GB per day!", 10000);
+      handleCloseModal();
+    } else if (
+      cutError === `THE_SIZE_OF_THIS_FILE_IS_GREATER_THAN ${fileUploadSize} GB`
+    ) {
+      errorMessage(`The file size is bigger than ${fileMaxSize}`, 10000);
+      handleCloseModal();
+    } else {
+      const cutDataError = error.message?.replace(
+        /(ApolloError: )?Error: /,
+        "",
+      );
+      errorMessage(cutDataError || "", 10000);
+      handleCloseModal();
     }
   };
 
@@ -683,7 +687,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                     fontWeight: 300,
                   }}
                 >
-                  Max file size 10GB/file available for unlimited time
+                  Max file size 2GB/file available for unlimited time
                 </Typography>
               </Box>
             </MUI.BoxUploadTitle>
