@@ -83,7 +83,6 @@ function Home() {
   const [subFeatures, setSubFeatures] = useState<any[]>([]);
   const [faq, setFaq] = useState<any[]>([]);
   const useDataSetting = useManageSetting();
-  console.log("aaaa")
 
   const settingKeys = {
     passwordLink: "HLINPFS",
