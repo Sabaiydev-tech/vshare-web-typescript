@@ -407,7 +407,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
     let getUrlAllWhenReturn: any = [];
 
     try {
-      const responseIp = await axios.get(LOAD_GET_IP_URL);
+      // const responseIp = await axios.get(LOAD_GET_IP_URL);
       const alphabet =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
       const nanoid = customAlphabet(alphabet, 6);
@@ -451,7 +451,8 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
               filePassword: file?.password,
               fileType: file?.type,
               filename: String(`${file?.name}`),
-              ip: String(responseIp?.data),
+              // ip: String(responseIp?.data),
+              ip: String("12"),
               newFilename: String(newNameFile),
               passwordUrlAll: file?.URLpassword,
               size: String(file?.size),

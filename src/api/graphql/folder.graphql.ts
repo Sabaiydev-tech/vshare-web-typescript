@@ -53,7 +53,6 @@ export const QUERY_FOLDER_PUBLICV1 = gql`
           newName
         }
       }
-      total
     }
   }
 `;

@@ -2,11 +2,8 @@ import { useLazyQuery, useMutation } from "@apollo/client";
 import axios from "axios";
 import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
-// components
-import GridIcon from "@mui/icons-material/AppsOutlined";
 import ListIcon from "@mui/icons-material/FormatListBulletedOutlined";
-import { Box, Button, IconButton, useMediaQuery } from "@mui/material";
+import { Box, IconButton, useMediaQuery } from "@mui/material";
 import {
   CREATE_DETAIL_ADVERTISEMENT,
   QUERY_ADVERTISEMENT,
@@ -20,13 +17,12 @@ import BoxSocialShare from "components/presentation/BoxSocialShare";
 import DialogConfirmQRCode from "components/presentation/DialogConfirmQRCode";
 import FileCardContainer from "components/presentation/FileCardContainer";
 import FileCardItem from "components/presentation/FileCardItem";
-import ListFileData from "components/presentation/ListFileData";
+import ListFileData from "components/Downloader/ListFileData";
 import { ENV_KEYS } from "constants/env.constant";
 import CryptoJS from "crypto-js";
 import useManageFiles from "hooks/useManageFile";
 import useManageSetting from "hooks/useManageSetting";
 import Helmet from "react-helmet";
-import { FaTimes } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import * as selectorAction from "stores/features/selectorSlice";
 import { errorMessage, successMessage } from "utils/alert.util";
@@ -34,9 +30,12 @@ import { getFileTypeName, removeFileNameOutOfPath } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "../file-uploader/styles/fileUploader.style";
 import "../file-uploader/styles/fileUploader.style.css";
-import ListFolderData from "components/presentation/ListFolderData";
-import BaseNormalButton from "components/BaseNormalButton";
+import ListFolderData from "components/Downloader/ListFolderData";
 import ViewMoreAction from "components/presentation/ViewMoreAction";
+import Advertisement from "components/presentation/Advertisement";
+import BaseDeeplinkDownload from "components/Downloader/BaseDeeplinkDownload";
+import BaseGridDownload from "components/Downloader/BaseGridDownload";
+import { IFolder } from "models/folder.model";
 
 function ExtendFolder() {
   const location = useLocation();
@@ -67,9 +66,10 @@ function ExtendFolder() {
   const [adAlive, setAdAlive] = useState(0);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloadLoading, setIsDownloadLoading] = useState(false);
   const [dataValue, setDataValue] = useState<any>(null);
   const [platform, setPlatform] = useState("");
-  const [_description, setDescription] = useState("No description");
+  const [_description, setDescription] = useState("");
 
   const [multipleType, setMultipleType] = useState("");
   const [fileDataSelect, setFileDataSelect] = useState<any>(null);
@@ -98,12 +98,12 @@ function ExtendFolder() {
   const LOAD_GET_IP_URL = ENV_KEYS.VITE_APP_LOAD_GETIP_URL;
 
   // Deep linking for mobile devices
-  const appScheme = "vshare.app://download?url=" + currentURL;
+  const appScheme = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
 
   const [multipleIds, setMultipleIds] = useState<any[]>([]);
   const [multipleFolderIds, setMultipleFolderIds] = useState<any[]>([]);
 
-  const [hideDownload, seHideDownload] = useState(true);
+  const [hideDownload, setHideDownload] = useState(true);
 
   const dataSelector = useSelector(
     selectorAction.checkboxFileAndFolderSelector,
@@ -204,7 +204,9 @@ function ExtendFolder() {
         (data) => data?.productKey === settingKeys.downloadKey,
       );
       if (downloadData) {
-        if (downloadData?.status === "on") seHideDownload(false);
+        if (downloadData?.status === "on") {
+          setHideDownload(false);
+        }
       }
     }
 
@@ -323,14 +325,6 @@ function ExtendFolder() {
               if (folderData?.[0]?.status === "active") {
                 setGetDataRes(folderData || []);
                 setFolderDownload(folderData || []);
-
-                document.title =
-                  folderData?.[0]?.folder_name || "Vshare download folder";
-                if (folderData && folderData?.[0]?.folder_type) {
-                  if (folderData[0]?.folder_name) {
-                    setDescription(folderData[0]?.folder_name + " Vshare.net");
-                  }
-                }
               }
             },
           });
@@ -611,13 +605,11 @@ function ExtendFolder() {
   const handleOpenApplication = () => {
     const timeout = setTimeout(() => {
       if (platform === "android") {
-        window.location.href =
-          "https://play.google.com/store/apps/details?id=com.vshare.app.client";
+        window.location.href = ENV_KEYS.VITE_APP_PLAY_STORE;
       }
 
       if (platform === "ios") {
-        window.location.href =
-          "https://apps.apple.com/la/app/vshare-file-transfer-app/id6476536606";
+        window.location.href = ENV_KEYS.VITE_APP_APPLE_STORE;
       }
     }, 1500);
 
@@ -628,27 +620,99 @@ function ExtendFolder() {
     };
   };
 
+  const getAllData = async () => {
+    setIsDownloadLoading(true);
+
+    try {
+      const result = await getFileLink({
+        variables: {
+          where: {
+            folder_id: linkClient._id,
+          },
+          noLimit: true,
+        },
+      });
+      const fileData: any[] = (await result.data?.filesByUID?.data) || [];
+      const fileDataMap = fileData.map((file) => ({
+        ...file,
+        isFile: true,
+      }));
+
+      const folderResult = await await getFolderLink({
+        variables: {
+          where: {
+            _id: linkClient?._id,
+          },
+          noLimit: true,
+        },
+      });
+      const folderData: any[] =
+        (await folderResult.data?.foldersByUID?.data) || [];
+
+      setIsDownloadLoading(false);
+      const mergeData = fileDataMap.concat(folderData);
+      return mergeData;
+    } catch (error: any) {
+      console.log(error.message);
+      setIsDownloadLoading(false);
+    } finally {
+      setIsDownloadLoading(false);
+    }
+  };
+
   const handleDownloadAsZip = async () => {
-    if (dataLinkMemo?.length > 0) {
-      const multipleData = dataLinkMemo.map((file) => {
-        const newPath = file.newPath || "";
+    setTotalClickCount((prevCount) => prevCount + 1);
+
+    if (totalClickCount >= getActionButton) {
+      setTotalClickCount(0);
+      // const groupData: any[] = (await getAllData()) || [];
+      const groupDataV1: any[] = dataLinkMemo.concat(dataFolderLinkMemo)
+
+      const multipleData = groupDataV1.map((item: any) => {
+        const newPath = item?.newPath || "";
+        const newFilename = item?.newFilename || item?.newFolder_name;
 
         return {
-          id: file._id,
-          name: file.filename,
-          newFilename: file.newFilename,
-          checkType: "file",
           newPath,
-          createdBy: file.createdBy,
+          id: item._id,
+          newFilename: newFilename || "",
+          name: item?.filename || item?.folder_name,
+          checkType: item?.isFile ? "file" : "folder",
+          createdBy: item?.createdBy,
           isPublic: linkClient?._id ? false : true,
         };
       });
 
-      setTotalClickCount((prevCount) => prevCount + 1);
-      setMultipleType("file");
+      manageFile.handleDownloadFile(
+        {
+          multipleData,
+        },
+        {
+          onFailed: () => {},
+          onSuccess: () => {},
+        },
+      );
+    } else {
+      if (getAdvertisemment.length) {
+        handleAdvertisementPopup();
+      } else {
+        const groupData: any[] = (await getAllData()) || [];
 
-      if (totalClickCount >= getActionButton) {
-        setTotalClickCount(0);
+        const multipleData = groupData.map((item: any) => {
+          const newPath = item?.newPath || "";
+          const newFilename = item?.newFilename || item?.newFolder_name;
+
+          return {
+            newPath,
+            id: item._id,
+            newFilename: newFilename || "",
+            name: item?.filename || item?.folder_name,
+            checkType: item?.isFile ? "file" : "folder",
+            createdBy: item?.createdBy,
+            isPublic: linkClient?._id ? false : true,
+          };
+        });
+
         manageFile.handleDownloadFile(
           {
             multipleData,
@@ -658,66 +722,6 @@ function ExtendFolder() {
             onSuccess: () => {},
           },
         );
-      } else {
-        if (getAdvertisemment.length) {
-          handleAdvertisementPopup();
-        } else {
-          manageFile.handleDownloadFile(
-            {
-              multipleData,
-            },
-            {
-              onFailed: () => {},
-              onSuccess: () => {},
-            },
-          );
-        }
-      }
-    }
-
-    if (dataFolderLinkMemo?.length > 0) {
-      const multipleData = dataFolderLinkMemo.map((file: any) => {
-        const newPath = file.newPath || "";
-
-        return {
-          id: file._id,
-          name: file.folder_name,
-          newFilename: file.newFolder_name,
-          checkType: "folder",
-          newPath,
-          createdBy: file.createdBy,
-        };
-      });
-
-      setTotalClickCount((prevCount) => prevCount + 1);
-      setMultipleType("folder");
-
-      if (totalClickCount >= getActionButton) {
-        setTotalClickCount(0);
-
-        manageFile.handleDownloadFolder(
-          {
-            multipleData,
-          },
-          {
-            onFailed: () => {},
-            onSuccess: () => {},
-          },
-        );
-      } else {
-        if (getAdvertisemment.length) {
-          handleAdvertisementPopup();
-        } else {
-          manageFile.handleDownloadFolder(
-            {
-              multipleData,
-            },
-            {
-              onFailed: () => {},
-              onSuccess: () => {},
-            },
-          );
-        }
       }
     }
   };
@@ -905,7 +909,7 @@ function ExtendFolder() {
     return [];
   }, [linkClient]);
 
-  const dataFolderLinkMemo = useMemo(() => {
+  const dataFolderLinkMemo = useMemo<IFolder[]>(() => {
     if (linkClient?._id) {
       const folderData = dataSubFolder?.map((folder, index) => {
         return {
@@ -914,80 +918,60 @@ function ExtendFolder() {
           index,
         };
       });
-      const title = folderData?.[0]?.folder_name || "Folder";
-      document.title = title;
+
       return folderData || [];
     }
 
-    // document.title = "Folder";
-    // setDescription("Folder vshare.net");
     return [];
   }, [linkClient]);
+
+  useEffect(() => {
+    if (dataFolderLinkMemo.length > 0) {
+      const title = dataFolderLinkMemo[0].folder_name || "";
+      document.title = title;
+      setDescription(`${title} on vshare.net`);
+    }
+
+    if (dataLinkMemo.length > 0) {
+      const title = dataLinkMemo[0].filename || "";
+      document.title = dataLinkMemo[0].filename || "";
+      setDescription(`${title} on vshare.net`);
+    }
+
+    if (dataFolderLinkMemo.length > 0 && dataLinkMemo.length > 0) {
+      const title = dataFolderLinkMemo[0].folder_name || "";
+      document.title = title;
+      setDescription(`${title} on vshare.net`);
+    }
+  }, [dataLinkMemo, dataFolderLinkMemo]);
 
   return (
     <React.Fragment>
       <Helmet>
-        <meta name="title" content={"title"} />
-        <meta name="description" content={_description} />
+        <meta name="description" key={"description"} content={_description} />
       </Helmet>
 
       <MUI.ContainerHome maxWidth="xl">
-        <DialogConfirmPassword
-          open={open}
-          isMobile={isMobile}
-          getFilenames={getFilenames}
-          getNewFileName={getNewFileName}
-          password={password}
-          checkModal={checkModal}
-          setPassword={setPassword}
-          handleClose={handleClose}
-          _confirmPasword={_confirmPasword}
-        />
-
         <Box sx={{ backgroundColor: "#ECF4F3", padding: "3rem 1rem" }}>
-          {/* <Advertisement /> */}
+          <Advertisement />
 
           {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
             <MUI.FileBoxToggle>
-              {!isMobileGrid && (
-                <Fragment>
-                  {toggle === "grid" && (
-                    <Fragment>
-                      <BaseNormalButton
-                        title="Download"
-                        disabled={
-                          dataSelector?.selectionFileAndFolderData?.length > 0
-                            ? false
-                            : true
-                        }
-                        handleClick={() => {
-                          if (
-                            dataSelector?.selectionFileAndFolderData?.length > 0
-                          ) {
-                            handleDownloadGridFileAndFolder();
-                          }
-                        }}
-                      />
-                      <BaseNormalButton
-                        title=""
-                        style={{ padding: "9px" }}
-                        disabled={
-                          dataSelector?.selectionFileAndFolderData?.length > 0
-                            ? false
-                            : true
-                        }
-                        handleClick={handleClearSelector}
-                      >
-                        <FaTimes fontSize={12} />
-                      </BaseNormalButton>
-                    </Fragment>
-                  )}
-                </Fragment>
+              {toggle === "grid" ? (
+                <BaseGridDownload
+                  dataFiles={dataSelector?.selectionFileAndFolderData}
+                  adAlive={adAlive}
+                  handleClearSelector={handleClearSelector}
+                  handleToggle={handleToggle}
+                  handleDownloadGridFileAndFolder={
+                    handleDownloadGridFileAndFolder
+                  }
+                />
+              ) : (
+                <IconButton size="small" onClick={handleToggle}>
+                  <ListIcon />
+                </IconButton>
               )}
-
-              <IconButton size="small" onClick={handleToggle}>
-                {toggle === "list" ? <ListIcon /> : <GridIcon />}
-              </IconButton>
             </MUI.FileBoxToggle>
           )}
 
@@ -1062,7 +1046,7 @@ function ExtendFolder() {
                                 path={item?.path}
                                 isCheckbox={true}
                                 filePassword={item?.access_password}
-                                fileType={getFileTypeName(item?.folder_type)}
+                                fileType={getFileTypeName(item.folder_type)}
                                 name={item?.folder_name}
                                 newName={item?.newFolder_name}
                                 cardProps={{
@@ -1143,6 +1127,7 @@ function ExtendFolder() {
                   _description={_description}
                   countAction={adAlive}
                   isHide={hideDownload}
+                  loading={isDownloadLoading}
                   handleDownloadFolderAsZip={handleDownloadAsZip}
                 />
               )}
@@ -1151,35 +1136,28 @@ function ExtendFolder() {
         </Box>
       </MUI.ContainerHome>
 
-      <MUI.FilBoxBottomContainer>
-        <Button
-          sx={{ padding: "0.6rem", borderRadius: "30px" }}
-          fullWidth={true}
-          size="small"
-          variant="contained"
-          disabled={
-            multipleIds.length > 0 ||
-            multipleFolderIds.length > 0 ||
-            dataSelector?.selectionFileAndFolderData?.length > 0
-              ? false
-              : true
-          }
-          onClick={handleMobileDownloadData}
-        >
-          Download
-        </Button>
-        {(platform === "android" || platform === "ios") && (
-          <Button
-            sx={{ padding: "0.6rem", borderRadius: "30px" }}
-            onClick={handleOpenApplication}
-            fullWidth={true}
-            size="small"
-            variant="contained"
-          >
-            Open app
-          </Button>
-        )}
-      </MUI.FilBoxBottomContainer>
+      <DialogConfirmPassword
+        open={open}
+        isMobile={isMobile}
+        getFilenames={getFilenames}
+        getNewFileName={getNewFileName}
+        password={password}
+        checkModal={checkModal}
+        setPassword={setPassword}
+        handleClose={handleClose}
+        _confirmPasword={_confirmPasword}
+      />
+
+      <BaseDeeplinkDownload
+        selectionData={
+          (multipleIds?.length > 0 && true) ||
+          (multipleFolderIds?.length > 0 && true) ||
+          (dataSelector?.selectionFileAndFolderData?.length > 0 && true)
+        }
+        platform={platform}
+        onClickOpenApplication={handleOpenApplication}
+        onClickDownloadData={handleMobileDownloadData}
+      />
 
       <DialogPreviewQRcode
         data={fileUrl}

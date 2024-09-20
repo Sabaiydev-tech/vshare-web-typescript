@@ -164,10 +164,6 @@ function PriceCard(props) {
       <NormalButton
         {...(isCost && {
           onClick: () => {
-            // const encrpytedId = encryptId(
-            //   props.details._id,
-            //   ENV_KEYS.VITE_APP_ENCRYPTION_KEY,
-            // );
             const encrpytedId = encryptDataLink(props.details._id);
             dispatch(setActivePaymentType(props.details._type));
             dispatch(setActivePaymentId(props.details._id));

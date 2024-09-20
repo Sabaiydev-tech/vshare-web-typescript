@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Box, Button, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Tooltip,
+  Typography,
+  useMediaQuery,
+  createTheme,
+} from "@mui/material";
 import {
   FileBoxPopup,
   FileBoxSocial,
@@ -7,16 +13,13 @@ import {
 
 // Icons
 import {
-  FacebookIcon,
   FacebookShareButton,
   FacebookMessengerIcon,
   FacebookMessengerShareButton,
-  TwitterIcon,
   TwitterShareButton,
   WhatsappIcon,
   WhatsappShareButton,
 } from "react-share";
-import dottIcon from "assets/images/dott-icon.png";
 import QRCode from "react-qr-code";
 import {
   BoxAdsAction,
@@ -24,6 +27,10 @@ import {
 } from "styles/presentation/presentation.style";
 import { ShareSocial } from "components/social-media";
 import { ENV_KEYS } from "constants/env.constant";
+import { BsThreeDots } from "react-icons/bs";
+import FacebookIcon from "assets/images/facebook-icon.png";
+import TwitterIcon from "assets/images/twitter-icon.png";
+import LoadingButton from "@mui/lab/LoadingButton";
 
 type Props = {
   _description?: string;
@@ -31,6 +38,7 @@ type Props = {
   isFile?: boolean;
   longUrl?: string;
   isHide?: boolean;
+  loading?: boolean;
 
   handleDownloadAsZip?: () => void;
   handleDownloadFolderAsZip?: () => void;
@@ -39,36 +47,54 @@ type Props = {
 function BoxSocialShare(props: Props) {
   const currentUrl = window.location.href;
   const [isMore, setIsMore] = useState(false);
+  const isMobile = useMediaQuery(`(max-width: 768px)`);
+  const isTablet = useMediaQuery(`(max-width: 1280px)`);
+  const theme = createTheme();
 
   return (
-    <FileBoxPopup>
+    <FileBoxPopup
+      sx={{
+        maxWidth: isTablet ? "1280px" : isMobile ? "100%" : "100%",
+        margin: isTablet ? "0 auto" : "inherit",
+      }}
+    >
       <FileBoxSocial className="box-social">
-        <Box sx={{ padding: "1.5rem" }}>
-          {!props?.isHide && (
-            <Box
-              className="button-ads"
-              sx={{ display: "flex", position: "relative" }}
-            >
-              {props?.countAction > 0 && (
-                <BoxAdsContainer>
-                  <BoxAdsAction>{props?.countAction} close ads</BoxAdsAction>
-                </BoxAdsContainer>
-              )}
-              <Button
-                variant="contained"
-                sx={{
-                  width: { xs: "100%", md: "80%" },
-                  mx: "auto !important",
-                }}
-                onClick={() => {
-                  props.handleDownloadFolderAsZip?.();
-                }}
+        <Box sx={{ padding: isMobile ? "1rem" : "1.5rem" }}>
+          <Box
+            sx={{
+              [theme.breakpoints.down(960)]: {
+                display: "none",
+              },
+            }}
+          >
+            {props?.isHide && (
+              <Box
+                className="button-ads"
+                sx={{ display: "flex", position: "relative" }}
               >
-                Download
-              </Button>
-            </Box>
-          )}
-          <Box sx={{ textAlign: "start", padding: "1rem 0" }}>
+                {props?.countAction > 0 && (
+                  <BoxAdsContainer>
+                    <BoxAdsAction>{props?.countAction} close ads</BoxAdsAction>
+                  </BoxAdsContainer>
+                )}
+                <LoadingButton
+                  variant="contained"
+                  sx={{
+                    width: { xs: "100%", md: "80%" },
+                    mx: "auto !important",
+                  }}
+                  loading={props?.loading || false}
+                  onClick={() => {
+                    props.handleDownloadFolderAsZip?.();
+                  }}
+                >
+                  Download
+                </LoadingButton>
+              </Box>
+            )}
+          </Box>
+
+          <Box sx={{ textAlign: "start", padding: isMobile ? "0" : "1rem 0" }}>
             <Typography variant="h5" sx={{ color: "rgb(0,0,0,0.9)" }}>
               Social Share
             </Typography>
@@ -109,14 +135,18 @@ function BoxSocialShare(props: Props) {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: "60px",
-                    height: "60px",
+                    width: isMobile ? "40px" : "60px",
+                    height: isMobile ? "40px" : "60px",
                     borderRadius: "100%",
                     background: "rgb(221, 221, 221,0.8)",
                     fontSize: "2rem",
                   }}
                 >
-                  <FacebookIcon size={40} round />
+                  <img
+                    src={FacebookIcon}
+                    style={{ width: isMobile ? 25 : 40 }}
+                    alt="facebook-icon"
+                  />
                 </FacebookShareButton>
               </Tooltip>
               <Tooltip title="Messenger" placement="top">
@@ -127,14 +157,14 @@ function BoxSocialShare(props: Props) {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: "60px",
-                    height: "60px",
+                    width: isMobile ? "40px" : "60px",
+                    height: isMobile ? "40px" : "60px",
                     borderRadius: "100%",
                     background: "rgb(221, 221, 221,0.8)",
                     fontSize: "2rem",
                   }}
                 >
-                  <FacebookMessengerIcon size={40} round />
+                  <FacebookMessengerIcon size={isMobile ? 25 : 40} round />
                 </FacebookMessengerShareButton>
               </Tooltip>
               <Tooltip title={"WhatsApp"}>
@@ -144,14 +174,14 @@ function BoxSocialShare(props: Props) {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: "60px",
-                    height: "60px",
+                    width: isMobile ? "40px" : "60px",
+                    height: isMobile ? "40px" : "60px",
                     borderRadius: "100%",
                     background: "rgb(221, 221, 221,0.8)",
                     fontSize: "2rem",
                   }}
                 >
-                  <WhatsappIcon size={40} round />
+                  <WhatsappIcon size={isMobile ? 25 : 40} round />
                 </WhatsappShareButton>
               </Tooltip>
               <Tooltip title={"Twitter"}>
@@ -161,38 +191,48 @@ function BoxSocialShare(props: Props) {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: "60px",
-                    height: "60px",
+                    width: isMobile ? "40px" : "60px",
+                    height: isMobile ? "40px" : "60px",
                     borderRadius: "100%",
                     background: "rgb(221, 221, 221,0.8)",
                     fontSize: "2rem",
                   }}
                 >
-                  <TwitterIcon size={40} round />
+                  <img
+                    src={TwitterIcon}
+                    style={{ width: isMobile ? 25 : 40 }}
+                    alt="facebook-icon"
+                  />
                 </TwitterShareButton>
               </Tooltip>
               <Box sx={{ position: "relative" }}>
-                <Button
+                <Box
                   sx={{
                     position: "relative",
-                    width: "60px",
-                    height: "60px",
-                    borderRadius: "100%",
+                    width: isMobile ? "40px" : "60px",
+                    height: isMobile ? "40px" : "60px",
+                    borderRadius: "30px",
                     background: "rgb(221, 221, 221,0.8)",
-                    fontSize: "2rem",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
                   }}
                   onClick={() => {
                     setIsMore(!isMore);
                   }}
                 >
-                  <img
-                    src={dottIcon}
-                    alt="dott-icon"
+                  <BsThreeDots
                     style={{
-                      objectFit: "cover",
+                      padding: "5px",
+                      backgroundColor: "#fff",
+                      width: isMobile ? "25px" : "40px",
+                      height: isMobile ? "25px" : "40px",
+                      borderRadius: "50%",
+                      color: "#17766B",
                     }}
                   />
-                </Button>
+                </Box>
                 {isMore && (
                   <Typography
                     component={"div"}
@@ -233,10 +273,9 @@ function BoxSocialShare(props: Props) {
           className="appbar appbar-bg-gradient-r"
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", md: "row" },
             justifyContent: "space-between",
             width: "100%",
-            paddingTop: "1.2rem",
+            paddingTop: isMobile ? "0.5rem" : "1.2rem",
           }}
         >
           <Box
@@ -245,22 +284,34 @@ function BoxSocialShare(props: Props) {
               flexDirection: "column",
               color: "#fff",
               padding: ".8rem",
-              textAlign: { xs: "center", md: "start" },
               ml: ".4rem",
             }}
           >
-            <Typography variant={"h4"} sx={{ m: 0, p: 0 }}>
+            <Typography
+              variant={"h4"}
+              sx={{ m: 0, p: 0, fontSize: isMobile ? 16 : 22 }}
+            >
               View on mobile phone
             </Typography>
-            <Typography variant={"h6"} sx={{ my: 4, fontWeight: 400 }}>
-              Scan to view on your mobile
-              <br />
+            <Typography
+              variant={"h6"}
+              sx={{
+                my: isMobile ? 2 : 4,
+                fontWeight: 400,
+                fontSize: isMobile ? 13 : 15,
+              }}
+            >
+              Scan to view on your mobile {!isMobile && <br />}
               phone for faster download
             </Typography>
-            <Typography variant={"h6"} sx={{ fontWeight: 400 }}>
-              Android users cn scan with
-              <br />a browser, and iOS users can
-              <br /> scan with camera
+
+            <Typography
+              variant={"h6"}
+              sx={{ fontWeight: 400, fontSize: isMobile ? 13 : 15 }}
+            >
+              Android users can scan with
+              {!isMobile && <br />} a browser, and iOS users can
+              {!isMobile && <br />} scan with camera
             </Typography>
           </Box>
           <Box
@@ -279,7 +330,7 @@ function BoxSocialShare(props: Props) {
                 borderRadius: "7px",
               }}
               value={currentUrl}
-              size={150}
+              size={isMobile ? 120 : 150}
               level="H"
               fgColor="#000000"
               bgColor="#FFFFFF"

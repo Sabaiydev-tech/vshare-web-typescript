@@ -4,6 +4,7 @@ import NormalButton from "./NormalButton";
 type Props = {
   title?: string;
   disabled?: boolean;
+  isSelectable?: boolean;
   children?: React.ReactNode;
   style?: any;
 

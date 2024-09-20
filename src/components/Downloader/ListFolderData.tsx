@@ -311,18 +311,22 @@ function ListFolderData(props: Props) {
                     sx={{
                       padding: (theme) =>
                         `${theme.spacing(1.6)} ${theme.spacing(5)}`,
-                      borderRadius: (theme) => theme.spacing(2),
-                      color: "#828282 !important",
+                      borderRadius: (theme) => theme.spacing(1.5),
+                      color:
+                        props?.multipleIds?.length > 0
+                          ? "#fff"
+                          : "#828282 !important",
                       fontWeight: "bold",
-                      backgroundColor: "#fff",
-                      border: "1px solid #ddd",
+                      backgroundColor:
+                        props?.multipleIds?.length > 0 ? "#17766B" : "#fff",
+                      border: "1px solid",
+                      borderColor:
+                        props?.multipleIds?.length > 0 ? "#17766B" : "#ddd",
                       width: "inherit",
                       outline: "none",
 
                       ":disabled": {
                         cursor: "context-menu",
-                        backgroundColor: "#D6D6D6",
-                        color: "#ddd",
                       },
                     }}
                   >
@@ -331,19 +335,25 @@ function ListFolderData(props: Props) {
                 </Box>
                 <NormalButton
                   onClick={props?.handleClearGridSelection}
+                  disabled={props?.multipleIds?.length > 0 ? false : true}
                   sx={{
                     padding: (theme) =>
                       `${theme.spacing(1.6)} ${theme.spacing(5)}`,
-                    borderRadius: (theme) => theme.spacing(2),
-                    color: "#828282 !important",
+                    borderRadius: (theme) => theme.spacing(1.5),
+                    color:
+                      props?.multipleIds?.length > 0
+                        ? "#fff"
+                        : "#828282 !important",
                     fontWeight: "bold",
-                    backgroundColor: "#fff",
-                    border: "1px solid #ddd",
+                    backgroundColor:
+                      props?.multipleIds?.length > 0 ? "#17766B" : "#fff",
+                    border: "1px solid",
+                    borderColor:
+                      props?.multipleIds?.length > 0 ? "#17766B" : "#ddd",
                     width: "inherit",
                     outline: "none",
 
                     ":disabled": {
-                      border: "2px solid #ddd",
                       cursor: "not-allowed",
                     },
                   }}

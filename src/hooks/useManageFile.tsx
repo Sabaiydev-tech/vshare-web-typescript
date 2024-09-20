@@ -33,7 +33,6 @@ const useManageFiles = () => {
         return {
           path,
           isFolder: file.checkType === "folder" ? true : false,
-          _id: file.id,
           createdBy: file.createdBy?._id,
         };
       });

@@ -18,13 +18,3 @@ const GoogleAdMob = ({ client, slot, style, className }) => {
 };
 
 export default GoogleAdMob;
-
-{
-  /* <script
-  async
-  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7125131537775388"
-  crossOrigin="anonymous"
-></script>; */
-}
-
-// <meta name="google-adsense-account" content="ca-pub-7125131537775388">

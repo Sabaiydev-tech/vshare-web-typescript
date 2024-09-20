@@ -912,7 +912,7 @@ export const BoxLiveChat = styled(Box)({
 export const BoxBottomDownload = styled(Box)({
   display: "flex",
   justifyContent: "flex-end",
-  gap: "3.5rem",
+  gap: "2.5rem",
   padding: "1rem 2rem 0.5rem 2rem",
 
   [theme.breakpoints.down("md")]: {

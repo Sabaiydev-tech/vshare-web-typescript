@@ -80,6 +80,7 @@ export const QUERY_FILE_PUBLIC = gql`
         urlAll
         url
         ip
+        expired
         folder_id {
           _id
           path
