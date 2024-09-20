@@ -69,7 +69,7 @@ const UploadArea = styled(Box)(({ theme }) => ({
     width: "50%",
   },
   [theme.breakpoints.down("sm")]: {
-    padding: "2rem 1rem",
+    padding: "2rem 0",
     p: {
       fontSize: "0.8rem",
     },
@@ -465,7 +465,7 @@ function FileDropDownloader() {
 
   React.useEffect(() => {
     queryGetFileDropUrl();
-  }, [currentUrl]);
+  }, [currentUrl, dataIp]);
 
   const handleClose = () => {
     setOpen(false);

@@ -108,6 +108,7 @@ export const QUERY_SUB_FOLDER = gql`
         url
         path
         newPath
+        status
         createdBy {
           _id
           newName

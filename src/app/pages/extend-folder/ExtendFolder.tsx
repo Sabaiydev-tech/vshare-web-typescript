@@ -179,6 +179,7 @@ function ExtendFolder() {
 
   function handleToggle() {
     setMultipleIds([]);
+    setMultipleFolderIds([]);
     handleClearSelector();
     if (toggle === "list") {
       setToggle("grid");
@@ -360,13 +361,7 @@ function ExtendFolder() {
 
   const handleMobileDownloadData = () => {
     if (toggle === "list") {
-      if (dataLinkMemo?.length > 0) {
-        handleDownloadFileGetLink();
-      }
-
-      if (dataFolderLinkMemo?.length > 0) {
-        handleDownloadFolderGetLink();
-      }
+      handleDownloadAsZip();
     }
 
     if (toggle === "grid") {
