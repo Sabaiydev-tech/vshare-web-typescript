@@ -514,9 +514,9 @@ function FileUploader() {
               setIsLoading(false);
               setOpenInputPassword(false);
             },
-            onError:(error)=>{
+            onError: (error) => {
               errorMessage(error?.message || "Not found data!", 3000);
-            }
+            },
           });
         }
       }

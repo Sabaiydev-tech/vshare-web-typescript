@@ -48,6 +48,12 @@ export const GET_ONE_TIME_LINK_DETAIL = gql`
           shortUrl
           longUrl
           createdAt
+          path
+          newPath
+          createdBy {
+            _id
+            newName
+          }
         }
         parentkey {
           _id
@@ -74,33 +80,11 @@ export const GET_ONE_TIME_LINK_DETAIL = gql`
           gender
           phone
           email
+          newName
         }
         createdAt
-      }
-      fileData {
-        _id
-        type_id {
-          _id
-          titile
-          status
-        }
-        folder_id {
-          _id
-          folder_name
-        }
-        filename
-        newFilename
-        filePassword
-        fileType
-        size
-        totalFile
-        status
-        isPublic
-        checkFile
-        shortUrl
-        longUrl
-        expired
-        createdAt
+        path
+        newPath
       }
     }
   }
@@ -147,6 +131,12 @@ export const GET_MANAGE_LINK_DETAIL = gql`
           shortUrl
           longUrl
           createdAt
+          path
+          newPath
+          createdBy {
+            _id
+            newName
+          }
         }
         parentkey {
           _id
@@ -173,33 +163,11 @@ export const GET_MANAGE_LINK_DETAIL = gql`
           gender
           phone
           email
+          newName
         }
         createdAt
-      }
-      fileData {
-        _id
-        type_id {
-          _id
-          titile
-          status
-        }
-        folder_id {
-          _id
-          folder_name
-        }
-        filename
-        newFilename
-        filePassword
-        fileType
-        size
-        totalFile
-        status
-        isPublic
-        checkFile
-        shortUrl
-        longUrl
-        expired
-        createdAt
+        path
+        newPath
       }
     }
     }
