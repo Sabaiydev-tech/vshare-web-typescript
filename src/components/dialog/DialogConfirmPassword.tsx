@@ -8,6 +8,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useCallback, useEffect } from "react";
+import { errorMessage } from "utils/alert.util";
 import { combineOldAndNewFileNames, cutFileName } from "utils/file.util";
 
 type Props = {
@@ -24,6 +26,30 @@ type Props = {
 };
 
 function DialogConfirmPassword(props: Props) {
+
+  const handleEnterKey = useCallback(
+    (event: KeyboardEvent): void => {
+      if (event.key === 'Enter') {
+        if (!props.password) {
+          errorMessage('Please, input the password');
+          return;
+        }
+        props?._confirmPasword?.(props.password);
+      }
+    },
+    [props.password, props?._confirmPasword]
+  );
+  
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => handleEnterKey(event);
+
+    window.addEventListener("keydown", handleKeyDown);
+  
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleEnterKey]);
+
   return (
     <Dialog open={props.open}>
       <DialogTitle

@@ -1,6 +1,6 @@
 import { Box, IconButton, createTheme } from "@mui/material";
-import React, { Fragment } from "react";
-import GridIcon from "@mui/icons-material/AppsOutlined";
+import { Fragment } from "react";
+import { CiBoxList } from "react-icons/ci";
 import {
   BoxAdsAction,
   BoxAdsContainer,
@@ -23,8 +23,8 @@ type Props = {
 function BaseGridDownload(props: Props) {
   return (
     <Fragment>
-      <IconButton size="small" onClick={props?.handleToggle}>
-        <GridIcon />
+      <IconButton onClick={props?.handleToggle}>
+        <CiBoxList />
       </IconButton>
 
       <Box
