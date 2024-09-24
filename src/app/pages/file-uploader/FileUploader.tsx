@@ -319,15 +319,17 @@ function FileUploader() {
     setOpenInputPassword(false);
   };
 
-  const handleListFiles = async () => {
-    if (!linkType) {
+  const handleListFiles = async (link?: string) => {
+    const type = link ?? linkType;
+
+    if (!type) {
       errorMessage("Omg! something went wrong.", 3000);
       return;
     }
 
     setIsLoading(true);
 
-    if (linkType === "one_time_link") {
+    if (type === "one_time_link") {
       await handleOneTimeLinkDetails();
     } else {
       await handleManageLinkDetails();
@@ -512,6 +514,9 @@ function FileUploader() {
               setIsLoading(false);
               setOpenInputPassword(false);
             },
+            onError:(error)=>{
+              errorMessage(error?.message || "Not found data!", 3000);
+            }
           });
         }
       }
@@ -554,7 +559,7 @@ function FileUploader() {
             setIsPassword(true);
             setOpenInputPassword(true);
           } else {
-            await handleListFiles();
+            await handleListFiles(result?.type);
           }
         }
       },

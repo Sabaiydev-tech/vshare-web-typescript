@@ -2,94 +2,109 @@ import { gql } from "@apollo/client";
 
 export const CHECK_GET_LINK = gql`
   query GetManageLinks($where: ManageLinkWhereInput) {
-    getManageLinks(where: $where) {
-      code
-      message
-      data {
-        _id
-        shortLink
-        status
-        createdAt
-        password
-        type
-        expiredAt
-      }
+  getManageLinks(where: $where) {
+    code
+    message
+    data {
+       _id
+      shortLink
+      status
+      createdAt
+      password
+      type
+      expiredAt
     }
   }
+}
 `;
 
 export const GET_ONE_TIME_LINK_DETAIL = gql`
-  query GetOneTimeLinkDetails(
-    $where: OneTimeLinkDetailsWhereInput
-    $orderBy: OrderBy
-    $skip: Int
-    $limit: Int
-  ) {
-    getOneTimeLinkDetails(
-      where: $where
-      orderBy: $orderBy
-      skip: $skip
-      limit: $limit
-    ) {
-      code
-      message
-      total
-      data {
+  query GetOneTimeLinkDetails($where: OneTimeLinkDetailsWhereInput, $orderBy: OrderBy, $skip: Int, $limit: Int) {
+  getOneTimeLinkDetails(where: $where, orderBy: $orderBy, skip: $skip, limit: $limit) {
+    code
+    message
+    total
+    data {
+      _id
+      fileId
+      folderId
+      type
+      folderData {
         _id
-        fileId
-        folderId
-        type
-        folderData {
+        folder_type
+        file_id {
           _id
-          folder_type
-          file_id {
-            _id
-            filename
-            newFilename
-            fileType
-            size
-            totalFile
-            totalDownload
-            totalDownloadFaild
-            totalFolder
-            status
-            isPublic
-            expired
-            shortUrl
-            longUrl
-            createdAt
-          }
-          parentkey {
-            _id
-            folder_name
-            newFolder_name
-            is_public
-            status
-          }
-          folder_name
-          newFolder_name
-          total_size
-          is_public
-          checkFolder
-          show_download_link
+          filename
+          newFilename
+          fileType
+          size
+          totalFile
+          totalDownload
+          totalDownloadFaild
+          totalFolder
+          status
+          isPublic
           expired
-          totalItems
-          pin
           shortUrl
           longUrl
-          createdBy {
-            _id
-            firstName
-            lastName
-            gender
-            phone
-            email
-          }
           createdAt
         }
+        parentkey {
+          _id
+          folder_name
+          newFolder_name
+          is_public
+          status
+        }
+        folder_name
+        newFolder_name
+        total_size
+        is_public
+        checkFolder
+        show_download_link
+        expired
+        totalItems
+        pin
+        shortUrl
+        longUrl
+        createdBy {
+          _id
+          firstName
+          lastName
+          gender
+          phone
+          email
+        }
+        createdAt
+      }
+      fileData {
+        _id
+        type_id {
+          _id
+          titile
+          status
+        }
+        folder_id {
+          _id
+          folder_name
+        }
+        filename
+        newFilename
+        filePassword
+        fileType
+        size
+        totalFile
+        status
+        isPublic
+        checkFile
+        shortUrl
+        longUrl
+        expired
+        createdAt
       }
     }
   }
+}
 `;
 
 export const GET_MANAGE_LINK_DETAIL = gql`
@@ -109,59 +124,84 @@ export const GET_MANAGE_LINK_DETAIL = gql`
       code
       total
       data {
+      _id
+      fileId
+      folderId
+      type
+      folderData {
         _id
-        fileId
-        folderId
-        type
-        folderData {
+        folder_type
+        file_id {
           _id
-          folder_type
-          file_id {
-            _id
-            filename
-            newFilename
-            fileType
-            size
-            totalFile
-            totalDownload
-            totalDownloadFaild
-            totalFolder
-            status
-            isPublic
-            expired
-            shortUrl
-            longUrl
-            createdAt
-          }
-          parentkey {
-            _id
-            folder_name
-            newFolder_name
-            is_public
-            status
-          }
-          folder_name
-          newFolder_name
-          total_size
-          is_public
-          checkFolder
-          show_download_link
+          filename
+          newFilename
+          fileType
+          size
+          totalFile
+          totalDownload
+          totalDownloadFaild
+          totalFolder
+          status
+          isPublic
           expired
-          totalItems
-          pin
           shortUrl
           longUrl
-          createdBy {
-            _id
-            firstName
-            lastName
-            gender
-            phone
-            email
-          }
           createdAt
         }
+        parentkey {
+          _id
+          folder_name
+          newFolder_name
+          is_public
+          status
+        }
+        folder_name
+        newFolder_name
+        total_size
+        is_public
+        checkFolder
+        show_download_link
+        expired
+        totalItems
+        pin
+        shortUrl
+        longUrl
+        createdBy {
+          _id
+          firstName
+          lastName
+          gender
+          phone
+          email
+        }
+        createdAt
       }
+      fileData {
+        _id
+        type_id {
+          _id
+          titile
+          status
+        }
+        folder_id {
+          _id
+          folder_name
+        }
+        filename
+        newFilename
+        filePassword
+        fileType
+        size
+        totalFile
+        status
+        isPublic
+        checkFile
+        shortUrl
+        longUrl
+        expired
+        createdAt
+      }
+    }
     }
   }
 `;
