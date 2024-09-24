@@ -541,7 +541,7 @@ function FileUploader() {
         setIsLoading(false);
         if (
           response &&
-          response?.getManageLinks?.data &&
+          // response?.getManageLinks?.data && ////ຖ້າ ເຫັນເປັນສໍາເລັດ ແຕ່ ດາຕ່າ ອາເລເປັນ ຫວ່າງເປົ່າແມ່ນໃຫ້ອ້າຍຍິງໄປເອົາດາຕາຂອງ getManagelinkdetails ເລີຍເພາະໂຕນີ້ຈະເປັນ link original ຂອງໄຟ ແລ້ວຈຶ່ງໄປເອົາດາຕາ ຢູ່ getManageLinks ເປັນຫວ່າງເປົ່າ
           response?.getManageLinks?.code === "200"
         ) {
           const result = response?.getManageLinks?.data[0];
@@ -1280,7 +1280,7 @@ function FileUploader() {
             <Box>
               {toggle === "list" && (
                 <Fragment>
-                  {dataFileConcat.length > 0 && (
+                  {dataFileConcat.length > 0 ? (
                     <ListDataItem
                       toggle={toggle}
                       _description={_description}
@@ -1297,6 +1297,8 @@ function FileUploader() {
                       handleDownloadAsZip={handleDownloadGridFileAndFolder}
                       handleDoubleClick={handleOpenFolder}
                     />
+                  ) : (
+                    <MUI.NotFoundData>Not found data!</MUI.NotFoundData>
                   )}
                   {/* {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
                     <ListFolderData
@@ -1350,89 +1352,95 @@ function FileUploader() {
                 </Fragment>
               )}
 
-              {toggle === "grid" && (
-                <Fragment>
-                  {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
-                    <FileCardContainer style={{ marginBottom: "1rem" }}>
-                      {dataFolderLinkMemo.map((item, index) => {
-                        return (
-                          <Fragment key={index}>
-                            <FileCardItem
-                              id={item._id}
-                              item={item}
-                              isContainFiles={
-                                item?.total_size > 0 ? true : false
-                              }
-                              imagePath={
-                                item?.createdBy?.newName +
-                                "-" +
-                                item?.createdBy?._id +
-                                "/" +
-                                (item.newPath
-                                  ? removeFileNameOutOfPath(item.newPath)
-                                  : "") +
-                                item.newFilename
-                              }
-                              user={item?.createdBy}
-                              path={item?.path}
-                              isCheckbox={true}
-                              filePassword={item?.access_password}
-                              fileType={getFileTypeName(item?.folder_type)}
-                              name={item?.folder_name}
-                              newName={item?.newFolder_name}
-                              cardProps={{
-                                onDoubleClick: () => {
-                                  handleOpenFolder(item);
-                                },
-                              }}
-                            />
-                          </Fragment>
-                        );
-                      })}
-                    </FileCardContainer>
-                  )}
+              {toggle === "grid" &&
+                ((dataFolderLinkMemo && dataFolderLinkMemo.length > 0) ||
+                (dataLinkMemo && dataLinkMemo.length > 0) ? (
+                  <Fragment>
+                    {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
+                      <FileCardContainer style={{ marginBottom: "1rem" }}>
+                        {dataFolderLinkMemo.map((item, index) => {
+                          return (
+                            <Fragment key={index}>
+                              <FileCardItem
+                                id={item._id}
+                                item={item}
+                                isContainFiles={
+                                  item?.total_size > 0 ? true : false
+                                }
+                                imagePath={
+                                  item?.createdBy?.newName +
+                                  "-" +
+                                  item?.createdBy?._id +
+                                  "/" +
+                                  (item.newPath
+                                    ? removeFileNameOutOfPath(item.newPath)
+                                    : "") +
+                                  item.newFilename
+                                }
+                                user={item?.createdBy}
+                                path={item?.path}
+                                isCheckbox={true}
+                                filePassword={item?.access_password}
+                                fileType={getFileTypeName(item?.folder_type)}
+                                name={item?.folder_name}
+                                newName={item?.newFolder_name}
+                                cardProps={{
+                                  onDoubleClick: () => {
+                                    handleOpenFolder(item);
+                                  },
+                                }}
+                              />
+                            </Fragment>
+                          );
+                        })}
+                      </FileCardContainer>
+                    )}
 
-                  {dataLinkMemo && dataLinkMemo.length > 0 && (
-                    <FileCardContainer>
-                      {dataLinkMemo.map((item, index) => {
-                        return (
-                          <Fragment key={index}>
-                            <FileCardItem
-                              id={item._id}
-                              item={item}
-                              imagePath={
-                                item?.createdBy?.newName +
-                                "-" +
-                                item?.createdBy?._id +
-                                "/" +
-                                (item.newPath
-                                  ? removeFileNameOutOfPath(item.newPath)
-                                  : "") +
-                                item.newFilename
-                              }
-                              user={item?.createdBy}
-                              path={item?.path}
-                              isCheckbox={true}
-                              filePassword={item?.filePassword}
-                              fileType={getFileTypeName(item?.fileType)}
-                              isPublic={
-                                item?.createdBy?._id === "0" ? true : false
-                              }
-                              name={item?.filename}
-                              newName={item?.newFilename}
-                              cardProps={{
-                                onDoubleClick: () => {
-                                  // console.log("first");
-                                },
-                              }}
-                            />
-                          </Fragment>
-                        );
-                      })}
-                    </FileCardContainer>
-                  )}
-                </Fragment>
-              )}
+                    {dataLinkMemo && dataLinkMemo.length > 0 && (
+                      <FileCardContainer>
+                        {dataLinkMemo.map((item, index) => {
+                          return (
+                            <Fragment key={index}>
+                              <FileCardItem
+                                id={item._id}
+                                item={item}
+                                imagePath={
+                                  item?.createdBy?.newName +
+                                  "-" +
+                                  item?.createdBy?._id +
+                                  "/" +
+                                  (item.newPath
+                                    ? removeFileNameOutOfPath(item.newPath)
+                                    : "") +
+                                  item.newFilename
+                                }
+                                user={item?.createdBy}
+                                path={item?.path}
+                                isCheckbox={true}
+                                filePassword={item?.filePassword}
+                                fileType={getFileTypeName(item?.fileType)}
+                                isPublic={
+                                  item?.createdBy?._id === "0" ? true : false
+                                }
+                                name={item?.filename}
+                                newName={item?.newFilename}
+                                cardProps={{
+                                  onDoubleClick: () => {
+                                    // console.log("first");
+                                  },
+                                }}
+                              />
+                            </Fragment>
+                          );
+                        })}
+                      </FileCardContainer>
+                    )}
+                  </Fragment>
+                ) : (
+                  <MUI.NotFoundData>
+                    Not found data!
+                  </MUI.NotFoundData>
+                ))}
             </Box>
 
             {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
