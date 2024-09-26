@@ -311,7 +311,7 @@ export const BoxFeatureCompIcon = styled(Box)(({ theme }) => ({
   img: {
     width: "50px",
     height: "50px",
-    filter: "drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3))",
+    // filter: "drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3))",
   },
   [theme.breakpoints.down("sm")]: {
     display: "flex",

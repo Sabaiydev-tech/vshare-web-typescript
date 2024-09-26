@@ -21,9 +21,9 @@ export const QUERY_FOLDER = gql`
           _id
           newName
         }
-        parentkey {
-          _id
-        }
+        # parentkey {
+        #   _id
+        # }
       }
     }
   }
@@ -108,6 +108,7 @@ export const QUERY_SUB_FOLDER = gql`
         url
         path
         newPath
+        status
         createdBy {
           _id
           newName

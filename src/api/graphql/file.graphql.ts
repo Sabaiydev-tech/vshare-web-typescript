@@ -81,11 +81,6 @@ export const QUERY_FILE_PUBLIC = gql`
         url
         ip
         expired
-        folder_id {
-          _id
-          path
-          folder_name
-        }
         createdBy {
           _id
           newName

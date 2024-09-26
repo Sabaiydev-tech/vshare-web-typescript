@@ -260,6 +260,9 @@ function ListFileData(props: Props) {
               "& .MuiDataGrid-cell:focus": {
                 outline: "none",
               },
+              "& .MuiDataGrid-virtualScroller": {
+                overflowX: "scroll",
+              },
               " .css-cemoa4-MuiButtonBase-root-MuiCheckbox-root": {
                 color: "rgba(0, 0, 0, 0.3)",
               },

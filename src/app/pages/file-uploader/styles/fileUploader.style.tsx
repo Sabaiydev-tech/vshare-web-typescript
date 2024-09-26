@@ -946,7 +946,7 @@ export const FileBoxDownload = styled("div")({
 export const FileBoxToggle = styled("div")({
   display: "flex",
   justifyContent: "flex-start",
-  marginBottom: "1.2rem",
+  marginBottom: "0.8rem",
   gap: "0.7rem",
   alignItems: "center",
 });
@@ -1008,7 +1008,7 @@ export const FileBoxHeader = styled("div")({
 
 ////Ads
 export const AdsContainer = styled(Box)({
-  marginBottom: "1rem",
+  // marginBottom: "1rem",
 });
 
 export const AdsContent = styled(Box)(({ theme }) => ({
