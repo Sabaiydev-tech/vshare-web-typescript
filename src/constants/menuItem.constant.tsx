@@ -13,9 +13,5 @@ export const menuItems = [
   { icon: <FiLink />, title: "Get Link", action: "get link", disabled: true },
   { icon: <FiLock />, title: "Password", action: "password", disabled: true },
   { icon: <FiEdit />, title: "Rename", action: "rename" },
-  {
-    icon: <MdOutlineFavoriteBorder />,
-    title: "Favourite",
-    action: "favourite",
-  },
+  { icon: <MdOutlineFavoriteBorder />, title: "Favourite", action: "favourite", },
 ];

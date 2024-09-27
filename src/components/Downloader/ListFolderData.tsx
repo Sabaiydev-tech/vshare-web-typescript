@@ -29,8 +29,8 @@ import {
   BoxAdsContainer,
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
-import { formatDate } from "utils/date.util";
 import { cutFileName } from "utils/file.util";
+import moment from "moment";
 
 const IconFolderContainer = styled("div")({
   width: "28px",
@@ -44,6 +44,7 @@ type Props = {
   isFile?: boolean;
   toggle?: string;
   total?: number;
+  linkExpired?: string;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -159,8 +160,12 @@ function ListFolderData(props: Props) {
   ];
 
   useEffect(() => {
-    if (props?.dataLinks?.[0]?.expired) {
-      setExpireDate(props?.dataLinks?.[0]?.expired || "");
+    if (props?.linkExpired || props?.dataLinks?.[0]?.expired) {
+      setExpireDate(
+        props?.linkExpired ||
+          moment(props?.dataLinks?.[0]?.expired).format("DD/MM/YYYY HH:MM A") ||
+          "",
+      );
     }
   }, [props]);
 
@@ -262,25 +267,27 @@ function ListFolderData(props: Props) {
                 >
                   <Typography component={"p"}>Expiration Date</Typography>
                   <Chip
-                    label={expireDate ? formatDate(expireDate) : "Never"}
+                    label={expireDate ? expireDate : "Never"}
                     size="small"
                     sx={{ padding: "0 1rem" }}
                   />
                 </Box>
                 {expireDate && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#FF9F43",
-                    }}
-                  >
-                    <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
-                    <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
-                      This link is expired. Please access the document before
-                      this date
-                    </Typography>
-                  </Box>
+                  <>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: "#FF9F43",
+                      }}
+                    >
+                      <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
+                      <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
+                        This link is expired. Please access the document before
+                        this date
+                      </Typography>
+                    </Box>
+                  </>
                 )}
               </Box>
 

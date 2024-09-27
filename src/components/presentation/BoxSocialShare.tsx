@@ -25,12 +25,12 @@ import {
   BoxAdsAction,
   BoxAdsContainer,
 } from "styles/presentation/presentation.style";
-import { ShareSocial } from "components/social-media";
 import { ENV_KEYS } from "constants/env.constant";
 import { BsThreeDots } from "react-icons/bs";
 import FacebookIcon from "assets/images/facebook-icon.png";
 import TwitterIcon from "assets/images/twitter-icon.png";
 import LoadingButton from "@mui/lab/LoadingButton";
+import DialogShare from "components/dialog/DialogShare.SocialMedia";
 
 type Props = {
   _description?: string;
@@ -121,7 +121,7 @@ function BoxSocialShare(props: Props) {
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "space-between",
+                justifyContent: "space-evenly",
                 flexWrap: "wrap",
                 gap: 3,
                 mt: 7,
@@ -135,8 +135,8 @@ function BoxSocialShare(props: Props) {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: isMobile ? "40px" : "60px",
-                    height: isMobile ? "40px" : "60px",
+                    width: isMobile ? "35px" : "50px",
+                    height: isMobile ? "35px" : "50px",
                     borderRadius: "100%",
                     background: "rgb(221, 221, 221,0.8)",
                     fontSize: "2rem",
@@ -144,7 +144,7 @@ function BoxSocialShare(props: Props) {
                 >
                   <img
                     src={FacebookIcon}
-                    style={{ width: isMobile ? 25 : 40 }}
+                    style={{ width: isMobile ? 20 : 28 }}
                     alt="facebook-icon"
                   />
                 </FacebookShareButton>
@@ -152,19 +152,19 @@ function BoxSocialShare(props: Props) {
               <Tooltip title="Messenger" placement="top">
                 <FacebookMessengerShareButton
                   url={currentUrl || ""}
-                  appId={ENV_KEYS.VITE_APP_FACEBOOk_APP_ID}
+                  appId={ENV_KEYS.VITE_APP_FACEBOOK}
                   style={{
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: isMobile ? "40px" : "60px",
-                    height: isMobile ? "40px" : "60px",
+                    width: isMobile ? "35px" : "50px",
+                    height: isMobile ? "35px" : "50px",
                     borderRadius: "100%",
                     background: "rgb(221, 221, 221,0.8)",
                     fontSize: "2rem",
                   }}
                 >
-                  <FacebookMessengerIcon size={isMobile ? 25 : 40} round />
+                  <FacebookMessengerIcon size={isMobile ? 20 : 28} round />
                 </FacebookMessengerShareButton>
               </Tooltip>
               <Tooltip title={"WhatsApp"}>
@@ -174,14 +174,14 @@ function BoxSocialShare(props: Props) {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: isMobile ? "40px" : "60px",
-                    height: isMobile ? "40px" : "60px",
+                    width: isMobile ? "35px" : "50px",
+                    height: isMobile ? "35px" : "50px",
                     borderRadius: "100%",
                     background: "rgb(221, 221, 221,0.8)",
                     fontSize: "2rem",
                   }}
                 >
-                  <WhatsappIcon size={isMobile ? 25 : 40} round />
+                  <WhatsappIcon size={isMobile ? 20 : 30} round />
                 </WhatsappShareButton>
               </Tooltip>
               <Tooltip title={"Twitter"}>
@@ -191,8 +191,8 @@ function BoxSocialShare(props: Props) {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: isMobile ? "40px" : "60px",
-                    height: isMobile ? "40px" : "60px",
+                    width: isMobile ? "35px" : "50px",
+                    height: isMobile ? "35px" : "50px",
                     borderRadius: "100%",
                     background: "rgb(221, 221, 221,0.8)",
                     fontSize: "2rem",
@@ -200,7 +200,7 @@ function BoxSocialShare(props: Props) {
                 >
                   <img
                     src={TwitterIcon}
-                    style={{ width: isMobile ? 25 : 40 }}
+                    style={{ width: isMobile ? 20 : 30 }}
                     alt="facebook-icon"
                   />
                 </TwitterShareButton>
@@ -209,8 +209,8 @@ function BoxSocialShare(props: Props) {
                 <Box
                   sx={{
                     position: "relative",
-                    width: isMobile ? "40px" : "60px",
-                    height: isMobile ? "40px" : "60px",
+                    width: isMobile ? "35px" : "50px",
+                    height: isMobile ? "35px" : "50px",
                     borderRadius: "30px",
                     background: "rgb(221, 221, 221,0.8)",
                     display: "inline-flex",
@@ -226,44 +226,26 @@ function BoxSocialShare(props: Props) {
                     style={{
                       padding: "5px",
                       backgroundColor: "#fff",
-                      width: isMobile ? "25px" : "40px",
-                      height: isMobile ? "25px" : "40px",
+                      width: isMobile ? "20px" : "30px",
+                      height: isMobile ? "20px" : "30px",
                       borderRadius: "50%",
                       color: "#17766B",
                     }}
                   />
                 </Box>
                 {isMore && (
-                  <Typography
-                    component={"div"}
+                  <Box
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsMore(!isMore);
                     }}
                   >
-                    <ShareSocial
-                      title="More Media"
-                      socialTypes={[
-                        "copy",
-                        "facebook",
-                        "twitter",
-                        "line",
-                        "linkedin",
-                        "whatsapp",
-                        "viber",
-                        "telegram",
-                        "reddit",
-                        "instapaper",
-                        "livejournal",
-                        "mailru",
-                        "ok",
-                        "hatena",
-                        "email",
-                        "workspace",
-                      ]}
-                      url={currentUrl || ""}
+                    <DialogShare 
+                      onClose={() => setIsMore(!isMore)}
+                      isOpen={isMore}
+                      url={currentUrl}
                     />
-                  </Typography>
+                  </Box>
                 )}
               </Box>
             </Box>

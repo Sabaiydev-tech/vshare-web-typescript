@@ -939,6 +939,22 @@ export const FileListContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
+export const NotFoundData = styled(Box)(({ theme }) => ({
+  display:'flex',
+  flex: 1,
+  justifyContent:'end',
+  alignItems:'center',
+  minHeight: '43vh',
+  fontSize: '1.5rem',
+  borderRadius:'10px',
+  paddingRight: '4rem',
+  color: 'grey',
+  [theme.breakpoints.down('sm')]: {
+    paddingRight: 0,
+    justifyContent:'center'
+  }
+}));
+
 export const FileBoxDownload = styled("div")({
   overflow: "hidden",
 });
@@ -946,7 +962,7 @@ export const FileBoxDownload = styled("div")({
 export const FileBoxToggle = styled("div")({
   display: "flex",
   justifyContent: "flex-start",
-  marginBottom: "1.2rem",
+  marginBottom: "0.8rem",
   gap: "0.7rem",
   alignItems: "center",
 });
@@ -1008,7 +1024,7 @@ export const FileBoxHeader = styled("div")({
 
 ////Ads
 export const AdsContainer = styled(Box)({
-  marginBottom: "1rem",
+  // marginBottom: "1rem",
 });
 
 export const AdsContent = styled(Box)(({ theme }) => ({

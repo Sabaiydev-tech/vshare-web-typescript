@@ -4,8 +4,7 @@ import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 // components
-import ListIcon from "@mui/icons-material/FormatListBulletedOutlined";
-import { Box, IconButton, useMediaQuery } from "@mui/material";
+import { Box, IconButton, Skeleton, useMediaQuery } from "@mui/material";
 import {
   CREATE_DETAIL_ADVERTISEMENT,
   QUERY_ADVERTISEMENT,
@@ -15,19 +14,30 @@ import {
   QUERY_FILE_GET_LINK,
   QUERY_FILE_PUBLIC,
 } from "api/graphql/file.graphql";
+import {
+  CHECK_GET_LINK,
+  GET_ONE_TIME_LINK_DETAIL,
+} from "api/graphql/file.new.graphql";
 import { QUERY_FOLDER_PUBLIC_LINK } from "api/graphql/folder.graphql";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
 import DialogConfirmPassword from "components/dialog/DialogConfirmPassword";
 import DialogPreviewQRcode from "components/dialog/DialogPreviewQRCode";
+import BaseDeeplinkDownload from "components/Downloader/BaseDeeplinkDownload";
+import BaseGridDownload from "components/Downloader/BaseGridDownload";
+import ListDataItem from "components/Downloader/ListDataItem";
+import NotFound from "components/NotFound";
+import Advertisement from "components/presentation/Advertisement";
 import BoxSocialShare from "components/presentation/BoxSocialShare";
 import DialogConfirmQRCode from "components/presentation/DialogConfirmQRCode";
 import FileCardContainer from "components/presentation/FileCardContainer";
 import FileCardItem from "components/presentation/FileCardItem";
-import ListFileData from "components/Downloader/ListFileData";
 import { ENV_KEYS } from "constants/env.constant";
 import CryptoJS from "crypto-js";
 import useManageFiles from "hooks/useManageFile";
 import useManageSetting from "hooks/useManageSetting";
+import moment from "moment";
+import { Helmet } from "react-helmet-async";
+import { BiSolidGrid } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
 import * as selectorAction from "stores/features/selectorSlice";
 import { errorMessage, successMessage } from "utils/alert.util";
@@ -35,13 +45,6 @@ import { getFileTypeName, removeFileNameOutOfPath } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "./styles/fileUploader.style";
 import "./styles/fileUploader.style.css";
-import ListFolderData from "components/Downloader/ListFolderData";
-import Advertisement from "components/presentation/Advertisement";
-import BaseDeeplinkDownload from "components/Downloader/BaseDeeplinkDownload";
-// import FeedCard from "components/Downloader/FeedCard";
-import BaseGridDownload from "components/Downloader/BaseGridDownload";
-import { Helmet } from "react-helmet-async";
-import ListDataItem from "components/Downloader/ListDataItem";
 
 const DATA_LIST_SIZE = 10;
 
@@ -54,6 +57,10 @@ function FileUploader() {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [filePasswords, setFilePasswords] = useState<any>("");
+  const [openInputPasswod, setOpenInputPassword] = useState(false);
+  const [linkType, setLinkType] = useState("normal");
+
+  const [linkExpirdAt, setLinkExpirdAt] = useState("");
   const [getNewFileName, setGetNewFileName] = useState("");
   const [fileQRCodePassword, setFileQRCodePassword] = useState("");
 
@@ -100,8 +107,7 @@ function FileUploader() {
   // Deep linking for mobile devices
   const appScheme = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
 
-  const [multipleIds, setMultipleIds] = useState<string[]>([]);
-  const [multipleFolderIds, setMultipleFolderIds] = useState<any[]>([]);
+  const [isPassword, setIsPassword] = useState(false);
 
   // const [qrcodeUser, setQrcodeUser] = useState([]);
   const [hideDownload, setHideDownload] = useState(true);
@@ -145,6 +151,13 @@ function FileUploader() {
       fetchPolicy: "cache-and-network",
     },
   );
+
+  const [getFilePassword] = useLazyQuery(CHECK_GET_LINK);
+  // const [getManageLinkDetails] = useLazyQuery(GET_MANAGE_LINK_DETAIL);
+  const [getOneTimeLinkDetails] = useLazyQuery(GET_ONE_TIME_LINK_DETAIL, {
+    fetchPolicy: "no-cache",
+  });
+
   const settingKeys = {
     downloadKey: "HDLABTO",
   };
@@ -169,14 +182,6 @@ function FileUploader() {
     return decryptedData;
   }
 
-  function handleClearFileSelection() {
-    setMultipleIds([]);
-  }
-
-  function handleClearFolderSelection() {
-    setMultipleFolderIds([]);
-  }
-
   const handleEscKey = (event: KeyboardEvent): void => {
     if (event.key === "Escape") {
       handleClearSelector();
@@ -190,9 +195,34 @@ function FileUploader() {
     dispatch(selectorAction.setRemoveFileAndFolderData());
   }
 
+  function handleMultipleListData(id: string) {
+    const item = dataFileConcat.find((data) => data._id === id);
+    const name = !item?.isFile ? item?.folder_name : item?.filename;
+    const newFilename = !item.isFile ? item?.newFolder_name : item?.newFilename;
+    const checkType = !item.isFile ? "folder" : "file";
+
+    const value = {
+      id: item?._id,
+      name,
+      newPath: item?.newPath || "",
+      newFilename,
+      checkType,
+      dataPassword: item?.filePassword || item?.access_password,
+      shortLink: item?.shortUrl,
+      createdBy: {
+        _id: item?.createdBy?._id,
+        newName: item?.createdBy?.newName,
+      },
+    };
+
+    dispatch(
+      selectorAction.setFileAndFolderData({
+        data: value,
+      }),
+    );
+  }
+
   function handleToggle() {
-    setMultipleIds([]);
-    setMultipleFolderIds([]);
     handleClearSelector();
     if (toggle === "list") {
       setToggle("grid");
@@ -277,185 +307,488 @@ function FileUploader() {
     setViewMore((prev) => prev + 10);
   };
 
-  useEffect(() => {
-    const getLinkData = async () => {
-      try {
-        if (linkClient?._id) {
-          if (linkClient?.type === "file") {
-            setIsLoading(true);
+  const handleInputPassword = async (inputPassword: string) => {
+    if (inputPassword && password) {
+      await handleListFiles();
+    } else {
+      errorMessage("Input your password", 3000);
+    }
+  };
 
-            await getFileLink({
-              variables: {
-                where: {
-                  _id: linkClient?._id,
-                },
-              },
-              // onCompleted: () => {},
-            });
+  const handleInputPasswordClose = () => {
+    setIsPassword(false);
+    setOpenInputPassword(false);
+  };
 
-            setTimeout(() => {
-              setIsLoading(false);
-            }, 500);
+  const handleListFiles = async (link?: string) => {
+    const type = link ?? linkType;
 
-            if (dataFileLink?.queryFileGetLinks?.data) {
-              document.title =
-                dataFileLink?.queryFileGetLinks?.data?.[0]?.filename ||
-                "Vshare download file";
+    if (!type) {
+      errorMessage("Omg! something went wrong.", 3000);
+      return;
+    }
 
-              if (dataFileLink?.queryFileGetLinks?.data?.[0]) {
-                setDescription(
-                  dataFileLink?.queryFileGetLinks?.data?.[0]?.filename +
-                    " on vshare.net",
-                );
-              }
-              setGetDataRes(dataFileLink?.queryFileGetLinks?.data || []);
-            }
-          }
+    setIsLoading(true);
 
-          if (linkClient?.type === "folder") {
-            setIsLoading(true);
-            await getFolderLink({
-              variables: {
-                where: {
-                  _id: linkClient?._id,
-                },
-              },
-              onCompleted: (data) => {
-                const folderData = data?.queryfoldersGetLinks?.data || [];
-                if (folderData?.[0]?.status === "active") {
-                  setGetDataRes(folderData || []);
-                  setFolderDownload(folderData || []);
+    if (type === "one_time_link") {
+      await handleOneTimeLinkDetails();
+    }
+    if (type === "normal") {
+      await handleManageLinkDetails();
+    }
 
-                  document.title =
-                    folderData?.[0]?.folder_name || "vshare download folder";
-                  if (folderData && folderData?.[0]?.folder_type) {
-                    if (folderData[0]?.folder_name) {
-                      setDescription(
-                        folderData[0]?.folder_name + " on vshare.net",
-                      );
-                    }
-                  }
-                }
-              },
-            });
-            setTimeout(() => {
-              setIsLoading(false);
-            }, 500);
-          }
-        } else {
+    setIsLoading(false);
+  };
+
+  const handleManageLinkDetails = async () => {
+    const os = navigator.userAgent;
+
+    try {
+      if (linkClient?._id)
+        if (linkClient?.type === "multiple") {
           setIsLoading(true);
-          getData({
+
+          await getManageLinkDetail({
             variables: {
               where: {
-                urlAll: linkValue ? String(linkValue) : null,
+                _id: linkClient?._id,
+                ...(password && { password }),
               },
+              limit: toggle === "list" ? DATA_LIST_SIZE : viewMore,
+              skip:
+                toggle === "list" ? DATA_LIST_SIZE * (currentPage - 1) : null,
             },
-            onCompleted: (resData) => {
-              const fileData = resData?.filesPublic?.data?.[0];
-              document.title = fileData?.filename;
-              setDescription(`${fileData?.filename} on vshare.net`);
-              setGetDataRes(resData?.filesPublic?.data);
+            onCompleted: async (values) => {
+              const totalData = values?.getManageLinkDetails?.total || 0;
+              const mainData = values?.getManageLinkDetails?.data || [];
+              setTotal(totalData);
+              setOpenInputPassword(false);
+
+              if (mainData?.length > 0) {
+                if (os.match(/iPhone|iPad|iPod/i)) {
+                  setPlatform("ios");
+                }
+
+                if (os.match(/Android/i)) {
+                  setPlatform("android");
+                }
+
+                const fileData = mainData?.filter(
+                  (file) => file.type === "file",
+                );
+
+                const folderData = mainData?.filter(
+                  (folder) => folder.type === "folder",
+                );
+
+                if (folderData?.length > 0) {
+                  const folderItems = folderData?.map((folder, index) => {
+                    return {
+                      ...folder?.folderData,
+                      _id: folder?.folderId,
+                      index,
+                    };
+                  });
+
+                  if (folderItems.length > 0) {
+                    const title = folderItems?.[0]?.folder_name || "";
+                    document.title = title + " | VSHARE";
+                    setDescription(`${title} on vshare.net`);
+                  }
+                  setDataMultipleFolder(folderItems);
+                }
+
+                if (fileData?.length > 0) {
+                  const fileItems = fileData?.map((file, index) => {
+                    return {
+                      ...file?.fileData,
+                      _id: file?.fileId,
+                      index,
+                    };
+                  });
+
+                  if (fileItems.length > 0) {
+                    const title = fileItems?.[0]?.filename || "";
+                    document.title = title + " | VSHARE";
+                    setDescription(`${title} on vshare.net`);
+                  }
+                  setDataMultipleFile(fileItems);
+                }
+              }
+
+              setIsLoading(false);
+            },
+            onError: (error) => {
+              setIsPassword(false);
+              setIsLoading(false);
+              errorMessage(error?.message, 3000);
             },
           });
-
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 500);
         }
-      } catch (error: any) {
+    } catch (error) {
+      document.title = "No documents found" + " | VSHARE";
+      setDescription("No documents found on vshare.net");
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOneTimeLinkDetails = async () => {
+    const os = navigator.userAgent;
+
+    try {
+      if (linkClient?._id) {
+        if (linkClient?.type === "multiple") {
+          setIsLoading(true);
+          await getOneTimeLinkDetails({
+            variables: {
+              where: {
+                _id: linkClient?._id,
+                ...(password && { password }),
+              },
+              orderBy: "desc",
+              limit: toggle === "list" ? DATA_LIST_SIZE : viewMore,
+              skip:
+                toggle === "list" ? DATA_LIST_SIZE * (currentPage - 1) : null,
+            },
+            onCompleted: async (values) => {
+              const totalData = values?.getOneTimeLinkDetails?.total || 0;
+              const mainData = values?.getOneTimeLinkDetails?.data || [];
+              const dataError = values?.getOneTimeLinkDetails?.message;
+              const codeError = values?.getOneTimeLinkDetails?.code;
+
+              if (dataError && codeError === "500") {
+                setIsLoading(false);
+                errorMessage(dataError, 3000);
+                return;
+              }
+
+              setTotal(totalData);
+
+              if (mainData?.length > 0) {
+                if (os.match(/iPhone|iPad|iPod/i)) {
+                  setPlatform("ios");
+                }
+
+                if (os.match(/Android/i)) {
+                  setPlatform("android");
+                }
+
+                const fileData = mainData?.filter(
+                  (file) => file.type === "file",
+                );
+
+                const folderData = mainData?.filter(
+                  (folder) => folder.type === "folder",
+                );
+
+                if (folderData?.length > 0) {
+                  const folderItems = folderData?.map((folder, index) => {
+                    return {
+                      ...folder?.folderData,
+                      _id: folder?.folderId,
+                      index,
+                    };
+                  });
+
+                  if (folderItems.length > 0) {
+                    const title = folderItems?.[0]?.folder_name || "";
+                    document.title = title + " | VSHARE";
+                    setDescription(`${title} on vshare.net`);
+                  }
+                  setDataMultipleFolder(folderItems);
+                }
+
+                if (fileData?.length > 0) {
+                  const fileItems = fileData?.map((file, index) => {
+                    return {
+                      ...file?.fileData,
+                      _id: file?.fileId,
+                      index,
+                    };
+                  });
+
+                  if (fileItems.length > 0) {
+                    const title = fileItems?.[0]?.filename || "" + " | VSHARE";
+                    document.title = title;
+                    setDescription(`${title} on vshare.net`);
+                  }
+                  setDataMultipleFile(fileItems);
+                }
+              }
+
+              setIsLoading(false);
+              setOpenInputPassword(false);
+            },
+            onError: (error) => {
+              setIsPassword(false);
+              setIsLoading(false);
+              errorMessage(error?.message || "Not found data!", 3000);
+            },
+          });
+        }
+      }
+    } catch (error: any) {
+      document.title = "No documents found" + " | VSHARE";
+      setDescription("No documents found on vshare.net");
+      errorMessage(error);
+      setIsLoading(false);
+    }
+  };
+
+  const getManageLinkPassword = async (id: string | number) => {
+    setIsLoading(true);
+    await getFilePassword({
+      variables: {
+        where: {
+          _id: id,
+          status: "active",
+        },
+      },
+      onCompleted: async (response) => {
         setIsLoading(false);
-        errorMessage(error);
+        if (
+          response &&
+          // response?.getManageLinks?.data && ////ຖ້າ ເຫັນເປັນສໍາເລັດ ແຕ່ ດາຕ່າ ອາເລເປັນ ຫວ່າງເປົ່າແມ່ນໃຫ້ອ້າຍຍິງໄປເອົາດາຕາຂອງ getManagelinkdetails ເລີຍເພາະໂຕນີ້ຈະເປັນ link original ຂອງໄຟ ແລ້ວຈຶ່ງໄປເອົາດາຕາ ຢູ່ getManageLinks ເປັນຫວ່າງເປົ່າ
+          response?.getManageLinks?.code === "200"
+        ) {
+          const result = response?.getManageLinks?.data[0];
+
+          if (result?.type) {
+            setLinkType(result?.type);
+          }
+
+          if (result?.expiredAt || result?.expired) {
+            setLinkExpirdAt(
+              moment(result?.expiredAt || result?.expired).format(
+                "DD/MM/YYYY HH:MM A",
+              ),
+            );
+          }
+
+          if (result?.password) {
+            setOpenInputPassword(true);
+          } else {
+            await handleListFiles(result?.type);
+          }
+        }
+      },
+      onError: (error) => {
+        errorMessage(error?.message || "Can not burn this secret Url.", 3000);
+        setOpenInputPassword(false);
+        setIsPassword(false);
+      },
+    });
+  };
+
+  const getFolders = async () => {
+    try {
+      setIsLoading(true);
+      await getFolderLink({
+        variables: {
+          where: {
+            _id: linkClient?._id,
+          },
+        },
+        onCompleted: (data) => {
+          const folderData = data?.queryfoldersGetLinks?.data || [];
+          if (folderData?.[0]?.status === "active") {
+            setGetDataRes(folderData || []);
+            setFolderDownload(folderData || []);
+
+            document.title =
+              folderData?.[0]?.folder_name || "vshare download folder";
+            if (folderData && folderData?.[0]?.folder_type) {
+              if (folderData[0]?.folder_name) {
+                setDescription(folderData[0]?.folder_name + " on vshare.net");
+              }
+            }
+          }
+        },
+      });
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+    } catch (error: any) {
+      setIsLoading(false);
+      errorMessage(error);
+    }
+  };
+
+  const getFiles = async () => {
+    try {
+      setIsLoading(true);
+
+      await getFileLink({
+        variables: {
+          where: {
+            _id: linkClient?._id,
+          },
+        },
+        // onCompleted: () => {},
+      });
+
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+
+      if (dataFileLink?.queryFileGetLinks?.data) {
+        document.title =
+          dataFileLink?.queryFileGetLinks?.data?.[0]?.filename ||
+          "Vshare download file";
+
+        if (dataFileLink?.queryFileGetLinks?.data?.[0]) {
+          setDescription(
+            dataFileLink?.queryFileGetLinks?.data?.[0]?.filename +
+              " on vshare.net",
+          );
+        }
+        setGetDataRes(dataFileLink?.queryFileGetLinks?.data || []);
+      }
+    } catch (error: any) {
+      setIsLoading(false);
+      errorMessage(error);
+    }
+  };
+
+  const getPublicLink = async () => {
+    try {
+      setIsLoading(true);
+      getData({
+        variables: {
+          where: {
+            urlAll: linkValue ? String(linkValue) : null,
+          },
+        },
+        onCompleted: (resData) => {
+          const fileData = resData?.filesPublic?.data?.[0];
+          document.title = fileData?.filename;
+          setDescription(`${fileData?.filename} on vshare.net`);
+          setGetDataRes(resData?.filesPublic?.data || []);
+        },
+      });
+
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+    } catch (error: any) {
+      setIsLoading(false);
+      errorMessage(error);
+    }
+  };
+
+  useEffect(() => {
+    const getLinkData = async () => {
+      if (linkClient?._id) {
+        if (linkClient?.type === "file") {
+          await getFiles();
+        }
+
+        if (linkClient?.type === "folder") {
+          await getFolders();
+        }
+
+        if (linkClient?.type === "multiple") {
+          await getManageLinkPassword(linkClient?._id);
+        }
+      } else {
+        await getPublicLink();
       }
     };
 
     getLinkData();
-  }, [linkValue, dataFileLink]);
 
-  useEffect(() => {
-    const getMultipleFileAndFolder = async () => {
-      const os = navigator.userAgent;
+    // if (urlClient && linkClient && linkClient?._id) {
+    //   getManageLinkPassword(linkClient?._id);
+    // }
+  }, [linkValue, linkType]);
 
-      try {
-        if (linkClient?._id)
-          if (linkClient?.type === "multiple") {
-            setIsLoading(true);
+  // useEffect(() => {
+  //   const getMultipleFileAndFolder = async () => {
+  //     const os = navigator.userAgent;
 
-            await getManageLinkDetail({
-              variables: {
-                where: { _id: linkClient?._id },
-                limit: toggle === "list" ? DATA_LIST_SIZE : viewMore,
-                skip:
-                  toggle === "list" ? DATA_LIST_SIZE * (currentPage - 1) : null,
-              },
-              onCompleted: async (values) => {
-                const totalData = values?.getManageLinkDetails?.total || 0;
-                const mainData = values?.getManageLinkDetails?.data || [];
-                setTotal(totalData);
+  //     try {
+  //       if (linkClient?._id)
+  //         if (linkClient?.type === "multiple") {
+  //           setIsLoading(true);
 
-                if (mainData?.length > 0) {
-                  if (os.match(/iPhone|iPad|iPod/i)) {
-                    setPlatform("ios");
-                  }
+  //           await getManageLinkDetail({
+  //             variables: {
+  //               where: { _id: linkClient?._id },
+  //               limit: toggle === "list" ? DATA_LIST_SIZE : viewMore,
+  //               skip:
+  //                 toggle === "list" ? DATA_LIST_SIZE * (currentPage - 1) : null,
+  //             },
+  //             onCompleted: async (values) => {
+  //               const totalData = values?.getManageLinkDetails?.total || 0;
+  //               const mainData = values?.getManageLinkDetails?.data || [];
+  //               setTotal(totalData);
 
-                  if (os.match(/Android/i)) {
-                    setPlatform("android");
-                  }
+  //               if (mainData?.length > 0) {
+  //                 if (os.match(/iPhone|iPad|iPod/i)) {
+  //                   setPlatform("ios");
+  //                 }
 
-                  const fileData = mainData?.filter(
-                    (file) => file.type === "file",
-                  );
+  //                 if (os.match(/Android/i)) {
+  //                   setPlatform("android");
+  //                 }
 
-                  const folderData = mainData?.filter(
-                    (folder) => folder.type === "folder",
-                  );
+  //                 const fileData = mainData?.filter(
+  //                   (file) => file.type === "file",
+  //                 );
 
-                  if (folderData?.length > 0) {
-                    const folderItems = folderData?.map((folder, index) => {
-                      return {
-                        ...folder?.folderData,
-                        _id: folder?.folderId,
-                        index,
-                      };
-                    });
+  //                 const folderData = mainData?.filter(
+  //                   (folder) => folder.type === "folder",
+  //                 );
 
-                    if (folderItems.length > 0) {
-                      const title = folderItems?.[0]?.folder_name || "";
-                      document.title = title;
-                      setDescription(`${title} on vshare.net`);
-                    }
-                    setDataMultipleFolder(folderItems);
-                  }
+  //                 if (folderData?.length > 0) {
+  //                   const folderItems = folderData?.map((folder, index) => {
+  //                     return {
+  //                       ...folder?.folderData,
+  //                       _id: folder?.folderId,
+  //                       index,
+  //                     };
+  //                   });
 
-                  if (fileData?.length > 0) {
-                    const fileItems = fileData?.map((file, index) => {
-                      return {
-                        ...file?.fileData,
-                        _id: file?.fileId,
-                        index,
-                      };
-                    });
+  //                   if (folderItems.length > 0) {
+  //                     const title = folderItems?.[0]?.folder_name || "";
+  //                     document.title = title;
+  //                     setDescription(`${title} on vshare.net`);
+  //                   }
+  //                   setDataMultipleFolder(folderItems);
+  //                 }
 
-                    if (fileItems.length > 0) {
-                      const title = fileItems?.[0]?.filename || "";
-                      document.title = title;
-                      setDescription(`${title} on vshare.net`);
-                    }
-                    setDataMultipleFile(fileItems);
-                  }
-                }
+  //                 if (fileData?.length > 0) {
+  //                   const fileItems = fileData?.map((file, index) => {
+  //                     return {
+  //                       ...file?.fileData,
+  //                       _id: file?.fileId,
+  //                       index,
+  //                     };
+  //                   });
 
-                setIsLoading(false);
-              },
-            });
-          }
-      } catch (error) {
-        document.title = "No documents found";
-        setDescription("No documents found on vshare.net");
-        setIsLoading(false);
-      }
-    };
-    getMultipleFileAndFolder();
-  }, [currentPage, viewMore]);
+  //                   if (fileItems.length > 0) {
+  //                     const title = fileItems?.[0]?.filename || "";
+  //                     document.title = title;
+  //                     setDescription(`${title} on vshare.net`);
+  //                   }
+  //                   setDataMultipleFile(fileItems);
+  //                 }
+  //               }
+
+  //               setIsLoading(false);
+  //             },
+  //           });
+  //         }
+  //     } catch (error) {
+  //       document.title = "No documents found";
+  //       setDescription("No documents found on vshare.net");
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //   getMultipleFileAndFolder();
+  // }, [currentPage, viewMore]);
 
   useEffect(() => {
     if (dataMultipleFile.length > 0 && dataMultipleFolder.length > 0) {
@@ -468,24 +801,28 @@ function FileUploader() {
   useEffect(() => {
     function handleDetectPlatform() {
       const os = navigator.userAgent;
-      try {
-        if (
-          dataFileLink?.queryFileGetLinks?.data?.length ||
-          dataFolderLink?.queryfoldersGetLinks?.data?.length
-        ) {
-          if (os.match(/iPhone|iPad|iPod/i)) {
-            setPlatform("ios");
-          } else if (os.match(/Android/i)) {
-            setPlatform("android");
-          }
+      if (
+        dataFileLink?.queryFileGetLinks?.data?.length ||
+        dataFolderLink?.queryfoldersGetLinks?.data?.length
+      ) {
+        if (os.match(/iPhone|iPad|iPod/i)) {
+          setPlatform("ios");
+        } else if (os.match(/Android/i)) {
+          setPlatform("android");
         }
-      } catch (error) {
-        console.error(error);
+      }
+
+      if (getDataRes?.[0]?._id) {
+        if (os.match(/iPhone|iPad|iPod/i)) {
+          setPlatform("ios");
+        } else if (os.match(/Android/i)) {
+          setPlatform("android");
+        }
       }
     }
 
     handleDetectPlatform();
-  }, [dataFileLink, dataFolderLink]);
+  }, [dataFileLink, dataFolderLink, getDataRes]);
 
   useEffect(() => {
     if (getDataRes) {
@@ -504,19 +841,7 @@ function FileUploader() {
   };
 
   const handleMobileDownloadData = () => {
-    if (toggle === "list") {
-      if (dataLinkMemo?.length > 0) {
-        handleDownloadFileGetLink();
-      }
-
-      if (dataFolderLinkMemo?.length > 0) {
-        handleDownloadFolderGetLink();
-      }
-    }
-
-    if (toggle === "grid") {
-      handleDownloadGridFileAndFolder();
-    }
+    handleDownloadGridFileAndFolder();
   };
 
   const handleDownloadGridFileAndFolder = async () => {
@@ -529,109 +854,6 @@ function FileUploader() {
           name: file.name,
           newFilename: file.newFilename,
           checkType: file?.checkType || "file",
-          newPath,
-          createdBy: file.createdBy,
-        };
-      });
-
-      setTotalClickCount((prevCount) => prevCount + 1);
-
-      if (totalClickCount >= getActionButton) {
-        setTotalClickCount(0);
-        manageFile.handleDownloadFile(
-          {
-            multipleData,
-          },
-          {
-            onFailed: () => {},
-            onSuccess: () => {},
-          },
-        );
-      } else {
-        if (getAdvertisemment.length) {
-          handleAdvertisementPopup();
-        } else {
-          manageFile.handleDownloadFile(
-            {
-              multipleData,
-            },
-            {
-              onFailed: () => {},
-              onSuccess: () => {},
-            },
-          );
-        }
-      }
-    }
-  };
-
-  const handleDownloadFileGetLink = async () => {
-    if (multipleIds?.length > 0) {
-      const newModelData = multipleIds.map((value) => {
-        const newVal = dataLinkMemo?.find((file) => file._id === value);
-
-        if (newVal) {
-          return newVal;
-        }
-
-        return "";
-      });
-
-      const multipleData = newModelData.map((file) => {
-        const newPath = file.newPath || "";
-
-        return {
-          id: file._id,
-          name: file.filename,
-          newFilename: file.newFilename,
-          checkType: "file",
-          newPath,
-          createdBy: file.createdBy,
-          isPublic: linkClient?._id ? false : true,
-        };
-      });
-
-      setTotalClickCount((prevCount) => prevCount + 1);
-
-      if (totalClickCount >= getActionButton) {
-        setTotalClickCount(0);
-        manageFile.handleDownloadFile(
-          {
-            multipleData,
-          },
-          {
-            onFailed: () => {},
-            onSuccess: () => {},
-          },
-        );
-      } else {
-        if (getAdvertisemment.length) {
-          handleAdvertisementPopup();
-        } else {
-          manageFile.handleDownloadFile(
-            {
-              multipleData,
-            },
-            {
-              onFailed: () => {},
-              onSuccess: () => {},
-            },
-          );
-        }
-      }
-    }
-
-    if (dataSelector?.selectionFileAndFolderData?.length > 0) {
-      const newModelData = dataSelector?.selectionFileAndFolderData || [];
-
-      const multipleData = newModelData.map((file) => {
-        const newPath = file.newPath || "";
-
-        return {
-          id: file.id,
-          name: file.name,
-          newFilename: file.newFilename,
-          checkType: "file",
           newPath,
           createdBy: file.createdBy,
           isPublic: file.createdBy?._id === "0" ? true : false,
@@ -656,111 +878,6 @@ function FileUploader() {
           handleAdvertisementPopup();
         } else {
           manageFile.handleDownloadFile(
-            {
-              multipleData,
-            },
-            {
-              onFailed: () => {},
-              onSuccess: () => {},
-            },
-          );
-        }
-      }
-    }
-  };
-
-  const handleDownloadFolderGetLink = async () => {
-    if (multipleFolderIds?.length > 0) {
-      const newModelData = multipleFolderIds.map((value: any) => {
-        const newVal = dataFolderLinkMemo?.find(
-          (file: any) => file?._id === value,
-        );
-
-        if (newVal) {
-          return newVal;
-        }
-
-        return "";
-      });
-
-      const multipleData = newModelData.map((file: any) => {
-        const newPath = file.newPath || "";
-
-        return {
-          id: file._id,
-          name: file.folder_name,
-          newFilename: file.newFolder_name,
-          checkType: "folder",
-          newPath,
-          createdBy: file.createdBy,
-        };
-      });
-
-      setTotalClickCount((prevCount) => prevCount + 1);
-      setMultipleType("file");
-
-      if (totalClickCount >= getActionButton) {
-        setTotalClickCount(0);
-        manageFile.handleDownloadFolder(
-          {
-            multipleData,
-          },
-          {
-            onFailed: () => {},
-            onSuccess: () => {},
-          },
-        );
-      } else {
-        if (getAdvertisemment.length) {
-          handleAdvertisementPopup();
-        } else {
-          manageFile.handleDownloadFolder(
-            {
-              multipleData,
-            },
-            {
-              onFailed: () => {},
-              onSuccess: () => {},
-            },
-          );
-        }
-      }
-    }
-    if (dataSelector?.selectionFileAndFolderData?.length > 0) {
-      const newModelData = dataSelector?.selectionFileAndFolderData || [];
-
-      const multipleData = newModelData.map((file: any) => {
-        const newPath = file.newPath || "";
-
-        return {
-          id: file.id,
-          name: file.name,
-          newFilename: file.newFilename,
-          checkType: "folder",
-          newPath,
-          createdBy: file.createdBy,
-        };
-      });
-
-      setTotalClickCount((prevCount) => prevCount + 1);
-      setMultipleType("folder");
-
-      if (totalClickCount >= getActionButton) {
-        setTotalClickCount(0);
-        manageFile.handleDownloadFolder(
-          {
-            multipleData,
-          },
-          {
-            onFailed: () => {},
-            onSuccess: () => {},
-          },
-        );
-      } else {
-        if (getAdvertisemment.length) {
-          handleAdvertisementPopup();
-        } else {
-          manageFile.handleDownloadFolder(
             {
               multipleData,
             },
@@ -810,6 +927,7 @@ function FileUploader() {
           newWindow.closed ||
           typeof newWindow.closed == "undefined"
         ) {
+          history.pushState(null, "", window.location.href);
           window.location.href = httpData;
         }
       }
@@ -1078,6 +1196,7 @@ function FileUploader() {
       const fileData = getDataRes?.map((file, index) => ({
         ...file,
         index,
+        isFile: true,
       }));
 
       return fileData || [];
@@ -1112,7 +1231,7 @@ function FileUploader() {
   }, [linkClient, getDataRes, dataMultipleFolder]);
 
   const dataFileConcat = useMemo(() => {
-    const result = dataLinkMemo?.concat(dataFolderLinkMemo);
+    const result = dataLinkMemo?.concat(dataFolderLinkMemo || []);
 
     return result || [];
   }, [dataLinkMemo, dataFolderLinkMemo]);
@@ -1123,207 +1242,252 @@ function FileUploader() {
         <meta name="description" content={_description} />
       </Helmet>
       <MUI.ContainerHome maxWidth="xl">
-        <DialogConfirmPassword
-          open={open}
-          isMobile={isMobile}
-          getFilenames={getFilenames}
-          getNewFileName={getNewFileName}
-          password={password}
-          checkModal={checkModal}
-          setPassword={setPassword}
-          handleClose={handleClose}
-          _confirmPasword={_confirmPasword}
-        />
-
         <Box sx={{ backgroundColor: "#F8F7FA", padding: "1rem" }}>
-          <Advertisement />
-
-          {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
-            <MUI.FileBoxToggle>
-              {toggle === "grid" ? (
-                <BaseGridDownload
-                  dataFiles={dataSelector?.selectionFileAndFolderData}
-                  adAlive={adAlive}
-                  handleClearSelector={handleClearSelector}
-                  handleToggle={handleToggle}
-                  handleDownloadGridFileAndFolder={
-                    handleDownloadGridFileAndFolder
-                  }
-                />
-              ) : (
-                <IconButton size="small" onClick={handleToggle}>
-                  <ListIcon />
-                </IconButton>
-              )}
-            </MUI.FileBoxToggle>
-          )}
-
-          <MUI.FileListContainer>
+          {/* {!dataFileConcat.length && ( */}
+          {(isLoading || isPassword || openInputPasswod) && (
             <Box>
-              {toggle === "list" && (
-                <Fragment>
-                  {/* {dataFileConcat.length > 0 && (
-                    <ListDataItem
-                      toggle={toggle}
-                      _description={_description}
-                      dataLinks={dataLinkMemo}
-                      multipleIds={multipleIds}
-                      countAction={adAlive}
-                      setMultipleIds={setMultipleIds}
-                      setToggle={handleToggle}
-                      handleQRGeneration={handleQRGeneration}
-                      handleClearFileSelection={handleClearFileSelection}
-                      handleDownloadAsZip={handleDownloadAsZip}
-                      handleDownloadFileGetLink={handleDownloadFileGetLink}
+              <Box sx={{ pt: 0.5 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 5,
+                  }}
+                >
+                  <Skeleton variant="rectangular" width={"100%"} height={118} />
+                  <Skeleton variant="rectangular" width={"100%"} height={118} />
+                  <Skeleton variant="rectangular" width={"100%"} height={118} />
+                </Box>
+                <Skeleton height={50} />
+                <Skeleton />
+                <Skeleton height={40} />
+                <Skeleton variant="rectangular" width={"100%"} height={60} />
+              </Box>
+              {!isMobile && (
+                <Box sx={{ pt: 0.5, mt: 5 }}>
+                  <Skeleton variant="rectangular" width={"100%"} height={60} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 5,
+                      py: 3,
+                    }}
+                  >
+                    <Skeleton
+                      variant="rectangular"
+                      width={"100%"}
+                      height={80}
                     />
-                  )} */}
-                  {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
-                    <ListFolderData
-                      isFile={false}
-                      toggle={toggle}
-                      _description={_description}
-                      dataLinks={dataFolderLinkMemo}
-                      multipleIds={multipleFolderIds}
-                      countAction={adAlive}
-                      setMultipleIds={setMultipleFolderIds}
-                      setToggle={handleToggle}
-                      handleQRGeneration={handleQRGeneration}
-                      handleClearGridSelection={handleClearFolderSelection}
-                      handleDownloadFolderAsZip={handleDownloadAsZip}
-                      handleDownloadFolder={handleDownloadFolderGetLink}
-                      handleDoubleClick={handleOpenFolder}
+                    <Skeleton
+                      variant="rectangular"
+                      width={"100%"}
+                      height={80}
                     />
-                  )}
-
-                  {dataLinkMemo && dataLinkMemo.length > 0 && (
-                    <ListFileData
-                      isFile={true}
-                      toggle={toggle}
-                      _description={_description}
-                      dataLinks={dataLinkMemo}
-                      multipleIds={multipleIds}
-                      countAction={adAlive}
-                      setMultipleIds={setMultipleIds}
-                      setToggle={handleToggle}
-                      handleQRGeneration={handleQRGeneration}
-                      handleClearFileSelection={handleClearFileSelection}
-                      handleDownloadAsZip={handleDownloadAsZip}
-                      handleDownloadFileGetLink={handleDownloadFileGetLink}
+                    <Skeleton
+                      variant="rectangular"
+                      width={"100%"}
+                      height={80}
                     />
-                  )}
-                </Fragment>
-              )}
-
-              {toggle === "grid" && (
-                <Fragment>
-                  {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
-                    <FileCardContainer style={{ marginBottom: "1rem" }}>
-                      {dataFolderLinkMemo.map((item, index) => {
-                        return (
-                          <Fragment key={index}>
-                            <FileCardItem
-                              id={item._id}
-                              item={item}
-                              isContainFiles={
-                                item?.total_size > 0 ? true : false
-                              }
-                              imagePath={
-                                item?.createdBy?.newName +
-                                "-" +
-                                item?.createdBy?._id +
-                                "/" +
-                                (item.newPath
-                                  ? removeFileNameOutOfPath(item.newPath)
-                                  : "") +
-                                item.newFilename
-                              }
-                              user={item?.createdBy}
-                              path={item?.path}
-                              isCheckbox={true}
-                              filePassword={item?.access_password}
-                              fileType={getFileTypeName(item?.folder_type)}
-                              name={item?.folder_name}
-                              newName={item?.newFolder_name}
-                              cardProps={{
-                                onDoubleClick: () => {
-                                  handleOpenFolder(item);
-                                },
-                              }}
-                            />
-                          </Fragment>
-                        );
-                      })}
-                    </FileCardContainer>
-                  )}
-
-                  {dataLinkMemo && dataLinkMemo.length > 0 && (
-                    <FileCardContainer>
-                      {dataLinkMemo.map((item, index) => {
-                        return (
-                          <Fragment key={index}>
-                            <FileCardItem
-                              id={item._id}
-                              item={item}
-                              imagePath={
-                                item?.createdBy?.newName +
-                                "-" +
-                                item?.createdBy?._id +
-                                "/" +
-                                (item.newPath
-                                  ? removeFileNameOutOfPath(item.newPath)
-                                  : "") +
-                                item.newFilename
-                              }
-                              user={item?.createdBy}
-                              path={item?.path}
-                              isCheckbox={true}
-                              filePassword={item?.filePassword}
-                              fileType={getFileTypeName(item?.fileType)}
-                              isPublic={
-                                item?.createdBy?._id === "0" ? true : false
-                              }
-                              name={item?.filename}
-                              newName={item?.newFilename}
-                              cardProps={{
-                                onDoubleClick: () => {
-                                  // console.log("first");
-                                },
-                              }}
-                            />
-                          </Fragment>
-                        );
-                      })}
-                    </FileCardContainer>
-                  )}
-                </Fragment>
+                  </Box>
+                  <Skeleton />
+                  <Skeleton height={40} />
+                </Box>
               )}
             </Box>
+          )}
 
-            {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
-              <BoxSocialShare
-                isFile={false}
-                _description={_description}
-                countAction={adAlive}
-                isHide={hideDownload}
-                handleDownloadFolderAsZip={handleDownloadAsZip}
-              />
-            )}
-          </MUI.FileListContainer>
+          <Advertisement />
 
+          {((dataFolderLinkMemo && dataFolderLinkMemo.length > 0) ||
+            (dataLinkMemo && dataLinkMemo.length > 0) ||
+            dataFileConcat.length > 0) &&
+          isLoading === false ? (
+            <>
+              {dataFileConcat?.length > 0 && (
+                <MUI.FileBoxToggle>
+                  {toggle === "grid" ? (
+                    <>
+                      {" "}
+                      <BaseGridDownload
+                        dataFiles={dataSelector?.selectionFileAndFolderData}
+                        adAlive={adAlive}
+                        handleClearSelector={handleClearSelector}
+                        handleToggle={handleToggle}
+                        handleDownloadGridFileAndFolder={
+                          handleDownloadGridFileAndFolder
+                        }
+                      />
+                    </>
+                  ) : (
+                    <IconButton onClick={handleToggle}>
+                      <BiSolidGrid />
+                    </IconButton>
+                  )}
+                </MUI.FileBoxToggle>
+              )}
+              <MUI.FileListContainer>
+                <Box>
+                  {toggle === "list" && (
+                    <Fragment>
+                      {dataFileConcat.length > 0 && (
+                        <ListDataItem
+                          toggle={toggle}
+                          _description={_description}
+                          dataLinks={dataFileConcat}
+                          linkExpired={linkExpirdAt}
+                          handleSelection={handleMultipleListData}
+                          selectionFileAndFolderData={
+                            dataSelector.selectionFileAndFolderData || []
+                          }
+                          countAction={adAlive}
+                          setToggle={handleToggle}
+                          handleQRGeneration={handleQRGeneration}
+                          handleClearFileSelection={handleClearSelector}
+                          handleDownloadAsZip={handleDownloadGridFileAndFolder}
+                          handleDoubleClick={handleOpenFolder}
+                        />
+                      )}
+                    </Fragment>
+                  )}
+
+                  {toggle === "grid" && (
+                    <Fragment>
+                      {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
+                        <FileCardContainer style={{ marginBottom: "1rem" }}>
+                          {dataFolderLinkMemo.map((item, index) => {
+                            return (
+                              <Fragment key={index}>
+                                <FileCardItem
+                                  id={item._id}
+                                  item={item}
+                                  isContainFiles={
+                                    item?.total_size > 0 ? true : false
+                                  }
+                                  imagePath={
+                                    item?.createdBy?.newName +
+                                    "-" +
+                                    item?.createdBy?._id +
+                                    "/" +
+                                    (item.newPath
+                                      ? removeFileNameOutOfPath(item.newPath)
+                                      : "") +
+                                    item.newFilename
+                                  }
+                                  user={item?.createdBy}
+                                  path={item?.path}
+                                  isCheckbox={true}
+                                  filePassword={item?.access_password}
+                                  fileType={getFileTypeName(item?.folder_type)}
+                                  name={item?.folder_name}
+                                  newName={item?.newFolder_name}
+                                  cardProps={{
+                                    onDoubleClick: () => {
+                                      handleOpenFolder(item);
+                                    },
+                                  }}
+                                />
+                              </Fragment>
+                            );
+                          })}
+                        </FileCardContainer>
+                      )}
+
+                      {dataLinkMemo && dataLinkMemo.length > 0 && (
+                        <FileCardContainer>
+                          {dataLinkMemo.map((item, index) => {
+                            return (
+                              <Fragment key={index}>
+                                <FileCardItem
+                                  id={item._id}
+                                  item={item}
+                                  imagePath={
+                                    item?.createdBy?.newName +
+                                    "-" +
+                                    item?.createdBy?._id +
+                                    "/" +
+                                    (item.newPath
+                                      ? removeFileNameOutOfPath(item.newPath)
+                                      : "") +
+                                    item.newFilename
+                                  }
+                                  user={item?.createdBy}
+                                  path={item?.path}
+                                  isCheckbox={true}
+                                  filePassword={item?.filePassword}
+                                  fileType={getFileTypeName(item?.fileType)}
+                                  isPublic={
+                                    item?.createdBy?._id === "0" ? true : false
+                                  }
+                                  name={item?.filename}
+                                  newName={item?.newFilename}
+                                  cardProps={{
+                                    onDoubleClick: () => {
+                                      // console.log("first");
+                                    },
+                                  }}
+                                />
+                              </Fragment>
+                            );
+                          })}
+                        </FileCardContainer>
+                      )}
+                    </Fragment>
+                  )}
+                </Box>
+
+                {(dataFolderLinkMemo?.length > 0 ||
+                  dataLinkMemo?.length > 0) && (
+                  <BoxSocialShare
+                    isFile={false}
+                    _description={_description}
+                    countAction={adAlive}
+                    isHide={hideDownload}
+                    handleDownloadFolderAsZip={handleDownloadAsZip}
+                  />
+                )}
+              </MUI.FileListContainer>
+            </>
+          ) : (
+            <NotFound />
+          )}
           {/* <FeedCard /> */}
         </Box>
       </MUI.ContainerHome>
 
       <BaseDeeplinkDownload
         selectionData={
-          (multipleIds?.length > 0 && true) ||
-          (multipleFolderIds?.length > 0 && true) ||
-          (dataSelector?.selectionFileAndFolderData?.length > 0 && true)
+          dataSelector?.selectionFileAndFolderData?.length > 0 && true
         }
         platform={platform}
         adAlive={adAlive}
         onClickOpenApplication={handleOpenApplication}
         onClickDownloadData={handleMobileDownloadData}
+      />
+
+      <DialogConfirmPassword
+        open={open}
+        isMobile={isMobile}
+        getFilenames={getFilenames}
+        getNewFileName={getNewFileName}
+        password={password}
+        checkModal={checkModal}
+        setPassword={setPassword}
+        handleClose={handleClose}
+        _confirmPasword={_confirmPasword}
+      />
+
+      {/* one time link or manage lin new  */}
+      <DialogConfirmPassword
+        open={openInputPasswod}
+        isMobile={isMobile}
+        getFilenames={getFilenames}
+        getNewFileName={getNewFileName}
+        password={password}
+        checkModal={checkModal}
+        setPassword={setPassword}
+        handleClose={handleInputPasswordClose}
+        _confirmPasword={handleInputPassword}
       />
 
       <DialogPreviewQRcode

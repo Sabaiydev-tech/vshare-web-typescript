@@ -40,7 +40,6 @@ import { IFolder } from "models/folder.model";
 function ExtendFolder() {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 600px)");
-  const isMobileGrid = useMediaQuery("(max-width: 997px)");
   const [checkConfirmPassword, setConfirmPassword] = useState(false);
   const [getDataRes, setGetDataRes] = useState<any>(null);
   const [folderDownload, setFolderDownload] = useState<any>(null);
@@ -99,6 +98,7 @@ function ExtendFolder() {
 
   // Deep linking for mobile devices
   const appScheme = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
+  console.log({ appScheme });
 
   const [multipleIds, setMultipleIds] = useState<any[]>([]);
   const [multipleFolderIds, setMultipleFolderIds] = useState<any[]>([]);
@@ -179,6 +179,7 @@ function ExtendFolder() {
 
   function handleToggle() {
     setMultipleIds([]);
+    setMultipleFolderIds([]);
     handleClearSelector();
     if (toggle === "list") {
       setToggle("grid");
@@ -360,13 +361,7 @@ function ExtendFolder() {
 
   const handleMobileDownloadData = () => {
     if (toggle === "list") {
-      if (dataLinkMemo?.length > 0) {
-        handleDownloadFileGetLink();
-      }
-
-      if (dataFolderLinkMemo?.length > 0) {
-        handleDownloadFolderGetLink();
-      }
+      handleDownloadAsZip();
     }
 
     if (toggle === "grid") {
@@ -573,6 +568,7 @@ function ExtendFolder() {
           newWindow.closed ||
           typeof newWindow.closed == "undefined"
         ) {
+          history.pushState(null, "", window.location.href);
           window.location.href = httpData;
         }
       }
@@ -665,10 +661,10 @@ function ExtendFolder() {
 
     if (totalClickCount >= getActionButton) {
       setTotalClickCount(0);
-      // const groupData: any[] = (await getAllData()) || [];
-      const groupDataV1: any[] = dataLinkMemo.concat(dataFolderLinkMemo)
+      const groupData: any[] = (await getAllData()) || [];
+      // const groupDataV1: any[] = dataLinkMemo.concat(dataFolderLinkMemo)
 
-      const multipleData = groupDataV1.map((item: any) => {
+      const multipleData = groupData.map((item: any) => {
         const newPath = item?.newPath || "";
         const newFilename = item?.newFilename || item?.newFolder_name;
 

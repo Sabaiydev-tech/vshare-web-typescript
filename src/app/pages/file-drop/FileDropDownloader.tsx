@@ -69,7 +69,7 @@ const UploadArea = styled(Box)(({ theme }) => ({
     width: "50%",
   },
   [theme.breakpoints.down("sm")]: {
-    padding: "2rem 1rem",
+    padding: "2rem 0",
     p: {
       fontSize: "0.8rem",
     },
@@ -117,7 +117,6 @@ function FileDropDownloader() {
   const [newPath, setNewPath] = useState("");
   const [folderNewName, setFolderNewName] = useState("");
   const [status, setStatus] = useState("");
-  const [isUploadMultiples, setIsUploadMultiples] = useState(false);
   const [getActionButton, setGetActionButton] = useState<any>();
   const [getAdvertisemment, setGetAvertisement] = useState<any>([]);
   const [usedAds, setUsedAds] = useState<any[]>([]);
@@ -135,12 +134,13 @@ function FileDropDownloader() {
   });
 
   const currentURL = window.location.href;
-  const appSchema = "vshare.app://download?url=" + currentURL;
+  const appSchema = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
   const [showDeepLink, setShowDeepLink] = useState(false);
 
   const [timeLeft, setTimeLeft] = useState("");
   const [multiId, setMultiId] = useState<any>([]);
   const [platform, setPlatform] = useState("");
+  const [isUploadMultiples, setIsUploadMultiples] = useState(false);
   // const [selectedRow, setSelectedRow] = React.useState([]);
   const [getDataButtonDownload, { data: getDataButtonDL }] = useLazyQuery(
     QUERY_SETTING,
@@ -465,7 +465,7 @@ function FileDropDownloader() {
 
   React.useEffect(() => {
     queryGetFileDropUrl();
-  }, [currentUrl]);
+  }, [currentUrl, dataIp]);
 
   const handleClose = () => {
     setOpen(false);
@@ -484,7 +484,7 @@ function FileDropDownloader() {
         variables: {
           where: {
             dropUrl: currentUrl,
-            ip: dataIp,
+            // ip: dataIp,
             status: "active",
           },
         },
@@ -563,6 +563,7 @@ function FileDropDownloader() {
           newWindow.closed ||
           typeof newWindow.closed == "undefined"
         ) {
+          history.pushState(null, "", window.location.href);
           window.location.href = httpData;
         }
       }
