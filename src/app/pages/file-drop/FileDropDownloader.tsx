@@ -425,10 +425,6 @@ function FileDropDownloader() {
         setStatus("expired");
         const cutErr = err?.message?.replace(/(ApolloError: )?Error: /, "");
 
-        if (err?.message === "Url not allow to upload") {
-          setStatus("locked");
-        }
-
         errorMessage(
           manageGraphqlError.handleErrorMessage(
             cutErr || err?.message || "Something went wrong, Please try again",
@@ -452,9 +448,9 @@ function FileDropDownloader() {
         }
 
         ///check permission allow to upload/upload multi
-        if (!item?.allowUpload) {
-          setStatus("locked");
-        }
+        // if (!item?.allowUpload) {
+        //   setStatus("locked");
+        // }
 
         if (item?.allowMultiples) {
           setIsUploadMultiples(item?.allowMultiples);
@@ -626,6 +622,7 @@ function FileDropDownloader() {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     multiple: isUploadMultiples,
+    noClick: dataFromUrl?.allowUpload === true ? false : isUploadMultiples === true ? false : true
   });
 
   useEffect(() => {
@@ -677,7 +674,9 @@ function FileDropDownloader() {
 
   return (
     <React.Fragment>
-      {status == "expired" || status === "locked" ? (
+      {
+        status == "expired" 
+        || status === "locked" ? (
         <ExpiredArea>
           <Box
             sx={{
@@ -704,7 +703,7 @@ function FileDropDownloader() {
                   fontFamily="Arial"
                   fontWeight="bold"
                 >
-                  OMG!
+                  ( •̀_•́ )
                 </text>
               </svg>
             </Typography>
@@ -759,7 +758,7 @@ function FileDropDownloader() {
                   sx={{
                     padding: "0.3rem",
                     borderRadius: "6px",
-                    background: "#DFE6E7",
+                    background: "#DFE6E7"
                   }}
                 >
                   <FileUploadOutlinedIcon
@@ -767,9 +766,14 @@ function FileDropDownloader() {
                   />
                 </Box>
 
-                <Box className="box-drag" sx={{ m: 2 }}>
+                <Box className="box-drag" sx={{ m: 3}}>
                   <Typography component="span">
-                    Drag and drop your files here to upload
+                    
+                    {
+                      dataFromUrl?.allowUpload || dataFromUrl?.allowMultiples 
+                      ? 'Drag and drop your files here to upload'
+                      : <Typography component={'span'} sx={{color: '#e31f09 !important', fontWeight: '300 !important'}}>Admin has not enable to upload file</Typography>
+                    }
                   </Typography>
                 </Box>
                 <Mui.ButtonUpload
@@ -820,7 +824,7 @@ function FileDropDownloader() {
                 data.push(updatedFile);
                 return <Fragment key={index}></Fragment>;
               })}
-              {data.length > 0 ? (
+              {data.length > 0 && (dataFromUrl?.allowUpload || dataFromUrl?.allowMultiples) ? (
                 <DialogShowFiledrop
                   open={open}
                   files={data}

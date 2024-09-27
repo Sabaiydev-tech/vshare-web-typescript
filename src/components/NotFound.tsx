@@ -50,13 +50,13 @@ const NotFound = (props: Props) => {
               fontFamily="Arial"
               fontWeight="bold"
             >
-              {`:)`}
+              ( •̀_•́ )
             </text>
           </svg>
         </Typography>
         {
             props?.msg ? props?.msg
-            : `Unfortunately, the link was expired or not ofound.`
+            : `Unfortunately, the link was expired or not found.`
         }
       </Box>
       <Box
