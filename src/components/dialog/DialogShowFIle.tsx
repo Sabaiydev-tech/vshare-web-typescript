@@ -1049,7 +1049,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
             {filesArray?.length > dataUploadPerTime.action || isLargeFile ? (
               <Alert severity="error" sx={{ width: "100%", mx: 2, my: 2 }}>
                 {isLargeFile
-                  ? "Some files are larger than 2GB."
+                  ? `Some files are larger than  ${fileMaxSize}.`
                   : `Upload is limited ${dataUploadPerTime.action}
                  files per time.`}
               </Alert>
