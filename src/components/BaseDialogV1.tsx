@@ -7,6 +7,7 @@ import NormalButton from "./NormalButton";
 const DialogV1Container = muiStyled("div")({
   position: "relative",
 });
+
 const DialogV1Content = muiStyled("div")({
   display: "flex",
   flexDirection: "column",

@@ -51,6 +51,7 @@ export const GET_ONE_TIME_LINK_DETAIL = gql`
           longUrl
           shortUrl
           newPath
+          expired
           path
           fileType
           url
@@ -66,6 +67,7 @@ export const GET_ONE_TIME_LINK_DETAIL = gql`
           newPath
           newFolder_name
           path
+          expired
           total_size
           access_password
           status
@@ -115,6 +117,7 @@ export const GET_MANAGE_LINK_DETAIL = gql`
           longUrl
           shortUrl
           newPath
+          expired
           path
           fileType
           url
@@ -134,6 +137,7 @@ export const GET_MANAGE_LINK_DETAIL = gql`
           access_password
           status
           shortUrl
+          expired
           longUrl
           url
           createdBy {

@@ -98,6 +98,7 @@ function ExtendFolder() {
 
   // Deep linking for mobile devices
   const appScheme = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
+  console.log({ appScheme });
 
   const [multipleIds, setMultipleIds] = useState<any[]>([]);
   const [multipleFolderIds, setMultipleFolderIds] = useState<any[]>([]);
@@ -567,6 +568,7 @@ function ExtendFolder() {
           newWindow.closed ||
           typeof newWindow.closed == "undefined"
         ) {
+          history.pushState(null, "", window.location.href);
           window.location.href = httpData;
         }
       }

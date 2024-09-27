@@ -36,6 +36,7 @@ import { UAParser } from "ua-parser-js";
 
 import { useMutation } from "@apollo/client";
 import {
+  Alert,
   Box,
   CircularProgress,
   FormControl,
@@ -46,13 +47,16 @@ import {
 } from "@mui/material";
 import { CREATE_FILE_PUBLIC } from "api/graphql/file.graphql";
 import { ENV_KEYS } from "constants/env.constant";
+import { useFetchLandingSetting } from "hooks/useFetchLandingSetting";
+import useManageSetting from "hooks/useManageSetting";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import { Id } from "types";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { cutFileName, getFileType } from "utils/file.util";
-import { convertBytetoMBandGB } from "utils/storage.util";
 import { encryptDownloadData } from "utils/secure.util";
+import { convertBytetoMBandGB } from "utils/storage.util";
+import { FindSettingKey } from "utils/findSetting.util";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -165,7 +169,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   window.location.protocol === "http:"
     ? (link = ENV_KEYS.VITE_APP_DOWNLOAD_URL_SERVER)
     : (link = ENV_KEYS.VITE_APP_DOWNLOAD_URL_SERVER);
-  const LOAD_GET_IP_URL = ENV_KEYS.VITE_APP_LOAD_GETIP_URL;
+  // const LOAD_GET_IP_URL = ENV_KEYS.VITE_APP_LOAD_GETIP_URL;
   const LOAD_UPLOAD_URL = ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL;
 
   const [value, setValue] = useState<string | null>(link);
@@ -173,6 +177,23 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   const [uploadStatus, setUploadStatus] = useState({});
   const UA = new UAParser();
   const result = UA.getResult();
+  const useDataSetting = useManageSetting();
+  const settingData = useFetchLandingSetting();
+  const settingKeys = {
+    uploadPerday: "MUPFAPD",
+    uploadMaxSize: "MXULDFE",
+    uploadPerTime: "MUPEAPD",
+    allowFileType: "ALWFTUD",
+  };
+
+  const maxFileSizeKey = FindSettingKey({
+    action: settingKeys.uploadMaxSize,
+    settings: settingData?.data,
+  });
+  const maxFileUploadKey = FindSettingKey({
+    action: settingKeys.uploadPerTime,
+    settings: settingData?.data,
+  });
 
   const autoProductKey = "AEADEFO";
 
@@ -186,9 +207,9 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   useEffect(() => {
     if (dataExpire) {
       setExpired({
-        title: dataExpire?.title,
-        action: dataExpire?.action,
-        productKey: dataExpire?.productKey,
+        title: dataExpire?.title || "",
+        action: dataExpire?.action || "",
+        productKey: dataExpire?.productKey || "",
       });
     }
   }, [dataExpire]);
@@ -236,6 +257,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
         //     `https://pro.ip-api.com/json/${ip}?key=x0TWf62F7ukWWpQ`,
         //   );
         //   if (res) {
+        //     console.log(res.data)
         //     setCountry(res?.data?.countryCode);
         //   }
         // }
@@ -267,6 +289,14 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
       expired: "",
     };
   });
+
+  let isLargeFile = false;
+  for (let i = 0; i < files?.length; i++) {
+    if (files[i].file?.sizeFile > dataMaxSize.action) {
+      isLargeFile = true;
+      break;
+    }
+  }
 
   const dataSizeAll = filesArray.reduce((total: number, obj: any) => {
     return total + obj.size;
@@ -681,14 +711,22 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                   flexDirection: "column",
                 }}
               >
-                <Typography>Upload files</Typography>
+                <Typography variant="h5" component="h4">
+                  Upload files
+                </Typography>
                 <Typography
+                  variant="h6"
+                  component="span"
                   sx={{
-                    fontSize: "0.7rem !important",
+                    mt: 3,
+                    fontSize: "0.8rem !important",
                     fontWeight: 300,
+                    color: "balck",
                   }}
                 >
-                  Max file size 2GB/file available for unlimited time
+                  Max file size &nbsp;
+                  {fileMaxSize}
+                  /file available for unlimited time
                 </Typography>
               </Box>
             </MUI.BoxUploadTitle>
@@ -699,50 +737,52 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                 sx={{ width: hidePasswordLink ? "50%" : "100%" }}
               >
                 <Typography component="span">Auto delete file</Typography>
-                <FormControl fullWidth>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    sx={{
-                      width: "95%",
-                      borderRadius: "20px",
-                      fontSize: "0.8rem",
-                    }}
-                    size="small"
-                    value={expired?.productKey}
-                    onChange={(e) => {
-                      const dataExp = dataExpires?.find(
-                        (exp: any) => exp?.productKey === e.target.value,
-                      );
+                {dataExpires && dataExpires?.length > 0 && (
+                  <FormControl fullWidth>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      sx={{
+                        width: "95%",
+                        borderRadius: "20px",
+                        fontSize: "0.8rem",
+                      }}
+                      size="small"
+                      onChange={(e) => {
+                        const dataExp = dataExpires?.find(
+                          (exp: any) => exp?.productKey === e.target.value,
+                        );
 
-                      if (dataExp) {
-                        setExpired({
-                          title: dataExp.title,
-                          productKey: dataExp.productKey,
-                          action: dataExp.action,
-                        });
-                      }
-                    }}
-                    fullWidth
-                    variant="standard"
-                  >
-                    {dataExpires?.map((data: any, index: number) => {
-                      return (
-                        <MenuItem key={index} value={data?.productKey}>
-                          <Fragment>
-                            {data?.productKey === autoProductKey ? (
-                              "Auto delete"
-                            ) : (
-                              <Fragment>
-                                {data?.action} {data?.title}
-                              </Fragment>
-                            )}
-                          </Fragment>
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
+                        if (dataExp) {
+                          setExpired({
+                            title: dataExp.title,
+                            productKey: dataExp.productKey,
+                            action: dataExp.action,
+                          });
+                        }
+                      }}
+                      value={expired?.productKey || ""}
+                      fullWidth
+                      variant="standard"
+                    >
+                      {dataExpires?.map((data: any, index: number) => {
+                        return (
+                          <MenuItem key={index} value={data?.productKey}>
+                            <Fragment>
+                              {data?.productKey === autoProductKey ? (
+                                "Auto delete"
+                              ) : (
+                                <Fragment>
+                                  {data?.action} {data?.title}
+                                </Fragment>
+                              )}
+                            </Fragment>
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+                )}
               </MUI.BoxLimitTime>
 
               {/* Gen password link */}
@@ -975,6 +1015,11 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
 
             <MUI.BoxUploadAndReset sx={{ padding: "0.2rem 0.8rem" }}>
               <Button
+                disabled={
+                  isLargeFile || filesArray?.length > dataUploadPerTime.action
+                    ? true
+                    : false
+                }
                 startIcon={<Upload />}
                 autoFocus
                 sx={{
@@ -1006,28 +1051,49 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              flexDirection: "column",
             }}
           >
-            <Button
-              startIcon={<Upload />}
-              autoFocus
-              sx={{
-                background: "#17766B",
-                color: "#ffffff",
-                fontSize: "14px",
-                padding: "2px 30px",
-                borderRadius: "6px",
-                border: "1px solid #17766B",
-                "&:hover": { border: "1px solid #17766B", color: "#17766B" },
-                margin: "1rem 0",
-              }}
-              onClick={() => {
-                handlePrepareToUpload();
-                setIsDone(0);
-              }}
-            >
-              Upload
-            </Button>
+            {filesArray?.length > dataUploadPerTime.action || isLargeFile ? (
+              <Alert severity="error" sx={{ width: "100%", mx: 2, my: 2 }}>
+                {isLargeFile
+                  ? "Some files are larger than 2GB."
+                  : `Upload is limited ${dataUploadPerTime.action}
+                 files per time.`}
+              </Alert>
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Button
+                  startIcon={<Upload />}
+                  autoFocus
+                  sx={{
+                    background: "#17766B",
+                    color: "#ffffff",
+                    fontSize: "14px",
+                    padding: "2px 30px",
+                    borderRadius: "6px",
+                    border: "1px solid #17766B",
+                    "&:hover": {
+                      border: "1px solid #17766B",
+                      color: "#17766B",
+                    },
+                    margin: "1rem 0",
+                  }}
+                  onClick={() => {
+                    handlePrepareToUpload();
+                    setIsDone(0);
+                  }}
+                >
+                  Upload
+                </Button>
+              </Box>
+            )}
           </DialogActions>
         </BootstrapDialog>
       ) : isDone === 0 ? (

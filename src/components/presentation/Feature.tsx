@@ -20,7 +20,7 @@ const Future = (props: FeatureProps) => {
   const { title, content, image } = props;
   const theme = createTheme();
   const isMobile = useMediaQuery("(max-width: 600px)");
-  const newPath = ENV_KEYS.VITE_APP_LOAD_URL + "preview?path=public/";
+  const newPath = ENV_KEYS.VITE_APP_LOAD_URL + "preview?path=image/";
 
   return (
     <MUI.CardFeature sx={{ minWidth: 70 }}>

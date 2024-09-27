@@ -416,7 +416,7 @@ function Feedback() {
                 <Grid item xs={12}>
                   <Editor
                     // ref={editorRef}
-                    apiKey={ENV_KEYS.VITE_APP_TINYMCE_API}
+                    apiKey={ENV_KEYS.VITE_APP_TINYMCE}
                     onInit={(_evt, editor) => {
                       editorRef.current = editor;
                     }}

@@ -115,10 +115,17 @@ function DropGridData(props: Props) {
                   size={isMobile ? "18px" : "22px"}
                 />
               ) : (
+                dataFromUrl?.allowDownload &&
                 <Tooltip title="Download" placement="top">
                   <IconButton
                     onClick={(e) => {
-                      handleDownloadFile?.(e, params?.row?.no, params?.row);
+                      if(!dataFromUrl?.allowDownload){
+                        return;
+                      }
+                      else
+                      {
+                        handleDownloadFile?.(e, params?.row?.no, params?.row);
+                      }
                     }}
                   >
                     <DownloadIcon sx={{ ":hover": { color: "#17766B" } }} />

@@ -14,7 +14,7 @@ export function encryptId(
 export const encryptData = (param: any) => {
   const encrypted = CryptoJS.AES.encrypt(
     param,
-    ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+    ENV_KEYS.VITE_APP_LOCAL_STORAGE,
   ).toString();
   return encodeURIComponent(encrypted);
 };
@@ -23,7 +23,7 @@ export const decryptData = (encryptedParam: any) => {
   try {
     const decrypted = CryptoJS.AES.decrypt(
       decodeURIComponent(encryptedParam),
-      ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+      ENV_KEYS.VITE_APP_LOCAL_STORAGE,
     ).toString(CryptoJS.enc.Utf8);
     return decrypted;
   } catch (error) {
@@ -32,7 +32,7 @@ export const decryptData = (encryptedParam: any) => {
 };
 
 export const encryptDataLink = (data) => {
-  const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
+  const secretKey = ENV_KEYS.VITE_APP_UPLOAD;
   const key = CryptoJS.enc.Utf8.parse(secretKey);
   const iv = CryptoJS.lib.WordArray.random(16);
   const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key, {
@@ -56,7 +56,7 @@ export const encryptDataLink = (data) => {
 };
 
 export const decryptDataLink = (data) => {
-  const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
+  const secretKey = ENV_KEYS.VITE_APP_UPLOAD;
 
   const [cipherText, ivText] = data.split(":");
   const cipherTextBase64 = cipherText.replace(/-/g, "+").replace(/_/g, "/");
@@ -118,10 +118,7 @@ export const isValidToken = (accessToken: string) => {
       return false;
     }
     const decoded = accessToken;
-    const userPayload = decryptToken(
-      decoded,
-      ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
-    );
+    const userPayload = decryptToken(decoded, ENV_KEYS.VITE_APP_TOKEN);
     const currentTime = Date.now() / 1000;
     return (userPayload || decoded).exp > currentTime;
   } catch (e) {
@@ -131,16 +128,16 @@ export const isValidToken = (accessToken: string) => {
 
 export const checkAccessToken = (accessToken: string) => {
   if (accessToken) {
-    localStorage.setItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY, accessToken);
+    localStorage.setItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN, accessToken);
     axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   } else {
-    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN);
     delete axios.defaults.headers.common.Authorization;
   }
 };
 
 export const encryptDownloadData = (headers: any) => {
-  const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
+  const secretKey = ENV_KEYS.VITE_APP_UPLOAD;
   const key = CryptoJS.enc.Utf8.parse(secretKey);
   const iv = CryptoJS.lib.WordArray.random(16);
   const encrypted = CryptoJS.AES.encrypt(JSON.stringify(headers), key, {

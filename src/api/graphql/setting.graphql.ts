@@ -18,3 +18,22 @@ export const QUERY_SETTING = gql`
     }
   }
 `;
+
+export const QUERY_LANDING_SETTING = gql`
+  query Data($where: General_settingsWhereInput) {
+    general_settings(where: $where) {
+      total
+      data {
+        _id
+        groupName
+        categoryKey
+        productKey
+        title
+        action
+        status
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`;

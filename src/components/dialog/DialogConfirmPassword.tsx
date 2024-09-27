@@ -61,7 +61,7 @@ function DialogConfirmPassword(props: Props) {
       >
         <Typography
           sx={{
-            fontSize: props.isMobile ? "0.9rem" : "1.2rem",
+            fontSize: props.isMobile ? "0.9rem" : "1.2rem"
           }}
         >
           Confirm password
@@ -74,7 +74,10 @@ function DialogConfirmPassword(props: Props) {
             alignItems: "center",
             justifyContent: "center",
             width: "100%",
-            padding: "20px 30px !important",
+            // padding: "20px 30px !important",
+            pb: '20p',
+            px: '30px',
+            pt:'5px',
             maxWidth: "600px",
           }}
         >
@@ -98,7 +101,7 @@ function DialogConfirmPassword(props: Props) {
               </span>
             </Typography>
           ) : (
-            <Typography variant="h6" sx={{ padding: "0", margin: "0" }}>
+            <Typography variant="h6" sx={{ mb: 7 }}>
               Please enter your link password
             </Typography>
           )}
@@ -131,7 +134,7 @@ function DialogConfirmPassword(props: Props) {
           variant="contained"
           color="success"
           onClick={() => props._confirmPasword?.(props.password || "")}
-          sx={{ background: "#17766B" }}
+          sx={{ background: "#17766B", px: 7, mb: 3, mx: 'auto'}}
           size="small"
         >
           Verify
