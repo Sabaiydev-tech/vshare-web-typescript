@@ -83,7 +83,6 @@ function Home() {
   const [subFeatures, setSubFeatures] = useState<any[]>([]);
   const [faq, setFaq] = useState<any[]>([]);
   const useDataSetting = useManageSetting();
-  console.log("aaaa")
 
   const settingKeys = {
     passwordLink: "HLINPFS",
@@ -212,7 +211,7 @@ function Home() {
       if (dataUploadPertime) {
         setUploadPerTime(dataUploadPertime);
       }
-     
+
       // Upload max size
       const dataUploadMaxSize = findDataSetting(settingKeys.uploadMaxSize);
       if (dataUploadMaxSize) {
