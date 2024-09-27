@@ -160,20 +160,17 @@ function AuthProvider() {
 
   // const accessToken = window.localStorage.getItem("accessToken");
   const accessToken = window.localStorage.getItem(
-    ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY,
+    ENV_KEYS.VITE_APP_ACCESS_TOKEN,
   );
 
   useEffect(() => {
     const initialize = async () => {
       setIsLoading(true);
-      const userStaff = localStorage.getItem(ENV_KEYS.VITE_APP_USER_DATA_KEY);
+      const userStaff = localStorage.getItem(ENV_KEYS.VITE_APP_USER_DATA);
       try {
         if (accessToken && isValidToken(accessToken)) {
           const decoded = accessToken;
-          const userPayload = decryptToken(
-            decoded,
-            ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
-          );
+          const userPayload = decryptToken(decoded, ENV_KEYS.VITE_APP_TOKEN);
 
           const dataDecode = JSON.parse(decryptData(userStaff) as string);
 
@@ -188,7 +185,7 @@ function AuthProvider() {
                 const user = data?.queryStaffs?.data[0];
                 const userEncrypted = encryptData(JSON.stringify(user));
                 localStorage.setItem(
-                  ENV_KEYS.VITE_APP_USER_DATA_KEY,
+                  ENV_KEYS.VITE_APP_USER_DATA,
                   userEncrypted,
                 );
                 dispatch({
@@ -211,7 +208,7 @@ function AuthProvider() {
                 const user = data?.getUser?.data[0];
                 const userEncrypted = encryptData(JSON.stringify(user));
                 localStorage.setItem(
-                  ENV_KEYS.VITE_APP_USER_DATA_KEY,
+                  ENV_KEYS.VITE_APP_USER_DATA,
                   userEncrypted,
                 );
                 // localStorage.setItem("userData", JSON.stringify(user));
@@ -252,9 +249,7 @@ function AuthProvider() {
   const [localPermission, setLocalPermission] = useState(null);
   useEffect(() => {
     // const storeValue = localStorage.getItem("permission");
-    const storeValue = localStorage.getItem(
-      ENV_KEYS.VITE_APP_PERMISSION_LOCAL_KEY,
-    );
+    const storeValue = localStorage.getItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL);
 
     if (storeValue) {
       const storeParseJson = JSON.parse(decryptData(storeValue) as string);
@@ -265,9 +260,7 @@ function AuthProvider() {
 
   useEffect(() => {
     // const dateJson = localStorage.getItem("dateForgetPassword");
-    const dateJson = localStorage.getItem(
-      ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY,
-    );
+    const dateJson = localStorage.getItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL);
     if (dateJson) {
       dispatch({
         type: FORGET_PASSWORD,
@@ -292,7 +285,7 @@ function AuthProvider() {
               JSON.stringify(data?.role_staffs?.data[0]?.permision),
             );
             localStorage.setItem(
-              ENV_KEYS.VITE_APP_USER_DATA_KEY,
+              ENV_KEYS.VITE_APP_USER_DATA,
               permissionEncrypted,
             );
           }
@@ -302,7 +295,7 @@ function AuthProvider() {
   };
 
   const generateNewToken = async () => {
-    const existToken = localStorage.getItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
+    const existToken = localStorage.getItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN);
     const newToken = (
       await refreshToken({
         variables: {
@@ -314,10 +307,7 @@ function AuthProvider() {
     const accessToken = newToken?.accessToken;
     if (accessToken) {
       const decoded = accessToken;
-      const userPayload = decryptToken(
-        decoded,
-        ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
-      );
+      const userPayload = decryptToken(decoded, ENV_KEYS.VITE_APP_TOKEN);
       await getUsers({
         variables: {
           where: {
@@ -329,7 +319,7 @@ function AuthProvider() {
           checkAccessToken(accessToken);
           // localStorage.setItem("userData", JSON.stringify(user));
           localStorage.setItem(
-            ENV_KEYS.VITE_APP_USER_DATA_KEY,
+            ENV_KEYS.VITE_APP_USER_DATA,
             JSON.stringify(user),
           );
           dispatch({
@@ -355,16 +345,10 @@ function AuthProvider() {
       const enable2FA = data?.twoFactorIsEnabled;
       const authen = true;
       const decoded = checkRole;
-      const tokenData = decryptToken(
-        decoded,
-        ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
-      );
+      const tokenData = decryptToken(decoded, ENV_KEYS.VITE_APP_TOKEN);
       if (enable2FA === 0) {
         checkAccessToken(token);
-        localStorage.setItem(
-          ENV_KEYS.VITE_APP_USER_DATA_KEY,
-          JSON.stringify(data),
-        );
+        localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, JSON.stringify(data));
         dispatch({
           type: SIGN_IN,
           payload: {
@@ -395,10 +379,7 @@ function AuthProvider() {
           }
 
           const userDataEncrypted = encryptData(JSON.stringify(user));
-          localStorage.setItem(
-            ENV_KEYS.VITE_APP_USER_DATA_KEY,
-            userDataEncrypted,
-          );
+          localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, userDataEncrypted);
 
           const tokenData = data?.staffLogin?.token;
           checkAccessToken(tokenData);
@@ -444,10 +425,7 @@ function AuthProvider() {
       const enable2FA = user?.twoFactorIsEnabled;
       const authen = true;
 
-      const tokenData = decryptToken(
-        checkRole,
-        ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
-      );
+      const tokenData = decryptToken(checkRole, ENV_KEYS.VITE_APP_TOKEN);
 
       await handleCreateLog(
         user?._id,
@@ -461,7 +439,7 @@ function AuthProvider() {
           JSON.stringify(signInUser?.data?.userLogin?.data[0]),
         );
         checkAccessToken(checkRole);
-        localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA_KEY, userDataEncrypt);
+        localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, userDataEncrypt);
 
         dispatch({
           type: SIGN_IN,
@@ -493,7 +471,7 @@ function AuthProvider() {
 
   const authentication2FA = async (user, token) => {
     // localStorage.setItem("userData", JSON.stringify(user));
-    localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA_KEY, JSON.stringify(user));
+    localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, JSON.stringify(user));
     checkAccessToken(token);
     dispatch({
       type: SIGN_IN,
@@ -526,9 +504,9 @@ function AuthProvider() {
     // localStorage.removeItem("accessToken");
     // localStorage.removeItem("userData");
     // localStorage.removeItem("permission");
-    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL_KEY);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL);
     oAuthLogOut();
     dispatch({ type: LOG_OUT });
   };
@@ -537,9 +515,9 @@ function AuthProvider() {
     // localStorage.removeItem("accessToken");
     // localStorage.removeItem("permission");
     // localStorage.removeItem("userData");
-    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL_KEY);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL);
     oAuthLogOut();
     dispatch({ type: SIGN_OUT });
   };
@@ -595,10 +573,10 @@ function AuthProvider() {
   };
 
   const resetForgetPassword = () => {
-    const data = localStorage.getItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY);
+    const data = localStorage.getItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL);
 
     if (data) {
-      localStorage.removeItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY);
+      localStorage.removeItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL);
       dispatch({
         type: RESET_FORGET_PASSWORD,
       });
@@ -644,7 +622,7 @@ function AuthProvider() {
             //   moment(dateFormat).format("HH:mm"),
             // );
             localStorage.setItem(
-              ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY,
+              ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL,
               moment(dateFormat).format("HH:mm"),
             );
 

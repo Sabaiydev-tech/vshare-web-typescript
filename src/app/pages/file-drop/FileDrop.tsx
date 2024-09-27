@@ -100,7 +100,7 @@ function FileDrop() {
   const [_showCaptcha, setShowCaptcha] = useState(false);
   const [filedropLinkCreation] = useMutation(CREATE_FILEDROP_LINK);
   const [captchaKey, setCaptchaKey] = useState(false);
-  const [captchaSetting, setCaptchaSetting] = useState('off');
+  const [captchaSetting, setCaptchaSetting] = useState("off");
   const useDataSettings = useManageSetting();
   const settingKeys = {
     fileDrop: "HMFDCAU",
@@ -129,7 +129,7 @@ function FileDrop() {
         variables: {
           input: {
             url: genLink,
-            captcha: window.__reCaptcha
+            captcha: window.__reCaptcha,
           },
         },
       });
@@ -169,7 +169,7 @@ function FileDrop() {
         (data: any) => data?.productKey === settingKeys.fileDropCaptcha,
       );
       if (dataCaptcha) {
-        setCaptchaSetting(dataCaptcha?.status || 'of');
+        setCaptchaSetting(dataCaptcha?.status || "of");
         if (dataCaptcha?.status === "on") {
           setCaptchaKey(true);
           setShowCaptcha(true);
@@ -247,19 +247,18 @@ function FileDrop() {
         </ConditionArea>
 
         <Fragment>
-          {
-            captchaSetting === 'on' &&  
+          {captchaSetting === "on" && (
             <Box sx={{ margin: "auto", mt: 6, mb: 5, display: "table" }}>
               <ReCAPTCHA
                 ref={captchaRef}
-                sitekey={ENV_KEYS.VITE_APP_RECAPTCHA_KEY}
+                sitekey={ENV_KEYS.VITE_APP_RECAPTCHA}
                 onChange={handleData}
                 onExpired={() => {
                   setCaptchaKey(false);
                 }}
               />
             </Box>
-          }
+          )}
           <Button
             variant="contained"
             onClick={generateFileDropLink}

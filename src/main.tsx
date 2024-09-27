@@ -23,9 +23,7 @@ import { createClient } from "graphql-ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 
 const authLink = setContext((_, { headers }) => {
-  let token = localStorage.getItem(
-    ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY as string,
-  );
+  let token = localStorage.getItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN as string);
 
   let pathname = window.location.pathname;
 
@@ -105,7 +103,7 @@ const client = new ApolloClient({
   connectToDevTools: false,
 });
 
-// demo 
+// demo
 // consoleText();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

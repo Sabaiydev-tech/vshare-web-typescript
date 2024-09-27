@@ -43,8 +43,10 @@ const useManageFiles = () => {
         createdBy: multipleData?.[0].createdBy?._id,
       };
 
+
       const encryptedData = encryptDownloadData(headers);
       const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
+      
       startDownload({ baseUrl });
       onSuccess?.();
     } catch (error) {

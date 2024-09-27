@@ -208,7 +208,7 @@ function ListDataItem(props: Props) {
         align: "center",
         renderCell: (params) => {
           const dataFile = params.row;
-
+          console.log({longUrl: dataFile?.longUrl });
           return (
             <IconButton
               onClick={(e: any) => {

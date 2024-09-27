@@ -21,7 +21,7 @@ import Typography from "@mui/material/Typography";
 import { styled } from "@mui/material/styles";
 // react animate component
 
-import { useMutation } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import { Box, CircularProgress, useMediaQuery, useTheme } from "@mui/material";
 import { CREATE_FILE_DROP_PUBLIC } from "api/graphql/fileDrop.graphql";
 import { ENV_KEYS } from "constants/env.constant";
@@ -29,6 +29,7 @@ import { useState } from "react";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import { UAParser } from "ua-parser-js";
 import { errorMessage, successMessage } from "utils/alert.util";
+import { calculateTime } from "utils/date.util";
 import {
   cutFileName,
   getFileNameExtension,
@@ -36,7 +37,8 @@ import {
 } from "utils/file.util";
 import { encryptData, encryptDownloadData } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
-import { calculateTime } from "utils/date.util";
+import { QUERY_SETTING } from "api/graphql/setting.graphql";
+import { IGeneralSetting } from "models/general-setting.model";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -113,6 +115,12 @@ export default function CustomizedDialogs(props) {
   const [uploadComplete, setUploadComplete] = useState(false);
   const chunkSize = 100 * 1024 * 1024; // 250 mb
 
+  const [generalData, setGeneralData] = useState<IGeneralSetting>({});
+
+  const [getMaxFileSize] = useLazyQuery(QUERY_SETTING, {
+    fetchPolicy: "cache-and-network",
+  });
+
   const isRunningRef = React.useRef(true);
   let link: any = null;
   window.location.protocol === "http:"
@@ -132,6 +140,20 @@ export default function CustomizedDialogs(props) {
   React.useEffect(() => {
     setFile(files);
   }, [files]);
+
+  React.useEffect(() => {
+    getMaxFileSize({
+      variables: {
+        where: {
+          productKey: "MXULDFE",
+        },
+      },
+      onCompleted: (data) => {
+        const res = data.general_settings?.data || [];
+        setGeneralData(res?.[0]);
+      },
+    });
+  }, []);
 
   React.useEffect(() => {
     const fetchIPAddress = async () => {
@@ -271,8 +293,6 @@ export default function CustomizedDialogs(props) {
             createdBy: userId > 0 && folderId > 0 ? String(userId) : "0",
           };
 
-          // console.log({ headers });
-
           const encryptedData = encryptDownloadData(headers);
           const blob = new Blob([dataFile[i]], {
             type: dataFile[i].type,
@@ -338,32 +358,26 @@ export default function CustomizedDialogs(props) {
       const str = getFileType(cutError);
       const indexRemote = str?.indexOf("IS_NOT_ALLOWED");
       const finalResult = str?.substring(0, indexRemote);
-      if (cutError == "FILE_NAME_CONTAINS_A_SINGLE_QUOTE(')") {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
+      if (error?.message?.includes("Can not upload more than")) {
+        const maxSize = convertBytetoMBandGB(
+          parseInt(generalData.action!) || 0,
+        );
+        errorMessage(`The maximum upload size is ${maxSize}`, 3000);
+      } else if (cutError == "FILE_NAME_CONTAINS_A_SINGLE_QUOTE(')") {
         errorMessage("Sorry We Don't Allow File Name Include (')", 3000);
       } else if (cutError == "UPLOAD_LIMITED") {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
         errorMessage("Upload Is Limited! Pleaes Try Again Tomorrow!", 3000);
       } else if (cutError == "NONE_URL") {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
         errorMessage("Your Upload Link Is Incorrect!", 3000);
       } else if (finalResult) {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
         errorMessage(`File ${finalResult} is not allowed`, 3000);
       } else {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
         errorMessage(cutError, 3000);
       }
+    } finally {
+      setUploadSpeed(0);
+      setOverallProgress(0);
+      setIsUploading(false);
     }
   };
 
@@ -823,7 +837,7 @@ export default function CustomizedDialogs(props) {
       );
     };
   }, [fileStates]);
-  
+
   return (
     <React.Fragment>
       {!isUploading ? (

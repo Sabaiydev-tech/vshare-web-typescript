@@ -939,6 +939,22 @@ export const FileListContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
+export const NotFoundData = styled(Box)(({ theme }) => ({
+  display:'flex',
+  flex: 1,
+  justifyContent:'end',
+  alignItems:'center',
+  minHeight: '43vh',
+  fontSize: '1.5rem',
+  borderRadius:'10px',
+  paddingRight: '4rem',
+  color: 'grey',
+  [theme.breakpoints.down('sm')]: {
+    paddingRight: 0,
+    justifyContent:'center'
+  }
+}));
+
 export const FileBoxDownload = styled("div")({
   overflow: "hidden",
 });

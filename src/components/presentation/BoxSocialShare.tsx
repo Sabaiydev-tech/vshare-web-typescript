@@ -25,12 +25,12 @@ import {
   BoxAdsAction,
   BoxAdsContainer,
 } from "styles/presentation/presentation.style";
-import { ShareSocial } from "components/social-media";
 import { ENV_KEYS } from "constants/env.constant";
 import { BsThreeDots } from "react-icons/bs";
 import FacebookIcon from "assets/images/facebook-icon.png";
 import TwitterIcon from "assets/images/twitter-icon.png";
 import LoadingButton from "@mui/lab/LoadingButton";
+import DialogShare from "components/dialog/DialogShare.SocialMedia";
 
 type Props = {
   _description?: string;
@@ -152,7 +152,7 @@ function BoxSocialShare(props: Props) {
               <Tooltip title="Messenger" placement="top">
                 <FacebookMessengerShareButton
                   url={currentUrl || ""}
-                  appId={ENV_KEYS.VITE_APP_FACEBOOk_APP_ID}
+                  appId={ENV_KEYS.VITE_APP_FACEBOOK}
                   style={{
                     display: "flex",
                     justifyContent: "center",
@@ -240,27 +240,10 @@ function BoxSocialShare(props: Props) {
                       setIsMore(!isMore);
                     }}
                   >
-                    <ShareSocial
-                      title="More Media"
-                      socialTypes={[
-                        "copy",
-                        "facebook",
-                        "twitter",
-                        "line",
-                        "linkedin",
-                        "whatsapp",
-                        "viber",
-                        "telegram",
-                        "reddit",
-                        "instapaper",
-                        "livejournal",
-                        "mailru",
-                        "ok",
-                        "hatena",
-                        "email",
-                        "workspace",
-                      ]}
-                      url={currentUrl || ""}
+                    <DialogShare 
+                      onClose={() => setIsMore(!isMore)}
+                      isOpen={isMore}
+                      url={currentUrl}
                     />
                   </Box>
                 )}
