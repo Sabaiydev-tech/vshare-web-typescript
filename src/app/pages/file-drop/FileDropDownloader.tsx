@@ -134,7 +134,7 @@ function FileDropDownloader() {
   });
 
   const currentURL = window.location.href;
-  const appSchema = "vshare.app://download?url=" + currentURL;
+  const appSchema = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
   const [showDeepLink, setShowDeepLink] = useState(false);
 
   const [timeLeft, setTimeLeft] = useState("");
@@ -475,7 +475,7 @@ function FileDropDownloader() {
         variables: {
           where: {
             dropUrl: currentUrl,
-            ip: dataIp,
+            // ip: dataIp,
             status: "active",
           },
         },
@@ -554,6 +554,7 @@ function FileDropDownloader() {
           newWindow.closed ||
           typeof newWindow.closed == "undefined"
         ) {
+          history.pushState(null, "", window.location.href);
           window.location.href = httpData;
         }
       }

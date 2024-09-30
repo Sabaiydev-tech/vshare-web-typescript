@@ -211,7 +211,7 @@ function Home() {
       if (dataUploadPertime) {
         setUploadPerTime(dataUploadPertime);
       }
-
+     
       // Upload max size
       const dataUploadMaxSize = findDataSetting(settingKeys.uploadMaxSize);
       if (dataUploadMaxSize) {

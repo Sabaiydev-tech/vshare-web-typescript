@@ -8,8 +8,8 @@ type Props = {
 
 const ExpiredArea = styled(Box)(({ theme }) => ({
     backgroundColor: '#F7F9FC',
-    marginTop: "5rem",
-    padding: "10rem 0",
+    // marginTop: "5rem",
+    padding: "5rem 0",
     textAlign: "center",
     h1: { margin: 0, color: "#5D596C" },
     h4: { margin: "0.5rem 0", color: "#6F6B7D" },
