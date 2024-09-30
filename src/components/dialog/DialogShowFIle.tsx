@@ -57,6 +57,7 @@ import { cutFileName, getFileType } from "utils/file.util";
 import { encryptDownloadData } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import { FindSettingKey } from "utils/findSetting.util";
+import { calculateTime, FormatTime } from "utils/date.util";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -179,6 +180,11 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   const result = UA.getResult();
   const useDataSetting = useManageSetting();
   const settingData = useFetchLandingSetting();
+  const [incrementTime, setIncrementTime] = useState(0);
+  const intervalRef = React.useRef<any>(null);
+
+
+
   const settingKeys = {
     uploadPerday: "MUPFAPD",
     uploadMaxSize: "MXULDFE",
@@ -274,6 +280,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   };
 
   const filesArray = files?.map((obj: any) => {
+    
     return {
       id: obj.file.id,
       path: obj.file.path,
@@ -401,12 +408,26 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
     onRemoveAll();
   };
 
+ 
+  useEffect(() => {
+    return () => clearInterval(intervalRef.current); 
+  }, []);
+
   const handlePrepareToUpload = () => {
     const uploadPerTime = dataUploadPerTime?.action || 0;
     if (filesArray?.length > parseInt(uploadPerTime)) {
       errorMessage(`Upload file per time only ${uploadPerTime} files`, 3000);
       return;
     }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = setInterval(() => {
+      setIncrementTime((prevTime) => {
+        return prevTime + 100;
+      });
+    }, 100);
 
     const passwordArr: any[] = [];
     passwordArr.push(passwords);
@@ -559,6 +580,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
           break;
         }
       }
+      clearInterval(intervalRef.current);
       setIsDone(1);
       setValue(`${value}${getUrlAllWhenReturn?.urlAll}`);
       setCheckUpload(true);
@@ -1225,7 +1247,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                   <Typography variant="h5">
                     <CheckIcon sx={{ color: "#0F6C61" }} />
                     &nbsp;{filesArray.length} files uploaded,{" "}
-                    {convertBytetoMBandGB(dataSizeAll)} in total
+                    {convertBytetoMBandGB(dataSizeAll)} in total, {FormatTime(incrementTime)}
                   </Typography>
                 </MUI.BoxUploadDoneTitle>
                 {information?.every((obj) => obj.password == "") &&

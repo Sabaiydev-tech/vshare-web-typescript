@@ -24,6 +24,7 @@ function PriceCard(props) {
   const dispatch = useDispatch();
   const { ...paymentSelector } = useSelector(paymentState);
   const isCost = props.details._price > 0;
+
   const features = useMemo(
     () => [
       {
@@ -38,15 +39,20 @@ function PriceCard(props) {
         title: "Uploads per day:",
         context: `${props.details.multipleUpload} uploads per day`,
       },
-      /* {
-        title: "Downloads:",
-        context: `${props.downLoadPerDay} downloads per day`,
-      }, */
+
       {
         title: "Max Download Size:",
         context: `${prettyNumberFormat(
           convertBytetoMBandGB(props.details.maxUploadSize),
         )}`,
+      },
+      {
+        title: "Download option:",
+        context: props.details.downLoadOption,
+      },
+      {
+        title: "Support:",
+        context: props.details.support ?? "Normal",
       },
     ],
     [props.details],
