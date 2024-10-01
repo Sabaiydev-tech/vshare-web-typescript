@@ -271,7 +271,7 @@ function AppBar() {
                 Feedback
               </Button>
             </Tooltip>
-            {token == "" ? (
+            {!token ? (
               <>
                 <Tooltip title="Sign in">
                   <Button
