@@ -117,7 +117,7 @@ function AppBar() {
             width: "100%",
           }}
         >
-          <span>Contact us</span>
+          <span>Contact uss</span>
         </ListItemButton>
         <ListItemButton
           component={NavLink}
