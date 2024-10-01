@@ -50,7 +50,7 @@ const NotFound = (props: Props) => {
               fontFamily="Arial"
               fontWeight="bold"
             >
-              Omg!
+              ( •̀_•́ )
             </text>
           </svg>
         </Typography>
