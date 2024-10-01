@@ -143,7 +143,7 @@ function AppBar() {
         >
           <span>Feedback</span>
         </ListItemButton>
-        {token == "" ? (
+        {!token ? (
           <>
             <ListItemButton
               component={NavLink}
