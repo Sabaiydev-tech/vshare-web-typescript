@@ -20,3 +20,21 @@ export function formatDate(date: string): string {
   const dateString = moment(date).format("DD-MM-YYYY");
   return dateString;
 }
+
+export const FormatTime = (time: number) => {
+  if (time < 1000) {
+    return `${time} mi`; 
+  } else if (time < 60000) {
+    const seconds = Math.floor(time / 1000);
+    return `${seconds} s`; 
+  } else if (time < 3600000) {
+    const minutes = Math.floor(time / 60000);
+    const seconds = Math.floor((time % 60000) / 1000);
+    return `${minutes} m ${seconds} s`;
+  } else {
+    const hours = Math.floor(time / 3600000);
+    const minutes = Math.floor((time % 3600000) / 60000);
+    const seconds = Math.floor((time % 60000) / 1000);
+    return `${hours} h ${minutes} m ${seconds} s`;
+  }
+};

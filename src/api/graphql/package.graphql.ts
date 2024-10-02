@@ -83,11 +83,9 @@ export const QUERY_PUBLIC_PACKAGES = gql`
         packageId
         name
         category
-        annualPrice
+        type
         monthlyPrice
-        currencyId {
-          _id
-        }
+        annualPrice
         discount
         description
         storage
@@ -99,18 +97,37 @@ export const QUERY_PUBLIC_PACKAGES = gql`
         uploadPerDay
         fileUploadPerDay
         maxUploadSize
+        multipleDownload
+        downLoadOption
         support
         batchDownload
         unlimitedDownload
         customExpiredLink
+        downloadFolder
+        remoteUpload
+        iosApplication
+        androidApplication
         sort
+        totalUsed
+        textColor
+        bgColor
+        lockFile
+        lockFolder
         status
         createdAt
         updatedAt
+          currencyId {
+          _id
+          code
+        }
         createdBy {
+          _id
           firstName
           lastName
+          email
         }
+        numberOfQueueDownload
+        numberOfQueueUpload
       }
       total
     }
