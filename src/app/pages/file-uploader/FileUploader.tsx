@@ -168,6 +168,7 @@ function FileUploader() {
   try {
     if (urlClient) {
       const decode = handleDecryptFile(urlClient);
+
       linkClient = {
         _id: decode?._id,
         type: decode?.type,
