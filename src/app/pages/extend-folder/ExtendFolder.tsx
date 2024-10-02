@@ -2,7 +2,6 @@ import { useLazyQuery, useMutation } from "@apollo/client";
 import axios from "axios";
 import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import ListIcon from "@mui/icons-material/FormatListBulletedOutlined";
 import { Box, IconButton, useMediaQuery } from "@mui/material";
 import {
   CREATE_DETAIL_ADVERTISEMENT,
@@ -36,6 +35,7 @@ import Advertisement from "components/presentation/Advertisement";
 import BaseDeeplinkDownload from "components/Downloader/BaseDeeplinkDownload";
 import BaseGridDownload from "components/Downloader/BaseGridDownload";
 import { IFolder } from "models/folder.model";
+import { BiSolidGrid } from "react-icons/bi";
 
 function ExtendFolder() {
   const location = useLocation();
@@ -98,7 +98,6 @@ function ExtendFolder() {
 
   // Deep linking for mobile devices
   const appScheme = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
-  console.log({ appScheme });
 
   const [multipleIds, setMultipleIds] = useState<any[]>([]);
   const [multipleFolderIds, setMultipleFolderIds] = useState<any[]>([]);
@@ -964,8 +963,8 @@ function ExtendFolder() {
                   }
                 />
               ) : (
-                <IconButton size="small" onClick={handleToggle}>
-                  <ListIcon />
+                <IconButton onClick={handleToggle}>
+                  <BiSolidGrid />
                 </IconButton>
               )}
             </MUI.FileBoxToggle>

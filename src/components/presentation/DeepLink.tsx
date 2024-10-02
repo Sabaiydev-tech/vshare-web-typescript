@@ -17,8 +17,8 @@ import * as MUI from "styles/presentation/deepLink.style";
 function DeepLink(props) {
   const { showBottom, platform, onClose, scriptScheme } = props;
   const [browser, setBrowser] = useState<any>("");
-  const androidStore = ENV_KEYS.VITE_APP_DEEP_LINK;
-  const appleStore = ENV_KEYS.VITE_APP_PLAY_STORE;
+  const androidStore = `${ENV_KEYS.VITE_APP_PLAY_STORE}`;
+  const appleStore = `${ENV_KEYS.VITE_APP_APPLE_STORE}`;
 
   const Icons = [
     {
@@ -69,7 +69,8 @@ function DeepLink(props) {
       }
 
       if (platform === "ios") {
-        window.location.href = appleStore;
+        // window.location.href = appleStore;
+        window.open(appleStore, "_blank");
       }
     }, 1500);
 
