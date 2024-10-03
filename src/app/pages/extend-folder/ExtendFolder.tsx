@@ -1,5 +1,4 @@
 import { useLazyQuery, useMutation } from "@apollo/client";
-import ListIcon from "@mui/icons-material/FormatListBulletedOutlined";
 import { Box, IconButton, useMediaQuery } from "@mui/material";
 import {
   CREATE_DETAIL_ADVERTISEMENT,
@@ -29,6 +28,7 @@ import useManageSetting from "hooks/useManageSetting";
 import { IFolder } from "models/folder.model";
 import React, { Fragment, useEffect, useMemo, useState } from "react";
 import Helmet from "react-helmet";
+import { BiSolidGrid } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import * as selectorAction from "stores/features/selectorSlice";
@@ -966,8 +966,8 @@ function ExtendFolder() {
                     }
                   />
                 ) : (
-                  <IconButton size="small" onClick={handleToggle}>
-                    <ListIcon />
+                  <IconButton onClick={handleToggle}>
+                    <BiSolidGrid />
                   </IconButton>
                 )}
               </MUI.FileBoxToggle>

@@ -3,26 +3,26 @@ import { styled } from "@mui/system";
 import { NavLink } from "react-router-dom";
 
 type Props = {
-    msg?: string
+  msg?: string;
 };
 
 const ExpiredArea = styled(Box)(({ theme }) => ({
-    backgroundColor: '#F7F9FC',
-    // marginTop: "5rem",
-    padding: "5rem 0",
-    textAlign: "center",
-    h1: { margin: 0, color: "#5D596C" },
-    h4: { margin: "0.5rem 0", color: "#6F6B7D" },
-    [theme.breakpoints.down("sm")]: {
-      padding: "5rem 1rem",
-      h1: {
-        fontSize: "18px",
-      },
+  backgroundColor: "#F7F9FC",
+  // marginTop: "5rem",
+  padding: "5rem 0",
+  textAlign: "center",
+  h1: { margin: 0, color: "#5D596C" },
+  h4: { margin: "0.5rem 0", color: "#6F6B7D" },
+  [theme.breakpoints.down("sm")]: {
+    padding: "5rem 1rem",
+    h1: {
+      fontSize: "18px",
     },
-  }));
+  },
+}));
 
 const NotFound = (props: Props) => {
-    const theme = createTheme();
+  const theme = createTheme();
   return (
     <ExpiredArea>
       <Box
@@ -54,10 +54,9 @@ const NotFound = (props: Props) => {
             </text>
           </svg>
         </Typography>
-        {
-            props?.msg ? props?.msg
-            : `Unfortunately, the link was expired or not found.`
-        }
+        {props?.msg
+          ? props?.msg
+          : `Unfortunately, the link was expired or not found.`}
       </Box>
       <Box
         sx={{
@@ -85,6 +84,5 @@ const NotFound = (props: Props) => {
     </ExpiredArea>
   );
 };
-
 
 export default NotFound;

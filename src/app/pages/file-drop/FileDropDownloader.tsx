@@ -622,7 +622,12 @@ function FileDropDownloader() {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     multiple: isUploadMultiples,
-    noClick: dataFromUrl?.allowUpload === true ? false : isUploadMultiples === true ? false : true
+    noClick:
+      dataFromUrl?.allowUpload === true
+        ? false
+        : isUploadMultiples === true
+        ? false
+        : true,
   });
 
   useEffect(() => {
@@ -674,9 +679,7 @@ function FileDropDownloader() {
 
   return (
     <React.Fragment>
-      {
-        status == "expired" 
-        || status === "locked" ? (
+      {status == "expired" || status === "locked" ? (
         <ExpiredArea>
           <Box
             sx={{
@@ -758,7 +761,7 @@ function FileDropDownloader() {
                   sx={{
                     padding: "0.3rem",
                     borderRadius: "6px",
-                    background: "#DFE6E7"
+                    background: "#DFE6E7",
                   }}
                 >
                   <FileUploadOutlinedIcon
@@ -766,31 +769,41 @@ function FileDropDownloader() {
                   />
                 </Box>
 
-                <Box className="box-drag" sx={{ m: 3}}>
+                <Box className="box-drag" sx={{ m: 3 }}>
                   <Typography component="span">
-                    
-                    {
-                      dataFromUrl?.allowUpload || dataFromUrl?.allowMultiples 
-                      ? 'Drag and drop your files here to upload'
-                      : <Typography component={'span'} sx={{color: '#e31f09 !important', fontWeight: '300 !important'}}>Admin has not enable to upload file</Typography>
-                    }
+                    {dataFromUrl?.allowUpload || dataFromUrl?.allowMultiples ? (
+                      "Drag and drop your files here to upload"
+                    ) : (
+                      <Typography
+                        component={"span"}
+                        sx={{
+                          color: "#e31f09 !important",
+                          fontWeight: "300 !important",
+                        }}
+                      >
+                        Admin has not enable to upload file
+                      </Typography>
+                    )}
                   </Typography>
                 </Box>
-                <Mui.ButtonUpload
-                  variant="contained"
-                  onClick={() => {
-                    setOpen(true);
-                    setClickUpload(!clickUpload);
-                  }}
-                  startIcon={
-                    <FileUploadOutlinedIcon
-                      sx={{ color: "#fff", verticalAlign: "middle" }}
-                    />
-                  }
-                >
-                  Select files
-                  <input {...getInputProps()} hidden={true} />
-                </Mui.ButtonUpload>
+
+                {dataFromUrl?.allowUpload && (
+                  <Mui.ButtonUpload
+                    variant="contained"
+                    onClick={() => {
+                      setOpen(true);
+                      setClickUpload(!clickUpload);
+                    }}
+                    startIcon={
+                      <FileUploadOutlinedIcon
+                        sx={{ color: "#fff", verticalAlign: "middle" }}
+                      />
+                    }
+                  >
+                    Select files
+                    <input {...getInputProps()} hidden={true} />
+                  </Mui.ButtonUpload>
+                )}
               </Mui.BoxShowUploadDetail>
               <br />
               <Typography component="p" sx={{ color: "#e31f09 !important" }}>
@@ -824,7 +837,8 @@ function FileDropDownloader() {
                 data.push(updatedFile);
                 return <Fragment key={index}></Fragment>;
               })}
-              {data.length > 0 && (dataFromUrl?.allowUpload || dataFromUrl?.allowMultiples) ? (
+              {data.length > 0 &&
+              (dataFromUrl?.allowUpload || dataFromUrl?.allowMultiples) ? (
                 <DialogShowFiledrop
                   open={open}
                   files={data}
