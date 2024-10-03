@@ -1,7 +1,4 @@
 import { useLazyQuery, useMutation } from "@apollo/client";
-import axios from "axios";
-import React, { Fragment, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import ListIcon from "@mui/icons-material/FormatListBulletedOutlined";
 import { Box, IconButton, useMediaQuery } from "@mui/material";
 import {
@@ -11,31 +8,35 @@ import {
 import { QUERY_SUB_FILE } from "api/graphql/file.graphql";
 import { QUERY_SUB_FOLDER } from "api/graphql/folder.graphql";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
+import axios from "axios";
 import DialogConfirmPassword from "components/dialog/DialogConfirmPassword";
 import DialogPreviewQRcode from "components/dialog/DialogPreviewQRCode";
+import BaseDeeplinkDownload from "components/Downloader/BaseDeeplinkDownload";
+import BaseGridDownload from "components/Downloader/BaseGridDownload";
+import ListFileData from "components/Downloader/ListFileData";
+import ListFolderData from "components/Downloader/ListFolderData";
+import NotFound from "components/NotFound";
+import Advertisement from "components/presentation/Advertisement";
 import BoxSocialShare from "components/presentation/BoxSocialShare";
 import DialogConfirmQRCode from "components/presentation/DialogConfirmQRCode";
 import FileCardContainer from "components/presentation/FileCardContainer";
 import FileCardItem from "components/presentation/FileCardItem";
-import ListFileData from "components/Downloader/ListFileData";
+import ViewMoreAction from "components/presentation/ViewMoreAction";
 import { ENV_KEYS } from "constants/env.constant";
 import CryptoJS from "crypto-js";
 import useManageFiles from "hooks/useManageFile";
 import useManageSetting from "hooks/useManageSetting";
+import { IFolder } from "models/folder.model";
+import React, { Fragment, useEffect, useMemo, useState } from "react";
 import Helmet from "react-helmet";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import * as selectorAction from "stores/features/selectorSlice";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { getFileTypeName, removeFileNameOutOfPath } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "../file-uploader/styles/fileUploader.style";
 import "../file-uploader/styles/fileUploader.style.css";
-import ListFolderData from "components/Downloader/ListFolderData";
-import ViewMoreAction from "components/presentation/ViewMoreAction";
-import Advertisement from "components/presentation/Advertisement";
-import BaseDeeplinkDownload from "components/Downloader/BaseDeeplinkDownload";
-import BaseGridDownload from "components/Downloader/BaseGridDownload";
-import { IFolder } from "models/folder.model";
 
 function ExtendFolder() {
   const location = useLocation();
@@ -98,7 +99,6 @@ function ExtendFolder() {
 
   // Deep linking for mobile devices
   const appScheme = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
-  console.log({ appScheme });
 
   const [multipleIds, setMultipleIds] = useState<any[]>([]);
   const [multipleFolderIds, setMultipleFolderIds] = useState<any[]>([]);
@@ -321,6 +321,7 @@ function ExtendFolder() {
             onCompleted: (values) => {
               const folderData = values?.foldersByUID?.data || [];
               const total = values?.foldersByUID?.total || 0;
+              console.log(folderData);
               setTotalFolder(total);
               setDataSubFolder(folderData);
               if (folderData?.[0]?.status === "active") {
@@ -947,190 +948,199 @@ function ExtendFolder() {
         <meta name="description" key={"description"} content={_description} />
       </Helmet>
 
-      <MUI.ContainerHome maxWidth="xl">
-        <Box sx={{ backgroundColor: "#ECF4F3", padding: "3rem 1rem" }}>
-          <Advertisement />
+      {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
+        <MUI.ContainerHome maxWidth="xl">
+          <Box sx={{ backgroundColor: "#ECF4F3", padding: "3rem 1rem" }}>
+            <Advertisement />
 
-          {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
-            <MUI.FileBoxToggle>
-              {toggle === "grid" ? (
-                <BaseGridDownload
-                  dataFiles={dataSelector?.selectionFileAndFolderData}
-                  adAlive={adAlive}
-                  handleClearSelector={handleClearSelector}
-                  handleToggle={handleToggle}
-                  handleDownloadGridFileAndFolder={
-                    handleDownloadGridFileAndFolder
-                  }
-                />
-              ) : (
-                <IconButton size="small" onClick={handleToggle}>
-                  <ListIcon />
-                </IconButton>
-              )}
-            </MUI.FileBoxToggle>
-          )}
+            {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
+              <MUI.FileBoxToggle>
+                {toggle === "grid" ? (
+                  <BaseGridDownload
+                    dataFiles={dataSelector?.selectionFileAndFolderData}
+                    adAlive={adAlive}
+                    handleClearSelector={handleClearSelector}
+                    handleToggle={handleToggle}
+                    handleDownloadGridFileAndFolder={
+                      handleDownloadGridFileAndFolder
+                    }
+                  />
+                ) : (
+                  <IconButton size="small" onClick={handleToggle}>
+                    <ListIcon />
+                  </IconButton>
+                )}
+              </MUI.FileBoxToggle>
+            )}
 
-          <MUI.FileListContainer>
-            <Box>
-              {toggle === "list" && (
-                <Fragment>
-                  {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
-                    <ListFolderData
-                      isFile={false}
-                      toggle={toggle}
-                      _description={_description}
-                      dataLinks={dataFolderLinkMemo}
-                      multipleIds={multipleFolderIds}
-                      countAction={adAlive}
-                      total={totalFolder}
-                      pagination={{
-                        currentPage: folderCurrentPage,
-                        totalPages: Math.ceil(totalFolder / LIMIT_DATA_PAGE),
-                        setCurrentPage: setFolderCurrentPage,
-                      }}
-                      setMultipleIds={setMultipleFolderIds}
-                      setToggle={handleToggle}
-                      handleQRGeneration={handleQRGeneration}
-                      handleClearGridSelection={handleClearFolderSelection}
-                      handleDownloadFolderAsZip={handleDownloadAsZip}
-                      handleDownloadFolder={handleDownloadFolderGetLink}
-                      handleDoubleClick={handleOpenFolder}
-                    />
-                  )}
+            <MUI.FileListContainer>
+              <Box>
+                {toggle === "list" && (
+                  <Fragment>
+                    {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
+                      <ListFolderData
+                        isFile={false}
+                        toggle={toggle}
+                        _description={_description}
+                        dataLinks={dataFolderLinkMemo}
+                        multipleIds={multipleFolderIds}
+                        countAction={adAlive}
+                        total={totalFolder}
+                        pagination={{
+                          currentPage: folderCurrentPage,
+                          totalPages: Math.ceil(totalFolder / LIMIT_DATA_PAGE),
+                          setCurrentPage: setFolderCurrentPage,
+                        }}
+                        setMultipleIds={setMultipleFolderIds}
+                        setToggle={handleToggle}
+                        handleQRGeneration={handleQRGeneration}
+                        handleClearGridSelection={handleClearFolderSelection}
+                        handleDownloadFolderAsZip={handleDownloadAsZip}
+                        handleDownloadFolder={handleDownloadFolderGetLink}
+                        handleDoubleClick={handleOpenFolder}
+                      />
+                    )}
 
-                  {dataLinkMemo && dataLinkMemo.length > 0 && (
-                    <ListFileData
-                      isFile={true}
-                      toggle={toggle}
-                      _description={_description}
-                      dataLinks={dataLinkMemo}
-                      multipleIds={multipleIds}
-                      countAction={adAlive}
-                      total={totalFile}
-                      pagination={{
-                        currentPage: fileCurrentPage,
-                        totalPages: Math.ceil(totalFile / LIMIT_DATA_PAGE),
-                        setCurrentPage: setFileCurrentPage,
-                      }}
-                      setMultipleIds={setMultipleIds}
-                      setToggle={handleToggle}
-                      handleQRGeneration={handleQRGeneration}
-                      handleClearFileSelection={handleClearGridSelection}
-                      handleDownloadAsZip={handleDownloadAsZip}
-                      handleDownloadFileGetLink={handleDownloadFileGetLink}
-                    />
-                  )}
-                </Fragment>
-              )}
+                    {dataLinkMemo && dataLinkMemo.length > 0 && (
+                      <ListFileData
+                        isFile={true}
+                        toggle={toggle}
+                        _description={_description}
+                        dataLinks={dataLinkMemo}
+                        multipleIds={multipleIds}
+                        countAction={adAlive}
+                        total={totalFile}
+                        pagination={{
+                          currentPage: fileCurrentPage,
+                          totalPages: Math.ceil(totalFile / LIMIT_DATA_PAGE),
+                          setCurrentPage: setFileCurrentPage,
+                        }}
+                        setMultipleIds={setMultipleIds}
+                        setToggle={handleToggle}
+                        handleQRGeneration={handleQRGeneration}
+                        handleClearFileSelection={handleClearGridSelection}
+                        handleDownloadAsZip={handleDownloadAsZip}
+                        handleDownloadFileGetLink={handleDownloadFileGetLink}
+                      />
+                    )}
+                  </Fragment>
+                )}
 
-              {toggle === "grid" && (
-                <Fragment>
-                  {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
-                    <Fragment>
-                      <FileCardContainer style={{ marginBottom: "1.5rem" }}>
-                        {dataFolderLinkMemo.map((item, index) => {
-                          return (
-                            <Fragment key={index}>
-                              <FileCardItem
-                                id={item._id}
-                                item={item}
-                                isContainFiles={
-                                  item?.total_size > 0 ? true : false
-                                }
-                                user={item?.createdBy}
-                                path={item?.path}
-                                isCheckbox={true}
-                                filePassword={item?.access_password}
-                                fileType={getFileTypeName(item.folder_type)}
-                                name={item?.folder_name}
-                                newName={item?.newFolder_name}
-                                cardProps={{
-                                  onDoubleClick: () => {
-                                    handleOpenFolder(item);
-                                  },
-                                }}
-                              />
-                            </Fragment>
-                          );
-                        })}
-                      </FileCardContainer>
+                {toggle === "grid" && (
+                  <Fragment>
+                    {dataFolderLinkMemo && dataFolderLinkMemo.length > 0 && (
+                      <Fragment>
+                        <FileCardContainer style={{ marginBottom: "1.5rem" }}>
+                          {dataFolderLinkMemo.map((item, index) => {
+                            return (
+                              <Fragment key={index}>
+                                <FileCardItem
+                                  id={item._id}
+                                  item={item}
+                                  isContainFiles={
+                                    item?.total_size > 0 ? true : false
+                                  }
+                                  user={item?.createdBy}
+                                  path={item?.path}
+                                  isCheckbox={true}
+                                  filePassword={item?.access_password}
+                                  fileType={getFileTypeName(item.folder_type)}
+                                  name={item?.folder_name}
+                                  newName={item?.newFolder_name}
+                                  cardProps={{
+                                    onDoubleClick: () => {
+                                      handleOpenFolder(item);
+                                    },
+                                  }}
+                                />
+                              </Fragment>
+                            );
+                          })}
+                        </FileCardContainer>
 
-                      {totalFolder > viewFolderMore ? (
-                        <ViewMoreAction handleViewMore={handleViewMoreFolder} />
-                      ) : (
-                        <Fragment></Fragment>
-                      )}
-                    </Fragment>
-                  )}
+                        {totalFolder > viewFolderMore ? (
+                          <ViewMoreAction
+                            handleViewMore={handleViewMoreFolder}
+                          />
+                        ) : (
+                          <Fragment></Fragment>
+                        )}
+                      </Fragment>
+                    )}
 
-                  {dataLinkMemo && dataLinkMemo.length > 0 && (
-                    <Fragment>
-                      <FileCardContainer>
-                        {dataLinkMemo.map((item, index) => {
-                          return (
-                            <Fragment key={index}>
-                              <FileCardItem
-                                id={item._id}
-                                item={item}
-                                imagePath={
-                                  item?.createdBy?.newName +
-                                  "-" +
-                                  item?.createdBy?._id +
-                                  "/" +
-                                  (item.newPath
-                                    ? removeFileNameOutOfPath(item.newPath)
-                                    : "") +
-                                  item.newFilename
-                                }
-                                user={item?.createdBy}
-                                path={item?.path}
-                                isCheckbox={true}
-                                filePassword={item?.filePassword}
-                                fileType={getFileTypeName(item?.fileType)}
-                                isPublic={
-                                  item?.createdBy?._id === "0" ? true : false
-                                }
-                                name={item?.filename}
-                                newName={item?.newFilename}
-                                cardProps={{
-                                  onDoubleClick: () => {
-                                    // console.log("first");
-                                  },
-                                }}
-                              />
-                            </Fragment>
-                          );
-                        })}
-                      </FileCardContainer>
+                    {dataLinkMemo && dataLinkMemo.length > 0 && (
+                      <Fragment>
+                        <FileCardContainer>
+                          {dataLinkMemo.map((item, index) => {
+                            return (
+                              <Fragment key={index}>
+                                <FileCardItem
+                                  id={item._id}
+                                  item={item}
+                                  imagePath={
+                                    item?.createdBy?.newName +
+                                    "-" +
+                                    item?.createdBy?._id +
+                                    "/" +
+                                    (item.newPath
+                                      ? removeFileNameOutOfPath(item.newPath)
+                                      : "") +
+                                    item.newFilename
+                                  }
+                                  user={item?.createdBy}
+                                  path={item?.path}
+                                  isCheckbox={true}
+                                  filePassword={item?.filePassword}
+                                  fileType={getFileTypeName(item?.fileType)}
+                                  isPublic={
+                                    item?.createdBy?._id === "0" ? true : false
+                                  }
+                                  name={item?.filename}
+                                  newName={item?.newFilename}
+                                  cardProps={{
+                                    onDoubleClick: () => {
+                                      // console.log("first");
+                                    },
+                                  }}
+                                />
+                              </Fragment>
+                            );
+                          })}
+                        </FileCardContainer>
 
-                      {totalFile > viewFileMore ? (
-                        <Box sx={{ mt: 5 }}>
-                          <ViewMoreAction handleViewMore={handleViewMoreFile} />
-                        </Box>
-                      ) : (
-                        <Fragment></Fragment>
-                      )}
-                    </Fragment>
-                  )}
-                </Fragment>
-              )}
-            </Box>
-            <Box>
-              {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
-                <BoxSocialShare
-                  isFile={false}
-                  _description={_description}
-                  countAction={adAlive}
-                  isHide={hideDownload}
-                  loading={isDownloadLoading}
-                  handleDownloadFolderAsZip={handleDownloadAsZip}
-                />
-              )}
-            </Box>
-          </MUI.FileListContainer>
-        </Box>
-      </MUI.ContainerHome>
+                        {totalFile > viewFileMore ? (
+                          <Box sx={{ mt: 5 }}>
+                            <ViewMoreAction
+                              handleViewMore={handleViewMoreFile}
+                            />
+                          </Box>
+                        ) : (
+                          <Fragment></Fragment>
+                        )}
+                      </Fragment>
+                    )}
+                  </Fragment>
+                )}
+              </Box>
+              <Box>
+                {(dataFolderLinkMemo?.length > 0 ||
+                  dataLinkMemo?.length > 0) && (
+                  <BoxSocialShare
+                    isFile={false}
+                    _description={_description}
+                    countAction={adAlive}
+                    isHide={hideDownload}
+                    loading={isDownloadLoading}
+                    handleDownloadFolderAsZip={handleDownloadAsZip}
+                  />
+                )}
+              </Box>
+            </MUI.FileListContainer>
+          </Box>
+        </MUI.ContainerHome>
+      )}
+
+      {!dataFolderLinkMemo?.length && !dataLinkMemo?.length && <NotFound />}
 
       <DialogConfirmPassword
         open={open}

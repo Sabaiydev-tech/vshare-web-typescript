@@ -179,6 +179,7 @@ function FileUploader() {
 
   function handleDecryptFile(val) {
     const decryptedData = decryptDataLink(val);
+
     return decryptedData;
   }
 
@@ -1224,7 +1225,8 @@ function FileUploader() {
 
         return folderData;
       }
-      return folderData;
+
+      return folderData || [];
     }
 
     return [];
