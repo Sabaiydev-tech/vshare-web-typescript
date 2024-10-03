@@ -663,7 +663,6 @@ function ExtendFolder() {
     if (totalClickCount >= getActionButton) {
       setTotalClickCount(0);
       const groupData: any[] = (await getAllData()) || [];
-      // const groupDataV1: any[] = dataLinkMemo.concat(dataFolderLinkMemo)
 
       const multipleData = groupData.map((item: any) => {
         const newPath = item?.newPath || "";

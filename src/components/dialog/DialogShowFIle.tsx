@@ -47,8 +47,6 @@ import {
 } from "@mui/material";
 import { CREATE_FILE_PUBLIC } from "api/graphql/file.graphql";
 import { ENV_KEYS } from "constants/env.constant";
-import { useFetchLandingSetting } from "hooks/useFetchLandingSetting";
-import useManageSetting from "hooks/useManageSetting";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import { Id } from "types";
@@ -56,7 +54,6 @@ import { errorMessage, successMessage } from "utils/alert.util";
 import { cutFileName, getFileType } from "utils/file.util";
 import { encryptDownloadData } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
-import { FindSettingKey } from "utils/findSetting.util";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -171,29 +168,13 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
     : (link = ENV_KEYS.VITE_APP_DOWNLOAD_URL_SERVER);
   // const LOAD_GET_IP_URL = ENV_KEYS.VITE_APP_LOAD_GETIP_URL;
   const LOAD_UPLOAD_URL = ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL;
+  const [totalProgress, setTotalProgress] = useState(0);
 
   const [value, setValue] = useState<string | null>(link);
   const [copied, setCopied] = useState(false);
   const [uploadStatus, setUploadStatus] = useState({});
   const UA = new UAParser();
   const result = UA.getResult();
-  const useDataSetting = useManageSetting();
-  const settingData = useFetchLandingSetting();
-  const settingKeys = {
-    uploadPerday: "MUPFAPD",
-    uploadMaxSize: "MXULDFE",
-    uploadPerTime: "MUPEAPD",
-    allowFileType: "ALWFTUD",
-  };
-
-  const maxFileSizeKey = FindSettingKey({
-    action: settingKeys.uploadMaxSize,
-    settings: settingData?.data,
-  });
-  const maxFileUploadKey = FindSettingKey({
-    action: settingKeys.uploadPerTime,
-    settings: settingData?.data,
-  });
 
   const autoProductKey = "AEADEFO";
 
@@ -435,6 +416,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
     let uploadedSize = 0;
     let currentUploadPercentage: number | string = 0;
     let getUrlAllWhenReturn: any = [];
+    let completedUploads = 0;
 
     try {
       // const responseIp = await axios.get(LOAD_GET_IP_URL);
@@ -443,6 +425,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
       const nanoid = customAlphabet(alphabet, 6);
       const generateID = nanoid();
       const urlAllFile = generateID;
+      const totalFiles = files.length;
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -516,6 +499,15 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                 encryptedHeaders: encryptedData,
               },
               onUploadProgress: (progressEvent: any) => {
+                const { loaded, total } = progressEvent;
+                const percent = Math.round((loaded / total) * 100);
+
+                const newTotalProgress = Math.round(
+                  (completedUploads * 100 + percent) / totalFiles,
+                );
+                console.log(newTotalProgress)
+                setTotalProgress(newTotalProgress);
+
                 const currentFileUploadedSize =
                   (progressEvent.loaded * dataFile[i].size) /
                     progressEvent.total || 0;
@@ -554,6 +546,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                 [i]: true,
               }));
             }
+            completedUploads++;
           } catch (error) {
             errorMessage("Error uploading file. Please try againn later", 3000);
           }
@@ -1130,8 +1123,10 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
               <MUI.BoxUploadProgress>
                 <div style={{ marginLeft: 8, width: 100, height: 100 }}>
                   <CircularProgressbar
-                    value={overallProgress}
-                    text={`${overallProgress}%`}
+                    // value={overallProgress}
+                    // text={`${overallProgress}%`}
+                    value={totalProgress}
+                    text={`${totalProgress}%`}
                     styles={buildStyles({
                       strokeLinecap: "butt",
                       textSize: "12px",
