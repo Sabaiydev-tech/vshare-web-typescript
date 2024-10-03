@@ -100,6 +100,7 @@ function ExtendFolder() {
   // Deep linking for mobile devices
   const appScheme = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
 
+  const [eventClick, setEventClick] = useState("");
   const [multipleIds, setMultipleIds] = useState<any[]>([]);
   const [multipleFolderIds, setMultipleFolderIds] = useState<any[]>([]);
 
@@ -321,7 +322,6 @@ function ExtendFolder() {
             onCompleted: (values) => {
               const folderData = values?.foldersByUID?.data || [];
               const total = values?.foldersByUID?.total || 0;
-              console.log(folderData);
               setTotalFolder(total);
               setDataSubFolder(folderData);
               if (folderData?.[0]?.status === "active") {
@@ -851,6 +851,18 @@ function ExtendFolder() {
     }
   };
 
+  const handleCheckOpenFolder = (folder) => {
+    setEventClick("open-folder");
+    setFolderDataSelect(folder);
+
+    if (folder?.access_password) {
+      setFileQRCodePassword(folder.access_password);
+      handleOpenVerifyQRCode();
+    } else {
+      handleOpenFolder(folder);
+    }
+  };
+
   const handleOpenFolder = (folder) => {
     const baseUrl = {
       _id: folder._id,
@@ -870,9 +882,15 @@ function ExtendFolder() {
   }
 
   function handleSuccessQRCode() {
-    setTimeout(() => {
-      setPreviewOpen(true);
-    }, 200);
+    if (eventClick === "qrcode") {
+      setTimeout(() => {
+        setPreviewOpen(true);
+      }, 200);
+    }
+
+    if (eventClick === "open-folder") {
+      handleOpenFolder(folderDataSelect);
+    }
   }
 
   function handleCloseVerifyQRCode() {
@@ -881,11 +899,13 @@ function ExtendFolder() {
   }
 
   const handleQRGeneration = (e: HTMLFormElement, file: any, url: string) => {
+    setEventClick("qrcode");
     e.preventDefault();
     setDataValue(file);
     setFileUrl(url);
-    if (file?.filePassword) {
-      setFileQRCodePassword(file.filePassword);
+
+    if (file?.filePassword || file?.access_password) {
+      setFileQRCodePassword(file.filePassword || file?.access_password);
       handleOpenVerifyQRCode();
     } else {
       setPreviewOpen(true);
@@ -997,7 +1017,7 @@ function ExtendFolder() {
                         handleClearGridSelection={handleClearFolderSelection}
                         handleDownloadFolderAsZip={handleDownloadAsZip}
                         handleDownloadFolder={handleDownloadFolderGetLink}
-                        handleDoubleClick={handleOpenFolder}
+                        handleDoubleClick={handleCheckOpenFolder}
                       />
                     )}
 
@@ -1049,7 +1069,7 @@ function ExtendFolder() {
                                   newName={item?.newFolder_name}
                                   cardProps={{
                                     onDoubleClick: () => {
-                                      handleOpenFolder(item);
+                                      handleCheckOpenFolder(item);
                                     },
                                   }}
                                 />

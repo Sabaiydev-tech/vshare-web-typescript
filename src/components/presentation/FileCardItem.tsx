@@ -6,8 +6,8 @@ import {
   Box,
   Checkbox,
   Tooltip,
-  useMediaQuery,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
@@ -235,7 +235,6 @@ const FileCardItem: React.FC<any> = ({
   };
 
   const handleItemClick = () => {
-    console.log(item);
     if (props?.isCheckbox) {
       handleSelect();
     }
