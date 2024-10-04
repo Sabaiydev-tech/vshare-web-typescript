@@ -188,8 +188,7 @@ function ListFolderData(props: Props) {
             variant="h4"
             sx={{ textAlign: "start", padding: "1rem .5rem" }}
           >
-            Application apply (
-            {cutFileName(props?.dataLinks?.[0]?.folder_name || "", 20)})
+            {cutFileName(props?.dataLinks?.[0]?.folder_name || "", 20)}
           </Typography>
         </Box>
 

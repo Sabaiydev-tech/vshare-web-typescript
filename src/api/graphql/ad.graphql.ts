@@ -74,6 +74,7 @@ export const QUERY_MANAGE_LINK_DETAIL = gql`
           path
           fileType
           url
+          downloadAt
           createdBy {
             _id
             newName
@@ -92,6 +93,7 @@ export const QUERY_MANAGE_LINK_DETAIL = gql`
           shortUrl
           longUrl
           url
+          downloadAt
           createdBy {
             _id
             newName
