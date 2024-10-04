@@ -319,6 +319,9 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
         const { ...restPasswords } = prevPasswords;
         return restPasswords;
       });
+      setPasswords({
+        d: "",
+      });
       setMainPassword("");
     } else {
       if (!passwords["special"]) {
