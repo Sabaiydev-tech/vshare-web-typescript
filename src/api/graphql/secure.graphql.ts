@@ -126,7 +126,6 @@ export const USER_LOGIN = gql`
         state
         zipCode
         country
-        ip
         device
         browser
         status
@@ -206,7 +205,6 @@ export const QUERY_SINGLE_USER = gql`
         state
         zipCode
         country
-        ip
         device
         browser
         status

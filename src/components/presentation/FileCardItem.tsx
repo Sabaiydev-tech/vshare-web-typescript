@@ -22,7 +22,7 @@ import useResizeImage from "hooks/useResizeImage";
 import { FileIcon, defaultStyles } from "react-file-icon";
 
 import * as MdIcon from "react-icons/md";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import * as selectorAction from "stores/features/selectorSlice";
 import { getFileType } from "utils/file.util";
 import { cutStringWithEllipsis } from "utils/string.util";
@@ -176,7 +176,7 @@ const FileCardItem: React.FC<any> = ({
   onOuterClick,
   styleSelectedCard,
   fileType,
-  // handleSelectData,
+  handleSelectData,
   ...props
 }) => {
   const resizeImage = useResizeImage({
@@ -205,38 +205,40 @@ const FileCardItem: React.FC<any> = ({
   const dataSelector = useSelector(
     selectorAction.checkboxFileAndFolderSelector,
   );
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
-  const handleSelect = () => {
-    const name = fileType === "folder" ? item?.folder_name : item?.filename;
-    const newFilename =
-      fileType === "folder" ? item?.newFolder_name : item?.newFilename;
-    const checkType = fileType === "folder" ? "folder" : "file";
+  // const handleSelect = () => {
+  //   const name = fileType === "folder" ? item?.folder_name : item?.filename;
+  //   const newFilename =
+  //     fileType === "folder" ? item?.newFolder_name : item?.newFilename;
+  //   const checkType = fileType === "folder" ? "folder" : "file";
 
-    const value = {
-      id: item?._id,
-      name,
-      newPath: item?.newPath || "",
-      newFilename,
-      checkType,
-      dataPassword: item?.filePassword || item?.access_password,
-      shortLink: item?.shortUrl,
-      createdBy: {
-        _id: item?.createdBy?._id,
-        newName: item?.createdBy?.newName,
-      },
-    };
+  //   const value = {
+  //     id: item?._id,
+  //     name,
+  //     newPath: item?.newPath || "",
+  //     newFilename,
+  //     checkType,
+  //     dataPassword: item?.filePassword || item?.access_password,
+  //     shortLink: item?.shortUrl,
+  //     createdBy: {
+  //       _id: item?.createdBy?._id,
+  //       newName: item?.createdBy?.newName,
+  //     },
+  //   };
 
-    dispatch(
-      selectorAction.setFileAndFolderData({
-        data: value,
-      }),
-    );
-  };
+  //   dispatch(
+  //     selectorAction.setFileAndFolderData({
+  //       data: value,
+  //     }),
+  //   );
+  // };
 
   const handleItemClick = () => {
     if (props?.isCheckbox) {
-      handleSelect();
+      const fileType = item?.isFile ? "file" : "folder";
+      handleSelectData?.(item._id, fileType);
+      // handleSelect();
     }
   };
 
@@ -323,7 +325,9 @@ const FileCardItem: React.FC<any> = ({
                   sx={{
                     display:
                       !!dataSelector?.selectionFileAndFolderData?.find(
-                        (el) => el?.id === props?.id,
+                        (el) =>
+                          el?.id === props?.id &&
+                          el.checkType === props?.selectType,
                       ) && true
                         ? "block"
                         : "none",

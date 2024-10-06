@@ -166,7 +166,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   window.location.protocol === "http:"
     ? (link = ENV_KEYS.VITE_APP_DOWNLOAD_URL_SERVER)
     : (link = ENV_KEYS.VITE_APP_DOWNLOAD_URL_SERVER);
-  // const LOAD_GET_IP_URL = ENV_KEYS.VITE_APP_LOAD_GETIP_URL;
+  const LOAD_GET_IP_URL = ENV_KEYS.VITE_APP_LOAD_GETIP_URL;
   const LOAD_UPLOAD_URL = ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL;
   const [totalProgress, setTotalProgress] = useState(0);
 
@@ -207,9 +207,11 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   }, [dataPasswordLink]);
 
   useEffect(() => {
-    const maxSize = convertBytetoMBandGB(dataMaxSize?.action);
-    setFileMaxSize(maxSize);
-  }, [dataMaxSize]);
+    if (dataMaxSize?.action) {
+      const maxSize = convertBytetoMBandGB(dataMaxSize?.action);
+      setFileMaxSize(maxSize);
+    }
+  }, [dataMaxSize?.action]);
 
   useEffect(() => {
     if (dataSubPasswordLink?.status === "on") {
@@ -422,7 +424,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
     let completedUploads = 0;
 
     try {
-      // const responseIp = await axios.get(LOAD_GET_IP_URL);
+      const responseIp = await axios.get(LOAD_GET_IP_URL);
       const alphabet =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
       const nanoid = customAlphabet(alphabet, 6);
@@ -467,8 +469,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
               filePassword: file?.password,
               fileType: file?.type,
               filename: String(`${file?.name}`),
-              // ip: String(responseIp?.data),
-              ip: String("12"),
+              ip: String(responseIp?.data),
               newFilename: String(newNameFile),
               passwordUrlAll: file?.URLpassword,
               size: String(file?.size),
@@ -508,7 +509,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                 const newTotalProgress = Math.round(
                   (completedUploads * 100 + percent) / totalFiles,
                 );
-                console.log(newTotalProgress)
+                console.log(newTotalProgress);
                 setTotalProgress(newTotalProgress);
 
                 const currentFileUploadedSize =
@@ -519,6 +520,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                   100
                 ).toFixed(0);
                 setOverallProgress(parseInt(currentUploadPercentage));
+                console.log({ overallProgress });
 
                 const currentTime = new Date().getTime();
                 const elapsedTime = (currentTime - startTime) / 1000;

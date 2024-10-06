@@ -1,4 +1,3 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Card,
@@ -12,6 +11,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { FileBoxDownload } from "app/pages/file-uploader/styles/fileUploader.style";
 import NormalButton from "components/NormalButton";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import ResponsivePagination from "react-responsive-pagination";
 import "styles/pagination.style.css";
@@ -19,20 +19,20 @@ import "styles/pagination.style.css";
 // Icons
 import InfoIcon from "@mui/icons-material/Info";
 
-import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import LockIcon from "@mui/icons-material/Lock";
+import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import { convertBytetoMBandGB } from "utils/storage.util";
 
+import { styled } from "@mui/system";
+import FolderEmptyIcon from "assets/images/folder-empty.svg?react";
+import FolderNotEmptyIcon from "assets/images/folder-not-empty.svg?react";
+import { FileIcon, FileIconProps } from "react-file-icon";
 import {
   BoxAdsAction,
   BoxAdsContainer,
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
 import { cutFileName, getFileType } from "utils/file.util";
-import FolderNotEmptyIcon from "assets/images/folder-not-empty.svg?react";
-import FolderEmptyIcon from "assets/images/folder-empty.svg?react";
-import { styled } from "@mui/system";
-import { FileIcon, FileIconProps } from "react-file-icon";
 
 const IconFolderContainer = styled("div")({
   width: "28px",
@@ -54,7 +54,7 @@ type Props = {
     setCurrentPage: (index) => void;
   };
 
-  handleSelection: (val: string) => void;
+  handleSelection: (val: string, fileType?: string) => void;
   setToggle?: () => void;
   setMultipleIds?: (value: any[]) => void;
   handleQRGeneration?: (e: any, file: any, longUrl: string) => void;
@@ -83,14 +83,16 @@ function ListDataItem(props: Props) {
         maxWidth: isMobile ? 40 : 70,
         flex: 1,
         renderCell: (params: { row: any }) => {
-          const { _id, status } = params?.row || {};
-          const isChecked = !!props?.selectionFileAndFolderData?.find(
-            (el) => el?.id === _id,
-          );
+          const { _id, status, isFile } = params?.row || {};
 
           if (status !== "active") {
             return <Fragment></Fragment>;
           }
+
+          const fileType = isFile ? "file" : "folder";
+          const isChecked = !!props?.selectionFileAndFolderData?.find(
+            (el) => el?.id === _id && el.checkType === fileType,
+          );
 
           return (
             <div>
@@ -101,7 +103,7 @@ function ListDataItem(props: Props) {
                 }}
                 checked={isChecked}
                 aria-label={"checkbox" + _id}
-                onClick={() => props?.handleSelection(_id)}
+                onClick={() => props?.handleSelection(_id, fileType)}
               />
             </div>
           );

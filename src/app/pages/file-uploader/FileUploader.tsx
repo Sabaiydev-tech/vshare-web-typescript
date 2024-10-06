@@ -53,10 +53,8 @@ function FileUploader() {
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [checkConfirmPassword, setConfirmPassword] = useState(false);
   const [getDataRes, setGetDataRes] = useState<any>(null);
-  const [folderDownload, setFolderDownload] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
-  const [filePasswords, setFilePasswords] = useState<any>("");
   const [openInputPasswod, setOpenInputPassword] = useState(false);
   const [linkType, setLinkType] = useState("normal");
 
@@ -72,7 +70,6 @@ function FileUploader() {
 
   const [getFilenames, setGetFilenames] = useState("");
   const [fileUrl, setFileUrl] = useState("");
-  const [checkModal, setCheckModal] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isVerifyQrCode, setIsVerifyQRCode] = useState(false);
   const [getActionButton, setGetActionButton] = useState<any>();
@@ -87,8 +84,6 @@ function FileUploader() {
   const [platform, setPlatform] = useState("");
   const [_description, setDescription] = useState("");
 
-  const [multipleType, setMultipleType] = useState("");
-  const [fileDataSelect, setFileDataSelect] = useState<any>(null);
   const [folderDataSelect, setFolderDataSelect] = useState<any>(null);
   const [dataMultipleFile, setDataMultipleFile] = useState<any[]>([]);
   const [dataMultipleFolder, setDataMultipleFolder] = useState<any[]>([]);
@@ -195,11 +190,34 @@ function FileUploader() {
     handleEscKey(event as unknown as KeyboardEvent);
 
   function handleClearSelector() {
+    setDataValue(null);
     dispatch(selectorAction.setRemoveFileAndFolderData());
   }
 
-  function handleMultipleListData(id: string) {
-    const item = dataFileConcat.find((data) => data._id === id);
+  function handleMultipleListData(id: string, fileType?: string) {
+    setEventClick("checkbox");
+
+    const item = dataFileConcat.find((data) => {
+      const checkType = data?.isFile ? "file" : "folder";
+      return data._id === id && checkType === fileType;
+    });
+
+    setDataValue(item);
+
+    if (
+      !dataSelector?.selectionFileAndFolderData.find((el) => el.id === item._id)
+    ) {
+      if (item.filePassword || item.access_password) {
+        setFileQRCodePassword(item.filePassword || item.access_password);
+        setIsVerifyQRCode(true);
+        return;
+      }
+    }
+
+    handleMultipleListDataDone(item);
+  }
+
+  function handleMultipleListDataDone(item: any) {
     const name = !item?.isFile ? item?.folder_name : item?.filename;
     const newFilename = !item.isFile ? item?.newFolder_name : item?.newFilename;
     const checkType = !item.isFile ? "folder" : "file";
@@ -217,7 +235,7 @@ function FileUploader() {
         newName: item?.createdBy?.newName,
       },
     };
-
+    setDataValue(null);
     dispatch(
       selectorAction.setFileAndFolderData({
         data: value,
@@ -599,7 +617,6 @@ function FileUploader() {
           const folderData = data?.queryfoldersGetLinks?.data || [];
           if (folderData?.[0]?.status === "active") {
             setGetDataRes(folderData || []);
-            setFolderDownload(folderData || []);
 
             document.title =
               folderData?.[0]?.folder_name || "vshare download folder";
@@ -815,7 +832,10 @@ function FileUploader() {
       });
       if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
         let httpData = "";
-        if (!randomAd.url.match(/^https?:\/\//i || /^http?:\/\//i)) {
+        if (
+          !randomAd.url.match(/^https?:\/\//i) &&
+          !randomAd.url.match(/^http?:\/\//i)
+        ) {
           httpData = "http://" + randomAd.url;
         } else {
           httpData = randomAd.url;
@@ -855,8 +875,7 @@ function FileUploader() {
   };
 
   const handleDownloadAsZip = async () => {
-    const groupData: any[] = dataLinkMemo.concat(dataFolderLinkMemo);
-    const multipleData = groupData
+    const multipleData = dataFileConcat
       .filter(
         (value) =>
           value.status === "active" &&
@@ -909,129 +928,14 @@ function FileUploader() {
   };
 
   const _confirmPasword = async (password) => {
-    if (!filePasswords) {
-      const modifyPassword = CryptoJS.MD5(password).toString();
-      const getPassword = getDataRes[0]?.passwordUrlAll;
-      if (modifyPassword === getPassword) {
-        setConfirmPassword(true);
-        successMessage("Successful!!", 3000);
-        handleClose();
-      } else {
-        errorMessage("Invalid password!!", 3000);
-      }
+    const modifyPassword = CryptoJS.MD5(password).toString();
+    const getPassword = getDataRes[0]?.passwordUrlAll;
+    if (modifyPassword === getPassword) {
+      setConfirmPassword(true);
+      successMessage("Successful!!", 3000);
+      handleClose();
     } else {
-      const modifyPassword = CryptoJS.MD5(password).toString();
-      const getPassword = filePasswords;
-
-      if (modifyPassword === getPassword) {
-        setConfirmPassword(true);
-        handleClose();
-        if (linkClient?._id) {
-          if (linkClient?.type === "multiple") {
-            if (multipleType === "folder") {
-              const path = folderDataSelect?.[0]?.newPath
-                ? folderDataSelect?.[0]?.newPath
-                : "";
-              const multipleData = [
-                {
-                  id: folderDataSelect?.[0]._id,
-                  newPath: path,
-                  newFilename: folderDataSelect?.[0].newFolder_name,
-                  createdBy: folderDataSelect?.[0]?.createdBy,
-                },
-              ];
-
-              await manageFile.handleDownloadFolder(
-                { multipleData },
-                {
-                  onSuccess: () => {},
-                  onFailed: (error) => {
-                    errorMessage(error);
-                  },
-                },
-              );
-            } else {
-              const multipleData = [
-                {
-                  id: fileDataSelect._id,
-                  newPath: fileDataSelect.newPath || "",
-                  newFilename: fileDataSelect.newFilename,
-                  createdBy: fileDataSelect.createdBy,
-                },
-              ];
-
-              await manageFile.handleDownloadFile(
-                { multipleData },
-                {
-                  onSuccess: () => {},
-                  onFailed: (error) => {
-                    errorMessage(error);
-                  },
-                },
-              );
-            }
-          } else {
-            if (linkClient?.type === "folder") {
-              const path = folderDownload[0]?.newPath
-                ? folderDownload[0]?.newPath
-                : "";
-              const multipleData = [
-                {
-                  id: folderDownload?.[0]._id,
-                  newPath: path,
-                  newFilename: folderDownload?.[0].newFolder_name,
-                  createdBy: folderDownload?.[0]?.createdBy,
-                },
-              ];
-
-              await manageFile.handleDownloadFolder(
-                { multipleData },
-                {
-                  onSuccess: () => {},
-                  onFailed: (error) => {
-                    errorMessage(error);
-                  },
-                },
-              );
-            } else {
-              const multipleData = [
-                {
-                  id: fileDataSelect._id,
-                  newPath: fileDataSelect.newPath || "",
-                  newFilename: fileDataSelect.newFilename,
-                  createdBy: fileDataSelect.createdBy,
-                },
-              ];
-
-              await manageFile.handleDownloadPublicFile(
-                { multipleData },
-                {
-                  onSuccess: () => {},
-                  onFailed: (error) => {
-                    errorMessage(error);
-                  },
-                },
-              );
-            }
-          }
-        } else {
-          const multipleData = [
-            {
-              id: fileDataSelect._id,
-            },
-          ];
-
-          await manageFile.handleDownloadPublicFile(
-            { multipleData },
-            {
-              onSuccess: () => {},
-              onFailed: (error) => {
-                errorMessage(error);
-              },
-            },
-          );
-        }
-      }
+      errorMessage("Invalid password!!", 3000);
     }
   };
 
@@ -1074,6 +978,10 @@ function FileUploader() {
 
     if (eventClick === "open-folder") {
       handleOpenFolder(folderDataSelect);
+    }
+
+    if (eventClick === "checkbox") {
+      handleMultipleListDataDone(dataValue);
     }
   }
 
@@ -1164,11 +1072,18 @@ function FileUploader() {
   }, [linkClient, getDataRes, dataMultipleFolder]);
 
   const dataFileConcat = useMemo(() => {
-    const result = dataLinkMemo?.concat(dataFolderLinkMemo || []);
-    document.title =
-      result?.[0]?.filename || result?.[0]?.folder_name || "data on vshare.net";
+    if (dataLinkMemo?.length || dataFolderLinkMemo?.length) {
+      const dataFiles = dataLinkMemo || [];
+      const result = dataFiles?.concat(dataFolderLinkMemo || []);
+      document.title =
+        result?.[0]?.filename ||
+        result?.[0]?.folder_name ||
+        "data on vshare.net";
 
-    return result || [];
+      return result || [];
+    }
+
+    return [];
   }, [dataLinkMemo, dataFolderLinkMemo]);
 
   return (
@@ -1296,6 +1211,7 @@ function FileUploader() {
                                 <FileCardItem
                                   id={item._id}
                                   item={item}
+                                  selectType="folder"
                                   isContainFiles={
                                     item?.total_size > 0 ? true : false
                                   }
@@ -1316,6 +1232,7 @@ function FileUploader() {
                                   fileType={getFileTypeName(item?.folder_type)}
                                   name={item?.folder_name}
                                   newName={item?.newFolder_name}
+                                  handleSelectData={handleMultipleListData}
                                   cardProps={{
                                     onDoubleClick: () => {
                                       if (item.status === "active") {
@@ -1350,6 +1267,7 @@ function FileUploader() {
                                   }
                                   user={item?.createdBy}
                                   path={item?.path}
+                                  selectType="file"
                                   isCheckbox={true}
                                   filePassword={item?.filePassword}
                                   fileType={getFileTypeName(item?.fileType)}
@@ -1357,6 +1275,7 @@ function FileUploader() {
                                     item?.createdBy?._id === "0" ? true : false
                                   }
                                   name={item?.filename}
+                                  handleSelectData={handleMultipleListData}
                                   newName={item?.newFilename}
                                   cardProps={{
                                     onDoubleClick: () => {
@@ -1376,7 +1295,6 @@ function FileUploader() {
                 {(dataFolderLinkMemo?.length > 0 ||
                   dataLinkMemo?.length > 0) && (
                   <BoxSocialShare
-                    isFile={false}
                     _description={_description}
                     countAction={adAlive}
                     isHide={hideDownload}
@@ -1407,9 +1325,8 @@ function FileUploader() {
         isMobile={isMobile}
         getFilenames={getFilenames}
         getNewFileName={getNewFileName}
-        password={password}
-        checkModal={checkModal}
         setPassword={setPassword}
+        password={password}
         handleClose={handleClose}
         _confirmPasword={_confirmPasword}
       />
@@ -1421,7 +1338,6 @@ function FileUploader() {
         getFilenames={getFilenames}
         getNewFileName={getNewFileName}
         password={password}
-        checkModal={checkModal}
         setPassword={setPassword}
         handleClose={handleInputPasswordClose}
         _confirmPasword={handleInputPassword}
@@ -1436,7 +1352,7 @@ function FileUploader() {
       <DialogConfirmQRCode
         isOpen={isVerifyQrCode}
         dataValue={dataValue}
-        filename={dataValue?.filename}
+        filename={dataValue?.filename || dataValue?.folder_name}
         newFilename={dataValue?.newFilename}
         dataPassword={fileQRCodePassword}
         onConfirm={handleSuccessQRCode}

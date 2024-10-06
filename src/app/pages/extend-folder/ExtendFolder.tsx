@@ -557,7 +557,10 @@ function ExtendFolder() {
       });
       if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
         let httpData = "";
-        if (!randomAd.url.match(/^https?:\/\//i || /^http?:\/\//i)) {
+        if (
+          !randomAd.url.match(/^https?:\/\//i) &&
+          !randomAd.url.match(/^http?:\/\//i)
+        ) {
           httpData = "http://" + randomAd.url;
         } else {
           httpData = randomAd.url;
@@ -1054,6 +1057,7 @@ function ExtendFolder() {
                             return (
                               <Fragment key={index}>
                                 <FileCardItem
+                                  selectType="folder"
                                   id={item._id}
                                   item={item}
                                   isContainFiles={
@@ -1096,6 +1100,7 @@ function ExtendFolder() {
                                 <FileCardItem
                                   id={item._id}
                                   item={item}
+                                  selectType="file"
                                   imagePath={
                                     item?.createdBy?.newName +
                                     "-" +
