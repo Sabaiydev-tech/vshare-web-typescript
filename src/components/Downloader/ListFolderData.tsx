@@ -216,11 +216,9 @@ function ListFolderData(props: Props) {
                 color: "rgba(0, 0, 0, 0.3)",
               },
             }}
-            selectionModel={props?.multipleIds}
             onCellDoubleClick={(value) => {
               props.handleDoubleClick?.(value.row || {});
             }}
-            checkboxSelection={true}
             autoHeight
             getRowId={(row) => row?._id}
             rows={props?.dataLinks || []}
@@ -229,9 +227,6 @@ function ListFolderData(props: Props) {
             disableColumnFilter
             disableColumnMenu
             hideFooter
-            onSelectionModelChange={(ids) => {
-              props?.setMultipleIds?.(ids);
-            }}
           />
 
           {props.total! > 10 && (

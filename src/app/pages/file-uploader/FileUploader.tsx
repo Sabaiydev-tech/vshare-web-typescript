@@ -26,7 +26,7 @@ import BaseDeeplinkDownload from "components/Downloader/BaseDeeplinkDownload";
 import BaseGridDownload from "components/Downloader/BaseGridDownload";
 import ListDataItem from "components/Downloader/ListDataItem";
 import NotFound from "components/NotFound";
-import Advertisement from "components/presentation/Advertisement";
+import GoogleAdsense from "components/presentation/GoogleAdsense";
 import BoxSocialShare from "components/presentation/BoxSocialShare";
 import DialogConfirmQRCode from "components/presentation/DialogConfirmQRCode";
 import FileCardContainer from "components/presentation/FileCardContainer";
@@ -955,6 +955,7 @@ function FileUploader() {
     const baseUrl = {
       _id: folder._id,
       type: "folder",
+      manageLinkId: linkClient?.type === "multiple" ? linkClient?._id : "",
     };
 
     const encodeUrl = encryptDataLink(baseUrl);
@@ -1147,7 +1148,7 @@ function FileUploader() {
             </Box>
           )}
 
-          <Advertisement />
+          <GoogleAdsense />
 
           {((dataFolderLinkMemo && dataFolderLinkMemo.length > 0) ||
             (dataLinkMemo && dataLinkMemo.length > 0) ||

@@ -509,7 +509,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                 const newTotalProgress = Math.round(
                   (completedUploads * 100 + percent) / totalFiles,
                 );
-                console.log(newTotalProgress);
+
                 setTotalProgress(newTotalProgress);
 
                 const currentFileUploadedSize =
@@ -520,7 +520,6 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                   100
                 ).toFixed(0);
                 setOverallProgress(parseInt(currentUploadPercentage));
-                console.log({ overallProgress });
 
                 const currentTime = new Date().getTime();
                 const elapsedTime = (currentTime - startTime) / 1000;

@@ -267,7 +267,7 @@ const FileCardItem: React.FC<any> = ({
       <Item
         ref={itemRef}
         className="card-item"
-        onClick={item.status === "active" ? handleItemClick : () => {}}
+        // onClick={item.status === "active" ? handleItemClick : () => {}}
         {...{
           ...(styleSelectedCard && {
             isstyledselectedcard: styleSelectedCard,
@@ -322,6 +322,9 @@ const FileCardItem: React.FC<any> = ({
             {props?.isCheckbox && (
               <SelectionContainer>
                 <CustomCheckbox
+                  onClick={
+                    item.status === "active" ? handleItemClick : () => {}
+                  }
                   sx={{
                     display:
                       !!dataSelector?.selectionFileAndFolderData?.find(

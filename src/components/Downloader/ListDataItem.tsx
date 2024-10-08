@@ -129,7 +129,10 @@ function ListDataItem(props: Props) {
             : dataFile?.access_password;
           return (
             <Fragment>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {password && (
+                  <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
+                )}
                 {!dataFile?.isFile && (
                   <Fragment>
                     <IconFolderContainer>
@@ -179,9 +182,6 @@ function ListDataItem(props: Props) {
                     </Typography>
                   )}
                 </Box>
-                {password && (
-                  <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
-                )}
               </Box>
             </Fragment>
           );

@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.vshare.app.client",
+      "sha256_cert_fingerprints": [
+        "5B:B9:25:A1:3E:E0:C5:8D:EF:56:AA:04:54:40:DB:75:66:7E:7D:36:CC:5D:92:9F:15:C7:09:D9:B6:FC:6F:8E"
+      ]
+    }
+  }
+]

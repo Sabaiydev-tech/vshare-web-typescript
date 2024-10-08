@@ -92,11 +92,6 @@ function App() {
             content={SEOData?.[0]?.description}
           />
           <meta name="twitter:url" content={canonicalUrl} />
-          <script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7931814511159648"
-            crossOrigin="anonymous"
-          />
         </Helmet>
         <MuiThemeProvider theme={createTheme(theme)}>
           {content}
