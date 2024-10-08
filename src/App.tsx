@@ -78,6 +78,8 @@ function App() {
             <meta name="description" content={SEOData?.[0]?.description} />
           )}
           <meta name="keywords" content={SEOData?.[0]?.keywords} />
+          {/* <meta name="author" content={"vSHARE"} />
+          <meta name="publisher" content={"vSHARE TECHNOLOGY"} /> */}
           <link rel="canonical" href={canonicalUrl} />
 
           <meta property="og:title" content={SEOData?.[0]?.title} />
