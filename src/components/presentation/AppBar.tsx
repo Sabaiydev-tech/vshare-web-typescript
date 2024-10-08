@@ -143,7 +143,7 @@ function AppBar() {
         >
           <span>Feedback</span>
         </ListItemButton>
-        {token == "" ? (
+        {!token ? (
           <>
             <ListItemButton
               component={NavLink}
@@ -271,7 +271,7 @@ function AppBar() {
                 Feedback
               </Button>
             </Tooltip>
-            {token == "" ? (
+            {!token ? (
               <>
                 <Tooltip title="Sign in">
                   <Button
