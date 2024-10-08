@@ -45,6 +45,7 @@ import { getFileTypeName, removeFileNameOutOfPath } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "./styles/fileUploader.style";
 import "./styles/fileUploader.style.css";
+import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
 
 const DATA_LIST_SIZE = 10;
 
@@ -1307,8 +1308,10 @@ function FileUploader() {
           ) : (
             <NotFound />
           )}
+
           {/* <FeedCard /> */}
         </Box>
+        <GoogleAdsenseFooter />
       </MUI.ContainerHome>
 
       <BaseDeeplinkDownload

@@ -2,6 +2,7 @@ import {
   Box,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   IconButton,
   Typography,
@@ -9,7 +10,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { FileBoxDownload } from "app/pages/file-uploader/styles/fileUploader.style";
 import NormalButton from "components/NormalButton";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import ResponsivePagination from "react-responsive-pagination";
 import "styles/pagination.style.css";
@@ -45,6 +46,7 @@ type Props = {
   toggle?: string;
   total?: number;
   linkExpired?: string;
+  selectionFileAndFolderData?: any[];
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -57,6 +59,7 @@ type Props = {
   handleDownloadFileGetLink?: () => void;
   handleClearGridSelection?: () => void;
   handleDownloadAsZip?: () => void;
+  handleSelection?: (str: string) => void;
 
   handleDownloadFolderAsZip?: () => void;
   handleDownloadFolder?: () => void;
@@ -66,98 +69,139 @@ type Props = {
 function ListFolderData(props: Props) {
   const [expireDate, setExpireDate] = useState("");
 
-  const columns: any = [
-    {
-      field: "filename",
-      headerName: "Name",
-      flex: 1,
-      headerAlign: "left",
-      renderCell: (params) => {
-        const dataFile = params?.row;
-        const filename = dataFile?.folder_name;
+  const columns = useMemo(() => {
+    const data: any = [
+      {
+        field: "checkboxAction",
+        headerName: "",
+        editable: false,
+        sortable: false,
+        flex: 1,
+        renderCell: (params: { row: any }) => {
+          const { _id, status } = params?.row || {};
 
-        const password = dataFile?.access_password;
-        return (
-          <Fragment>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              {!props.isFile && (
-                <Fragment>
-                  <IconFolderContainer>
-                    {dataFile?.total_size && dataFile.total_size > 0 ? (
-                      <FolderNotEmptyIcon />
-                    ) : (
-                      <FolderEmptyIcon />
-                    )}
-                  </IconFolderContainer>
-                </Fragment>
-              )}
-              <Typography title={dataFile?.filename} component={"span"}>
-                {cutFileName(filename || "", 20)}
-              </Typography>
-              {password && (
-                <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
-              )}
-            </Box>
-          </Fragment>
-        );
-      },
-    },
-    {
-      field: "size",
-      headerName: "Size",
-      width: 70,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        const size = params?.row?.total_size;
-        return <span>{convertBytetoMBandGB(size || 0)}</span>;
-      },
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      headerAlign: "center",
-      width: 70,
-      align: "center",
-      renderCell: (params) => {
-        const status = params?.row?.status || "Inactive";
-        return (
-          <Chip
-            sx={{
-              backgroundColor:
-                status?.toLowerCase() === "active" ? "#DCF6E8" : "#dcf6e8",
-              color: status?.toLowerCase() === "active" ? "#4BD087" : "#29c770",
-              fontWeight: "bold",
-            }}
-            label={
-              status?.toLowerCase() === "active" ? "" + "Active" : "Inactive"
-            }
-            size="small"
-          />
-        );
-      },
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        const dataFile = params.row;
+          if (status !== "active") {
+            return <Fragment></Fragment>;
+          }
 
-        return (
-          <IconButton
-            onClick={(e: any) => {
-              props.handleQRGeneration?.(e, dataFile, dataFile?.longUrl || "");
-            }}
-          >
-            <QrCodeIcon />
-          </IconButton>
-        );
+          const isChecked = !!props?.selectionFileAndFolderData?.find(
+            (el) => el?.id === _id,
+          );
+
+          return (
+            <div>
+              <Checkbox
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                checked={isChecked}
+                aria-label={"checkbox" + _id}
+                onClick={() => props?.handleSelection?.(_id)}
+              />
+            </div>
+          );
+        },
       },
-    },
-  ];
+      {
+        field: "filename",
+        headerName: "Name",
+        flex: 1,
+        headerAlign: "left",
+        renderCell: (params) => {
+          const dataFile = params?.row;
+          const filename = dataFile?.folder_name;
+
+          const password = dataFile?.access_password;
+          return (
+            <Fragment>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                {!props.isFile && (
+                  <Fragment>
+                    <IconFolderContainer>
+                      {dataFile?.total_size && dataFile.total_size > 0 ? (
+                        <FolderNotEmptyIcon />
+                      ) : (
+                        <FolderEmptyIcon />
+                      )}
+                    </IconFolderContainer>
+                  </Fragment>
+                )}
+                <Typography title={dataFile?.filename} component={"span"}>
+                  {cutFileName(filename || "", 20)}
+                </Typography>
+                {password && (
+                  <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
+                )}
+              </Box>
+            </Fragment>
+          );
+        },
+      },
+      {
+        field: "size",
+        headerName: "Size",
+        width: 70,
+        headerAlign: "center",
+        align: "center",
+        renderCell: (params) => {
+          const size = params?.row?.total_size;
+          return <span>{convertBytetoMBandGB(size || 0)}</span>;
+        },
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        headerAlign: "center",
+        width: 70,
+        align: "center",
+        renderCell: (params) => {
+          const status = params?.row?.status || "Inactive";
+          return (
+            <Chip
+              sx={{
+                backgroundColor:
+                  status?.toLowerCase() === "active" ? "#DCF6E8" : "#dcf6e8",
+                color:
+                  status?.toLowerCase() === "active" ? "#4BD087" : "#29c770",
+                fontWeight: "bold",
+              }}
+              label={
+                status?.toLowerCase() === "active" ? "" + "Active" : "Inactive"
+              }
+              size="small"
+            />
+          );
+        },
+      },
+      {
+        field: "action",
+        headerName: "Action",
+        flex: 1,
+        headerAlign: "center",
+        align: "center",
+        renderCell: (params) => {
+          const dataFile = params.row;
+
+          return (
+            <IconButton
+              onClick={(e: any) => {
+                props.handleQRGeneration?.(
+                  e,
+                  dataFile,
+                  dataFile?.longUrl || "",
+                );
+              }}
+            >
+              <QrCodeIcon />
+            </IconButton>
+          );
+        },
+      },
+    ];
+
+    return data || [];
+  }, [props.selectionFileAndFolderData]);
 
   useEffect(() => {
     if (props?.linkExpired || props?.dataLinks?.[0]?.expired) {
@@ -302,11 +346,12 @@ function ListFolderData(props: Props) {
                   )}
                   <NormalButton
                     onClick={() => {
-                      if (props.isFile) {
-                        props.handleDownloadFileGetLink?.();
-                      } else {
-                        props.handleDownloadFolder?.();
-                      }
+                      props.handleDownloadFileGetLink?.();
+                      // if (props.isFile) {
+                      //   //
+                      // } else {
+                      //   props.handleDownloadFolder?.();
+                      // }
                     }}
                     disabled={props?.multipleIds?.length > 0 ? false : true}
                     sx={{
