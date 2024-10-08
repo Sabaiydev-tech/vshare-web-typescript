@@ -45,7 +45,7 @@ function ExtendFolder() {
   const [getDataRes, setGetDataRes] = useState<any>(null);
   const [folderDownload, setFolderDownload] = useState<any>(null);
   const [open, setOpen] = useState(false);
-  const [password, setPassword] = useState(""); 
+  const [password, setPassword] = useState("");
   const [getNewFileName, setGetNewFileName] = useState("");
   const [fileQRCodePassword, setFileQRCodePassword] = useState("");
   const [toggle, setToggle] = useState(
@@ -895,7 +895,7 @@ function ExtendFolder() {
                         handleQRGeneration={handleQRGeneration}
                         handleClearGridSelection={handleClearFolderSelection}
                         handleDownloadFolderAsZip={handleDownloadAsZip}
-                        handleSelection={handleMultipleData}
+                        // handleSelection={handleMultipleData}
                         handleDownloadFolder={handleDownloadFolderGetLink}
                         handleDoubleClick={handleCheckOpenFolder}
                         handleDownloadFileGetLink={
