@@ -30,7 +30,6 @@ export const QUERY_FILE = gql`
         size
         status
         isPublic
-        checkFile
         path
         newPath
         urlAll
@@ -75,11 +74,9 @@ export const QUERY_FILE_PUBLIC = gql`
         newPath
         status
         isPublic
-        checkFile
         path
         urlAll
         url
-        ip
         expired
         createdBy {
           _id
@@ -107,7 +104,6 @@ export const QUERY_FILE_PUBLICV2 = gql`
         newPath
         status
         isPublic
-        checkFile
         path
         urlAll
         url
@@ -136,7 +132,6 @@ export const QUERY_FILE_GET_LINK = gql`
         filename
         filePassword
         newFilename
-        checkFile
         expired
         fileType
         size

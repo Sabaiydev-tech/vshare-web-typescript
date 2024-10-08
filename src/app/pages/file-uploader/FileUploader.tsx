@@ -26,7 +26,7 @@ import BaseDeeplinkDownload from "components/Downloader/BaseDeeplinkDownload";
 import BaseGridDownload from "components/Downloader/BaseGridDownload";
 import ListDataItem from "components/Downloader/ListDataItem";
 import NotFound from "components/NotFound";
-import Advertisement from "components/presentation/Advertisement";
+import GoogleAdsense from "components/presentation/GoogleAdsense";
 import BoxSocialShare from "components/presentation/BoxSocialShare";
 import DialogConfirmQRCode from "components/presentation/DialogConfirmQRCode";
 import FileCardContainer from "components/presentation/FileCardContainer";
@@ -53,16 +53,15 @@ function FileUploader() {
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [checkConfirmPassword, setConfirmPassword] = useState(false);
   const [getDataRes, setGetDataRes] = useState<any>(null);
-  const [folderDownload, setFolderDownload] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
-  const [filePasswords, setFilePasswords] = useState<any>("");
   const [openInputPasswod, setOpenInputPassword] = useState(false);
   const [linkType, setLinkType] = useState("normal");
 
   const [linkExpirdAt, setLinkExpirdAt] = useState("");
   const [getNewFileName, setGetNewFileName] = useState("");
   const [fileQRCodePassword, setFileQRCodePassword] = useState("");
+  const [eventClick, setEventClick] = useState("");
 
   const toggleJson = localStorage.getItem("toggle")
     ? localStorage.getItem("toggle")
@@ -71,7 +70,6 @@ function FileUploader() {
 
   const [getFilenames, setGetFilenames] = useState("");
   const [fileUrl, setFileUrl] = useState("");
-  const [checkModal, setCheckModal] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isVerifyQrCode, setIsVerifyQRCode] = useState(false);
   const [getActionButton, setGetActionButton] = useState<any>();
@@ -86,8 +84,6 @@ function FileUploader() {
   const [platform, setPlatform] = useState("");
   const [_description, setDescription] = useState("");
 
-  const [multipleType, setMultipleType] = useState("");
-  const [fileDataSelect, setFileDataSelect] = useState<any>(null);
   const [folderDataSelect, setFolderDataSelect] = useState<any>(null);
   const [dataMultipleFile, setDataMultipleFile] = useState<any[]>([]);
   const [dataMultipleFolder, setDataMultipleFolder] = useState<any[]>([]);
@@ -168,6 +164,7 @@ function FileUploader() {
   try {
     if (urlClient) {
       const decode = handleDecryptFile(urlClient);
+
       linkClient = {
         _id: decode?._id,
         type: decode?.type,
@@ -179,6 +176,7 @@ function FileUploader() {
 
   function handleDecryptFile(val) {
     const decryptedData = decryptDataLink(val);
+
     return decryptedData;
   }
 
@@ -192,11 +190,34 @@ function FileUploader() {
     handleEscKey(event as unknown as KeyboardEvent);
 
   function handleClearSelector() {
+    setDataValue(null);
     dispatch(selectorAction.setRemoveFileAndFolderData());
   }
 
-  function handleMultipleListData(id: string) {
-    const item = dataFileConcat.find((data) => data._id === id);
+  function handleMultipleListData(id: string, fileType?: string) {
+    setEventClick("checkbox");
+
+    const item = dataFileConcat.find((data) => {
+      const checkType = data?.isFile ? "file" : "folder";
+      return data._id === id && checkType === fileType;
+    });
+
+    setDataValue(item);
+
+    if (
+      !dataSelector?.selectionFileAndFolderData.find((el) => el.id === item._id)
+    ) {
+      if (item.filePassword || item.access_password) {
+        setFileQRCodePassword(item.filePassword || item.access_password);
+        setIsVerifyQRCode(true);
+        return;
+      }
+    }
+
+    handleMultipleListDataDone(item);
+  }
+
+  function handleMultipleListDataDone(item: any) {
     const name = !item?.isFile ? item?.folder_name : item?.filename;
     const newFilename = !item.isFile ? item?.newFolder_name : item?.newFilename;
     const checkType = !item.isFile ? "folder" : "file";
@@ -214,7 +235,7 @@ function FileUploader() {
         newName: item?.createdBy?.newName,
       },
     };
-
+    setDataValue(null);
     dispatch(
       selectorAction.setFileAndFolderData({
         data: value,
@@ -550,7 +571,8 @@ function FileUploader() {
         setIsLoading(false);
         if (
           response &&
-          // response?.getManageLinks?.data && ////ຖ້າ ເຫັນເປັນສໍາເລັດ ແຕ່ ດາຕ່າ ອາເລເປັນ ຫວ່າງເປົ່າແມ່ນໃຫ້ອ້າຍຍິງໄປເອົາດາຕາຂອງ getManagelinkdetails ເລີຍເພາະໂຕນີ້ຈະເປັນ link original ຂອງໄຟ ແລ້ວຈຶ່ງໄປເອົາດາຕາ ຢູ່ getManageLinks ເປັນຫວ່າງເປົ່າ
+          // response?.getManageLinks?.data && ////ຖ້າ ເຫັນເປັນສໍາເລັດ ແຕ່ ດາຕ່າ ອາເລເປັນ ຫວ່າງເປົ່າແມ່ນໃຫ້ອ້າຍຍິງໄປເອົາດາຕາຂອງ getManagelinkdetails ເລີຍເພາະໂຕນີ້ຈະເປັນ link original ຂອງໄຟ
+          //  ແລ້ວຈຶ່ງໄປເອົາດາຕາ ຢູ່ getManageLinks ເປັນຫວ່າງເປົ່າ
           response?.getManageLinks?.code === "200"
         ) {
           const result = response?.getManageLinks?.data[0];
@@ -595,7 +617,6 @@ function FileUploader() {
           const folderData = data?.queryfoldersGetLinks?.data || [];
           if (folderData?.[0]?.status === "active") {
             setGetDataRes(folderData || []);
-            setFolderDownload(folderData || []);
 
             document.title =
               folderData?.[0]?.folder_name || "vshare download folder";
@@ -634,16 +655,6 @@ function FileUploader() {
       }, 500);
 
       if (dataFileLink?.queryFileGetLinks?.data) {
-        document.title =
-          dataFileLink?.queryFileGetLinks?.data?.[0]?.filename ||
-          "Vshare download file";
-
-        if (dataFileLink?.queryFileGetLinks?.data?.[0]) {
-          setDescription(
-            dataFileLink?.queryFileGetLinks?.data?.[0]?.filename +
-              " on vshare.net",
-          );
-        }
         setGetDataRes(dataFileLink?.queryFileGetLinks?.data || []);
       }
     } catch (error: any) {
@@ -703,100 +714,6 @@ function FileUploader() {
     //   getManageLinkPassword(linkClient?._id);
     // }
   }, [linkValue, linkType]);
-
-  // useEffect(() => {
-  //   const getMultipleFileAndFolder = async () => {
-  //     const os = navigator.userAgent;
-
-  //     try {
-  //       if (linkClient?._id)
-  //         if (linkClient?.type === "multiple") {
-  //           setIsLoading(true);
-
-  //           await getManageLinkDetail({
-  //             variables: {
-  //               where: { _id: linkClient?._id },
-  //               limit: toggle === "list" ? DATA_LIST_SIZE : viewMore,
-  //               skip:
-  //                 toggle === "list" ? DATA_LIST_SIZE * (currentPage - 1) : null,
-  //             },
-  //             onCompleted: async (values) => {
-  //               const totalData = values?.getManageLinkDetails?.total || 0;
-  //               const mainData = values?.getManageLinkDetails?.data || [];
-  //               setTotal(totalData);
-
-  //               if (mainData?.length > 0) {
-  //                 if (os.match(/iPhone|iPad|iPod/i)) {
-  //                   setPlatform("ios");
-  //                 }
-
-  //                 if (os.match(/Android/i)) {
-  //                   setPlatform("android");
-  //                 }
-
-  //                 const fileData = mainData?.filter(
-  //                   (file) => file.type === "file",
-  //                 );
-
-  //                 const folderData = mainData?.filter(
-  //                   (folder) => folder.type === "folder",
-  //                 );
-
-  //                 if (folderData?.length > 0) {
-  //                   const folderItems = folderData?.map((folder, index) => {
-  //                     return {
-  //                       ...folder?.folderData,
-  //                       _id: folder?.folderId,
-  //                       index,
-  //                     };
-  //                   });
-
-  //                   if (folderItems.length > 0) {
-  //                     const title = folderItems?.[0]?.folder_name || "";
-  //                     document.title = title;
-  //                     setDescription(`${title} on vshare.net`);
-  //                   }
-  //                   setDataMultipleFolder(folderItems);
-  //                 }
-
-  //                 if (fileData?.length > 0) {
-  //                   const fileItems = fileData?.map((file, index) => {
-  //                     return {
-  //                       ...file?.fileData,
-  //                       _id: file?.fileId,
-  //                       index,
-  //                     };
-  //                   });
-
-  //                   if (fileItems.length > 0) {
-  //                     const title = fileItems?.[0]?.filename || "";
-  //                     document.title = title;
-  //                     setDescription(`${title} on vshare.net`);
-  //                   }
-  //                   setDataMultipleFile(fileItems);
-  //                 }
-  //               }
-
-  //               setIsLoading(false);
-  //             },
-  //           });
-  //         }
-  //     } catch (error) {
-  //       document.title = "No documents found";
-  //       setDescription("No documents found on vshare.net");
-  //       setIsLoading(false);
-  //     }
-  //   };
-  //   getMultipleFileAndFolder();
-  // }, [currentPage, viewMore]);
-
-  useEffect(() => {
-    if (dataMultipleFile.length > 0 && dataMultipleFolder.length > 0) {
-      const title = dataMultipleFolder?.[0]?.folder_name || "";
-      document.title = title;
-      setDescription(`${title} on vshare.net`);
-    }
-  }, [dataMultipleFile, dataMultipleFolder]);
 
   useEffect(() => {
     function handleDetectPlatform() {
@@ -915,7 +832,10 @@ function FileUploader() {
       });
       if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
         let httpData = "";
-        if (!randomAd.url.match(/^https?:\/\//i || /^http?:\/\//i)) {
+        if (
+          !randomAd.url.match(/^https?:\/\//i) &&
+          !randomAd.url.match(/^http?:\/\//i)
+        ) {
           httpData = "http://" + randomAd.url;
         } else {
           httpData = randomAd.url;
@@ -955,22 +875,27 @@ function FileUploader() {
   };
 
   const handleDownloadAsZip = async () => {
-    const groupData: any[] = dataLinkMemo.concat(dataFolderLinkMemo);
+    const multipleData = dataFileConcat
+      .filter(
+        (value) =>
+          value.status === "active" &&
+          !value.filePassword &&
+          !value.access_password,
+      )
+      .map((item: any) => {
+        const newPath = item?.newPath || "";
+        const newFilename = item?.newFilename || item?.newFolder_name;
 
-    const multipleData = groupData.map((item: any) => {
-      const newPath = item?.newPath || "";
-      const newFilename = item?.newFilename || item?.newFolder_name;
-
-      return {
-        newPath,
-        id: item._id,
-        newFilename: newFilename || "",
-        name: item?.filename || item?.folder_name,
-        checkType: item?.isFile ? "file" : "folder",
-        createdBy: item?.createdBy,
-        isPublic: linkClient?._id ? false : true,
-      };
-    });
+        return {
+          newPath,
+          id: item._id,
+          newFilename: newFilename || "",
+          name: item?.filename || item?.folder_name,
+          checkType: item?.isFile ? "file" : "folder",
+          createdBy: item?.createdBy,
+          isPublic: linkClient?._id ? false : true,
+        };
+      });
 
     setTotalClickCount((prevCount) => prevCount + 1);
 
@@ -1003,130 +928,26 @@ function FileUploader() {
   };
 
   const _confirmPasword = async (password) => {
-    if (!filePasswords) {
-      const modifyPassword = CryptoJS.MD5(password).toString();
-      const getPassword = getDataRes[0]?.passwordUrlAll;
-      if (modifyPassword === getPassword) {
-        setConfirmPassword(true);
-        successMessage("Successful!!", 3000);
-        handleClose();
-      } else {
-        errorMessage("Invalid password!!", 3000);
-      }
+    const modifyPassword = CryptoJS.MD5(password).toString();
+    const getPassword = getDataRes[0]?.passwordUrlAll;
+    if (modifyPassword === getPassword) {
+      setConfirmPassword(true);
+      successMessage("Successful!!", 3000);
+      handleClose();
     } else {
-      const modifyPassword = CryptoJS.MD5(password).toString();
-      const getPassword = filePasswords;
+      errorMessage("Invalid password!!", 3000);
+    }
+  };
 
-      if (modifyPassword === getPassword) {
-        setConfirmPassword(true);
+  const handleCheckOpenFolder = (folder) => {
+    setEventClick("open-folder");
+    setFolderDataSelect(folder);
 
-        handleClose();
-        if (linkClient?._id) {
-          if (linkClient?.type === "multiple") {
-            if (multipleType === "folder") {
-              const path = folderDataSelect?.[0]?.newPath
-                ? folderDataSelect?.[0]?.newPath
-                : "";
-              const multipleData = [
-                {
-                  id: folderDataSelect?.[0]._id,
-                  newPath: path,
-                  newFilename: folderDataSelect?.[0].newFolder_name,
-                  createdBy: folderDataSelect?.[0]?.createdBy,
-                },
-              ];
-
-              await manageFile.handleDownloadFolder(
-                { multipleData },
-                {
-                  onSuccess: () => {},
-                  onFailed: (error) => {
-                    errorMessage(error);
-                  },
-                },
-              );
-            } else {
-              const multipleData = [
-                {
-                  id: fileDataSelect._id,
-                  newPath: fileDataSelect.newPath || "",
-                  newFilename: fileDataSelect.newFilename,
-                  createdBy: fileDataSelect.createdBy,
-                },
-              ];
-
-              await manageFile.handleDownloadFile(
-                { multipleData },
-                {
-                  onSuccess: () => {},
-                  onFailed: (error) => {
-                    errorMessage(error);
-                  },
-                },
-              );
-            }
-          } else {
-            if (linkClient?.type === "folder") {
-              const path = folderDownload[0]?.newPath
-                ? folderDownload[0]?.newPath
-                : "";
-              const multipleData = [
-                {
-                  id: folderDownload?.[0]._id,
-                  newPath: path,
-                  newFilename: folderDownload?.[0].newFolder_name,
-                  createdBy: folderDownload?.[0]?.createdBy,
-                },
-              ];
-
-              await manageFile.handleDownloadFolder(
-                { multipleData },
-                {
-                  onSuccess: () => {},
-                  onFailed: (error) => {
-                    errorMessage(error);
-                  },
-                },
-              );
-            } else {
-              const multipleData = [
-                {
-                  id: fileDataSelect._id,
-                  newPath: fileDataSelect.newPath || "",
-                  newFilename: fileDataSelect.newFilename,
-                  createdBy: fileDataSelect.createdBy,
-                },
-              ];
-
-              await manageFile.handleDownloadPublicFile(
-                { multipleData },
-                {
-                  onSuccess: () => {},
-                  onFailed: (error) => {
-                    errorMessage(error);
-                  },
-                },
-              );
-            }
-          }
-        } else {
-          const multipleData = [
-            {
-              id: fileDataSelect._id,
-            },
-          ];
-
-          await manageFile.handleDownloadPublicFile(
-            { multipleData },
-            {
-              onSuccess: () => {},
-              onFailed: (error) => {
-                errorMessage(error);
-              },
-            },
-          );
-        }
-      }
+    if (folder?.access_password) {
+      setFileQRCodePassword(folder.access_password);
+      handleOpenVerifyQRCode();
+    } else {
+      handleOpenFolder(folder);
     }
   };
 
@@ -1134,6 +955,7 @@ function FileUploader() {
     const baseUrl = {
       _id: folder._id,
       type: "folder",
+      manageLinkId: linkClient?.type === "multiple" ? linkClient?._id : "",
     };
 
     const encodeUrl = encryptDataLink(baseUrl);
@@ -1149,9 +971,19 @@ function FileUploader() {
   }
 
   function handleSuccessQRCode() {
-    setTimeout(() => {
-      setPreviewOpen(true);
-    }, 200);
+    if (eventClick === "qrcode") {
+      setTimeout(() => {
+        setPreviewOpen(true);
+      }, 200);
+    }
+
+    if (eventClick === "open-folder") {
+      handleOpenFolder(folderDataSelect);
+    }
+
+    if (eventClick === "checkbox") {
+      handleMultipleListDataDone(dataValue);
+    }
   }
 
   function handleCloseVerifyQRCode() {
@@ -1160,11 +992,12 @@ function FileUploader() {
   }
 
   const handleQRGeneration = (e: HTMLFormElement, file: any, url: string) => {
+    setEventClick("qrcode");
     e.preventDefault();
     setDataValue(file);
     setFileUrl(url);
-    if (file?.filePassword) {
-      setFileQRCodePassword(file.filePassword);
+    if (file?.filePassword || file?.access_password) {
+      setFileQRCodePassword(file.filePassword || file?.access_password);
       handleOpenVerifyQRCode();
     } else {
       setPreviewOpen(true);
@@ -1174,30 +1007,34 @@ function FileUploader() {
   const dataLinkMemo = useMemo<any[]>(() => {
     if (linkClient?._id) {
       if (linkClient?.type === "multiple") {
-        const fileData = dataMultipleFile?.map((file, index) => ({
-          ...file,
-          isFile: true,
-          index,
-        }));
+        const fileData = dataMultipleFile
+          // ?.filter((el) => el.status === "active")
+          ?.map((file, index) => ({
+            ...file,
+            isFile: true,
+            index,
+          }));
 
         return fileData || [];
       } else {
-        const fileData = dataFileLink?.queryFileGetLinks?.data?.map(
-          (file, index) => ({
+        const fileData = dataFileLink?.queryFileGetLinks?.data
+          // ?.filter((el) => el.status === "active")
+          ?.map((file, index) => ({
             ...file,
             index,
             isFile: true,
-          }),
-        );
+          }));
 
         return fileData || [];
       }
     } else {
-      const fileData = getDataRes?.map((file, index) => ({
-        ...file,
-        index,
-        isFile: true,
-      }));
+      const fileData = getDataRes
+        // ?.filter((el) => el.status === "active")
+        ?.map((file, index) => ({
+          ...file,
+          index,
+          isFile: true,
+        }));
 
       return fileData || [];
     }
@@ -1207,33 +1044,47 @@ function FileUploader() {
     if (linkClient?._id) {
       let folderData: any = [];
       if (linkClient?.type === "multiple") {
-        folderData = dataMultipleFolder?.map((file, index) => ({
-          index,
-          isFile: false,
-          ...file,
-        }));
+        folderData = dataMultipleFolder
+          // ?.filter((el) => el.status === "active")
+          ?.map((file, index) => ({
+            index,
+            isFile: false,
+            ...file,
+          }));
         return folderData || [];
       }
 
       if (linkClient?.type === "folder") {
-        folderData = getDataRes?.map((file, index) => ({
-          index,
-          isFile: false,
-          ...file,
-        }));
+        folderData = getDataRes
+          // ?.filter((el) => el.status === "active")
+          ?.map((file, index) => ({
+            index,
+            isFile: false,
+            ...file,
+          }));
 
         return folderData;
       }
-      return folderData;
+
+      return folderData || [];
     }
 
     return [];
   }, [linkClient, getDataRes, dataMultipleFolder]);
 
   const dataFileConcat = useMemo(() => {
-    const result = dataLinkMemo?.concat(dataFolderLinkMemo || []);
+    if (dataLinkMemo?.length || dataFolderLinkMemo?.length) {
+      const dataFiles = dataLinkMemo || [];
+      const result = dataFiles?.concat(dataFolderLinkMemo || []);
+      document.title =
+        result?.[0]?.filename ||
+        result?.[0]?.folder_name ||
+        "data on vshare.net";
 
-    return result || [];
+      return result || [];
+    }
+
+    return [];
   }, [dataLinkMemo, dataFolderLinkMemo]);
 
   return (
@@ -1297,7 +1148,7 @@ function FileUploader() {
             </Box>
           )}
 
-          <Advertisement />
+          <GoogleAdsense />
 
           {((dataFolderLinkMemo && dataFolderLinkMemo.length > 0) ||
             (dataLinkMemo && dataLinkMemo.length > 0) ||
@@ -1345,7 +1196,7 @@ function FileUploader() {
                           handleQRGeneration={handleQRGeneration}
                           handleClearFileSelection={handleClearSelector}
                           handleDownloadAsZip={handleDownloadGridFileAndFolder}
-                          handleDoubleClick={handleOpenFolder}
+                          handleDoubleClick={handleCheckOpenFolder}
                         />
                       )}
                     </Fragment>
@@ -1361,6 +1212,7 @@ function FileUploader() {
                                 <FileCardItem
                                   id={item._id}
                                   item={item}
+                                  selectType="folder"
                                   isContainFiles={
                                     item?.total_size > 0 ? true : false
                                   }
@@ -1381,9 +1233,12 @@ function FileUploader() {
                                   fileType={getFileTypeName(item?.folder_type)}
                                   name={item?.folder_name}
                                   newName={item?.newFolder_name}
+                                  handleSelectData={handleMultipleListData}
                                   cardProps={{
                                     onDoubleClick: () => {
-                                      handleOpenFolder(item);
+                                      if (item.status === "active") {
+                                        handleCheckOpenFolder(item);
+                                      }
                                     },
                                   }}
                                 />
@@ -1413,6 +1268,7 @@ function FileUploader() {
                                   }
                                   user={item?.createdBy}
                                   path={item?.path}
+                                  selectType="file"
                                   isCheckbox={true}
                                   filePassword={item?.filePassword}
                                   fileType={getFileTypeName(item?.fileType)}
@@ -1420,6 +1276,7 @@ function FileUploader() {
                                     item?.createdBy?._id === "0" ? true : false
                                   }
                                   name={item?.filename}
+                                  handleSelectData={handleMultipleListData}
                                   newName={item?.newFilename}
                                   cardProps={{
                                     onDoubleClick: () => {
@@ -1439,7 +1296,6 @@ function FileUploader() {
                 {(dataFolderLinkMemo?.length > 0 ||
                   dataLinkMemo?.length > 0) && (
                   <BoxSocialShare
-                    isFile={false}
                     _description={_description}
                     countAction={adAlive}
                     isHide={hideDownload}
@@ -1470,9 +1326,8 @@ function FileUploader() {
         isMobile={isMobile}
         getFilenames={getFilenames}
         getNewFileName={getNewFileName}
-        password={password}
-        checkModal={checkModal}
         setPassword={setPassword}
+        password={password}
         handleClose={handleClose}
         _confirmPasword={_confirmPasword}
       />
@@ -1484,7 +1339,6 @@ function FileUploader() {
         getFilenames={getFilenames}
         getNewFileName={getNewFileName}
         password={password}
-        checkModal={checkModal}
         setPassword={setPassword}
         handleClose={handleInputPasswordClose}
         _confirmPasword={handleInputPassword}
@@ -1499,7 +1353,7 @@ function FileUploader() {
       <DialogConfirmQRCode
         isOpen={isVerifyQrCode}
         dataValue={dataValue}
-        filename={dataValue?.filename}
+        filename={dataValue?.filename || dataValue?.folder_name}
         newFilename={dataValue?.newFilename}
         dataPassword={fileQRCodePassword}
         onConfirm={handleSuccessQRCode}

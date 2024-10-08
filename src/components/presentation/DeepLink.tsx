@@ -10,16 +10,15 @@ import {
   VivalidBrowser,
 } from "assets/icons/icon";
 import vshareLogo from "assets/images/vshare-deeplink.png";
+import { ENV_KEYS } from "constants/env.constant";
 import { Fragment, useEffect, useState } from "react";
 import * as MUI from "styles/presentation/deepLink.style";
 
 function DeepLink(props) {
   const { showBottom, platform, onClose, scriptScheme } = props;
   const [browser, setBrowser] = useState<any>("");
-  const androidStore =
-    "https://play.google.com/store/apps/details?id=com.vshare.app.client";
-  const appleStore =
-    "https://apps.apple.com/la/app/vshare-file-transfer-app/id6476536606";
+  const androidStore = `${ENV_KEYS.VITE_APP_PLAY_STORE}`;
+  const appleStore = `${ENV_KEYS.VITE_APP_APPLE_STORE}`;
 
   const Icons = [
     {
@@ -70,7 +69,8 @@ function DeepLink(props) {
       }
 
       if (platform === "ios") {
-        window.location.href = appleStore;
+        // window.location.href = appleStore;
+        window.open(appleStore, "_blank");
       }
     }, 1500);
 
@@ -87,21 +87,47 @@ function DeepLink(props) {
       const userAgent = navigator.userAgent;
 
       // Check for common browsers
-      if (userAgent.indexOf("Firefox") > -1) {
-        handleFindBrowser("Firefox");
-      } else if (userAgent.indexOf("Chrome") > -1) {
-        handleFindBrowser("Chrome");
-      } else if (userAgent.indexOf("Safari") > -1) {
-        handleFindBrowser("Safari");
-      } else if (userAgent.indexOf("Edge") > -1) {
+      // if (userAgent.indexOf("Firefox") > -1) {
+      //   handleFindBrowser("Firefox");
+      // } else if (userAgent.indexOf("Chrome") > -1) {
+      //   handleFindBrowser("Chrome");
+      // } else if (userAgent.indexOf("Safari") > -1) {
+      //   handleFindBrowser("Safari");
+      // } else if (userAgent.indexOf("Edge") > -1) {
+      //   handleFindBrowser("Edge");
+      // } else if (userAgent.indexOf("Opera") > -1) {
+      //   handleFindBrowser("Opera");
+      // } else if (userAgent.indexOf("Brave") > -1) {
+      //   handleFindBrowser("Brave");
+      // } else if (userAgent.indexOf("Vivaldi") > -1) {
+      //   handleFindBrowser("Vivaldi");
+      // } else if (userAgent.indexOf("DuckDuckGo") > -1) {
+      //   handleFindBrowser("DuckDuckGo");
+      // } else {
+      //   setBrowser({
+      //     icon: <EdgeBrowser />,
+      //     title: "Edge",
+      //   });
+      // }
+
+      if (userAgent.includes("Edg")) {
         handleFindBrowser("Edge");
-      } else if (userAgent.indexOf("Opera") > -1) {
+      } else if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+        handleFindBrowser("Chrome");
+      } else if (
+        userAgent.includes("Safari") &&
+        !userAgent.includes("Chrome")
+      ) {
+        handleFindBrowser("Safari");
+      } else if (userAgent.includes("Firefox")) {
+        handleFindBrowser("Firefox");
+      } else if (userAgent.includes("Opera") || userAgent.includes("OPR")) {
         handleFindBrowser("Opera");
-      } else if (userAgent.indexOf("Brave") > -1) {
-        handleFindBrowser("Brave");
-      } else if (userAgent.indexOf("Vivaldi") > -1) {
+      } else if (userAgent.includes("Vivaldi")) {
         handleFindBrowser("Vivaldi");
-      } else if (userAgent.indexOf("DuckDuckGo") > -1) {
+      }
+      // Check for DuckDuckGo
+      else if (userAgent.includes("DuckDuckGo")) {
         handleFindBrowser("DuckDuckGo");
       } else {
         setBrowser({

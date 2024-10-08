@@ -188,8 +188,7 @@ function ListFolderData(props: Props) {
             variant="h4"
             sx={{ textAlign: "start", padding: "1rem .5rem" }}
           >
-            Application apply (
-            {cutFileName(props?.dataLinks?.[0]?.folder_name || "", 20)})
+            {cutFileName(props?.dataLinks?.[0]?.folder_name || "", 20)}
           </Typography>
         </Box>
 
@@ -217,11 +216,9 @@ function ListFolderData(props: Props) {
                 color: "rgba(0, 0, 0, 0.3)",
               },
             }}
-            selectionModel={props?.multipleIds}
             onCellDoubleClick={(value) => {
               props.handleDoubleClick?.(value.row || {});
             }}
-            checkboxSelection={true}
             autoHeight
             getRowId={(row) => row?._id}
             rows={props?.dataLinks || []}
@@ -230,9 +227,6 @@ function ListFolderData(props: Props) {
             disableColumnFilter
             disableColumnMenu
             hideFooter
-            onSelectionModelChange={(ids) => {
-              props?.setMultipleIds?.(ids);
-            }}
           />
 
           {props.total! > 10 && (

@@ -1,4 +1,3 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Card,
@@ -12,6 +11,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { FileBoxDownload } from "app/pages/file-uploader/styles/fileUploader.style";
 import NormalButton from "components/NormalButton";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import ResponsivePagination from "react-responsive-pagination";
 import "styles/pagination.style.css";
@@ -19,19 +19,20 @@ import "styles/pagination.style.css";
 // Icons
 import InfoIcon from "@mui/icons-material/Info";
 
-import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import LockIcon from "@mui/icons-material/Lock";
+import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import { convertBytetoMBandGB } from "utils/storage.util";
 
+import { styled } from "@mui/system";
+import FolderEmptyIcon from "assets/images/folder-empty.svg?react";
+import FolderNotEmptyIcon from "assets/images/folder-not-empty.svg?react";
+import { FileIcon, FileIconProps } from "react-file-icon";
 import {
   BoxAdsAction,
   BoxAdsContainer,
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
-import { cutFileName } from "utils/file.util";
-import FolderNotEmptyIcon from "assets/images/folder-not-empty.svg?react";
-import FolderEmptyIcon from "assets/images/folder-empty.svg?react";
-import { styled } from "@mui/system";
+import { cutFileName, getFileType } from "utils/file.util";
 
 const IconFolderContainer = styled("div")({
   width: "28px",
@@ -53,7 +54,7 @@ type Props = {
     setCurrentPage: (index) => void;
   };
 
-  handleSelection: (val: string) => void;
+  handleSelection: (val: string, fileType?: string) => void;
   setToggle?: () => void;
   setMultipleIds?: (value: any[]) => void;
   handleQRGeneration?: (e: any, file: any, longUrl: string) => void;
@@ -70,6 +71,7 @@ type Props = {
 function ListDataItem(props: Props) {
   const [expireDate, setExpireDate] = useState("");
   const isMobile = useMediaQuery(`(max-width: 768px)`);
+  const [styles] = useState<Record<string, Partial<FileIconProps>>>({});
 
   const columns = useMemo(() => {
     const data: any = [
@@ -81,9 +83,15 @@ function ListDataItem(props: Props) {
         maxWidth: isMobile ? 40 : 70,
         flex: 1,
         renderCell: (params: { row: any }) => {
-          const { _id } = params?.row || {};
+          const { _id, status, isFile } = params?.row || {};
+
+          if (status !== "active") {
+            return <Fragment></Fragment>;
+          }
+
+          const fileType = isFile ? "file" : "folder";
           const isChecked = !!props?.selectionFileAndFolderData?.find(
-            (el) => el?.id === _id,
+            (el) => el?.id === _id && el.checkType === fileType,
           );
 
           return (
@@ -95,7 +103,7 @@ function ListDataItem(props: Props) {
                 }}
                 checked={isChecked}
                 aria-label={"checkbox" + _id}
-                onClick={() => props?.handleSelection(_id)}
+                onClick={() => props?.handleSelection(_id, fileType)}
               />
             </div>
           );
@@ -121,7 +129,10 @@ function ListDataItem(props: Props) {
             : dataFile?.access_password;
           return (
             <Fragment>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {password && (
+                  <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
+                )}
                 {!dataFile?.isFile && (
                   <Fragment>
                     <IconFolderContainer>
@@ -134,6 +145,25 @@ function ListDataItem(props: Props) {
                   </Fragment>
                 )}
 
+                {dataFile?.isFile && (
+                  <Box
+                    sx={{
+                      maxWidth: "1.2rem",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                    mt={2}
+                    mr={1.5}
+                  >
+                    <FileIcon
+                      color="white"
+                      extension={getFileType(params.row.filename) ?? ""}
+                      {...{
+                        ...styles[getFileType(params.row.filename) as string],
+                      }}
+                    />
+                  </Box>
+                )}
                 <Box sx={{ display: "flex", flexDirection: "column" }}>
                   <Typography
                     title={dataFile?.filename}
@@ -152,9 +182,6 @@ function ListDataItem(props: Props) {
                     </Typography>
                   )}
                 </Box>
-                {password && (
-                  <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
-                )}
               </Box>
             </Fragment>
           );
@@ -179,7 +206,7 @@ function ListDataItem(props: Props) {
         field: "status",
         headerName: "Status",
         headerAlign: "center",
-        width: 70,
+        width: 120,
         align: "center",
         renderCell: (params) => {
           const status = params?.row?.status || "Inactive";
@@ -187,13 +214,13 @@ function ListDataItem(props: Props) {
             <Chip
               sx={{
                 backgroundColor:
-                  status?.toLowerCase() === "active" ? "#DCF6E8" : "#dcf6e8",
+                  status?.toLowerCase() === "active" ? "#DCF6E8" : "#F8E7E8",
                 color:
-                  status?.toLowerCase() === "active" ? "#4BD087" : "#29c770",
+                  status?.toLowerCase() === "active" ? "#4BD087" : "#EA5455",
                 fontWeight: "bold",
               }}
               label={
-                status?.toLowerCase() === "active" ? "" + "Active" : "Inactive"
+                status?.toLowerCase() === "active" ? "" + "Active" : "Deleted"
               }
               size="small"
             />
@@ -208,7 +235,10 @@ function ListDataItem(props: Props) {
         align: "center",
         renderCell: (params) => {
           const dataFile = params.row;
-          console.log({longUrl: dataFile?.longUrl });
+          if (dataFile.status !== "active") {
+            return null;
+          }
+
           return (
             <IconButton
               onClick={(e: any) => {
@@ -298,7 +328,11 @@ function ListDataItem(props: Props) {
               },
             }}
             onCellDoubleClick={(value) => {
-              if (!value.row.isFile) props.handleDoubleClick?.(value.row || {});
+              if (!value.row.isFile) {
+                if (value.row.status === "active") {
+                  props.handleDoubleClick?.(value.row || {});
+                }
+              }
             }}
             autoHeight
             getRowId={(row) => row?._id}

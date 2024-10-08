@@ -240,7 +240,7 @@ function BoxSocialShare(props: Props) {
                       setIsMore(!isMore);
                     }}
                   >
-                    <DialogShare 
+                    <DialogShare
                       onClose={() => setIsMore(!isMore)}
                       isOpen={isMore}
                       url={currentUrl}
