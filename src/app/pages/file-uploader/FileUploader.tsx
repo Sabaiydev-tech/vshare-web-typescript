@@ -1077,12 +1077,27 @@ function FileUploader() {
     if (dataLinkMemo?.length || dataFolderLinkMemo?.length) {
       const dataFiles = dataLinkMemo || [];
       const result = dataFiles?.concat(dataFolderLinkMemo || []);
-      document.title =
+      const title =
         result?.[0]?.filename ||
         result?.[0]?.folder_name ||
         "data on vshare.net";
+      document.title = title || "data on vshare.net";
 
       return result || [];
+    }
+
+    return [];
+  }, [dataLinkMemo, dataFolderLinkMemo]);
+
+  const dataFileTitle = useMemo(() => {
+    if (dataLinkMemo?.length || dataFolderLinkMemo?.length) {
+      const dataFiles = dataLinkMemo || [];
+      const result = dataFiles?.concat(dataFolderLinkMemo || []);
+      const title =
+        result?.[0]?.filename ||
+        result?.[0]?.folder_name ||
+        "data on vshare.net";
+      return title;
     }
 
     return [];
@@ -1091,11 +1106,17 @@ function FileUploader() {
   return (
     <React.Fragment>
       <Helmet>
+        <meta name="title" content={dataFileTitle} />
         <meta name="description" content={_description} />
+        <meta property="og:title" content={dataFileTitle} />
+        <meta property="og:description" content={_description} />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="twitter:title" content={dataFileTitle} />
+        <meta property="twitter:description" content={_description} />
       </Helmet>
+
       <MUI.ContainerHome maxWidth="xl">
         <Box sx={{ backgroundColor: "#F8F7FA", padding: "1rem" }}>
-          {/* {!dataFileConcat.length && ( */}
           {(isLoading || isPassword || openInputPasswod) && (
             <Box>
               <Box sx={{ pt: 0.5 }}>
