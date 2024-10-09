@@ -26,6 +26,7 @@ function GoogleAdsense() {
         data-ad-slot="9909598547"
         data-adtest="on"
         data-ad-format="auto"
+        data-full-width-responsive="true"
       />
     </AdsContainer>
   );
