@@ -37,6 +37,7 @@ import { getFileTypeName, removeFileNameOutOfPath } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "../file-uploader/styles/fileUploader.style";
 import "../file-uploader/styles/fileUploader.style.css";
+import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
 
 function ExtendFolder() {
   const location = useLocation();
@@ -211,6 +212,31 @@ function ExtendFolder() {
     ) {
       if (item.filePassword || item.access_password) {
         setFileQRCodePassword(item.filePassword || item.access_password);
+        setIsVerifyQRCode(true);
+        return;
+      }
+    }
+
+    handleMultipleDataDone(item);
+  }
+
+  function handleMultipleFolderData(id: string) {
+    setEventClick("checkbox");
+
+    const item = dataFolderLinkMemo.find((data) => {
+      const checkType = data?.isFile ? "file" : "folder";
+      return data._id === id && checkType === "file";
+    });
+
+    setDataValue(item);
+
+    if (
+      !dataSelector?.selectionFileAndFolderData.find(
+        (el) => el.id === item!._id,
+      )
+    ) {
+      if (item!.access_password) {
+        setFileQRCodePassword(item!.access_password);
         setIsVerifyQRCode(true);
         return;
       }
@@ -622,10 +648,13 @@ function ExtendFolder() {
         },
       });
       const fileData: any[] = (await result.data?.filesByUID?.data) || [];
-      const fileDataMap = fileData.map((file) => ({
-        ...file,
-        isFile: true,
-      }));
+      const fileDataMap =
+        fileData
+          ?.filter((file) => !file.filePassword)
+          .map((file) => ({
+            ...file,
+            isFile: true,
+          })) || [];
 
       const folderResult = await await getFolderLink({
         variables: {
@@ -637,9 +666,16 @@ function ExtendFolder() {
       });
       const folderData: any[] =
         (await folderResult.data?.foldersByUID?.data) || [];
+      const folderDataMap =
+        folderData
+          ?.filter((file) => !file.filePassword)
+          .map((file) => ({
+            ...file,
+            isFile: true,
+          })) || [];
 
       setIsDownloadLoading(false);
-      const mergeData = fileDataMap.concat(folderData);
+      const mergeData = fileDataMap.concat(folderDataMap);
       return mergeData;
     } catch (error: any) {
       console.log(error.message);
@@ -656,30 +692,31 @@ function ExtendFolder() {
       setTotalClickCount(0);
       const groupData: any[] = (await getAllData()) || [];
 
-      const multipleData = groupData.map((item: any) => {
-        const newPath = item?.newPath || "";
-        const newFilename = item?.newFilename || item?.newFolder_name;
+      console.log(groupData);
+      // const multipleData = groupData.map((item: any) => {
+      //   const newPath = item?.newPath || "";
+      //   const newFilename = item?.newFilename || item?.newFolder_name;
 
-        return {
-          newPath,
-          id: item._id,
-          newFilename: newFilename || "",
-          name: item?.filename || item?.folder_name,
-          checkType: item?.isFile ? "file" : "folder",
-          createdBy: item?.createdBy,
-          isPublic: linkClient?._id ? false : true,
-        };
-      });
+      //   return {
+      //     newPath,
+      //     id: item._id,
+      //     newFilename: newFilename || "",
+      //     name: item?.filename || item?.folder_name,
+      //     checkType: item?.isFile ? "file" : "folder",
+      //     createdBy: item?.createdBy,
+      //     isPublic: linkClient?._id ? false : true,
+      //   };
+      // });
 
-      manageFile.handleDownloadFile(
-        {
-          multipleData,
-        },
-        {
-          onFailed: () => {},
-          onSuccess: () => {},
-        },
-      );
+      // manageFile.handleDownloadFile(
+      //   {
+      //     multipleData,
+      //   },
+      //   {
+      //     onFailed: () => {},
+      //     onSuccess: () => {},
+      //   },
+      // );
     } else {
       if (getAdvertisemment.length) {
         handleAdvertisementPopup();
@@ -890,12 +927,15 @@ function ExtendFolder() {
                           totalPages: Math.ceil(totalFolder / LIMIT_DATA_PAGE),
                           setCurrentPage: setFolderCurrentPage,
                         }}
+                        selectionFileAndFolderData={
+                          dataSelector?.selectionFileAndFolderData || []
+                        }
                         setMultipleIds={setMultipleFolderIds}
                         setToggle={handleToggle}
                         handleQRGeneration={handleQRGeneration}
                         handleClearGridSelection={handleClearFolderSelection}
                         handleDownloadFolderAsZip={handleDownloadAsZip}
-                        // handleSelection={handleMultipleData}
+                        handleSelection={handleMultipleFolderData}
                         handleDownloadFolder={handleDownloadFolderGetLink}
                         handleDoubleClick={handleCheckOpenFolder}
                         handleDownloadFileGetLink={
@@ -956,6 +996,7 @@ function ExtendFolder() {
                                   fileType={getFileTypeName(item.folder_type)}
                                   name={item?.folder_name}
                                   newName={item?.newFolder_name}
+                                  handleSelectData={handleMultipleFolderData}
                                   cardProps={{
                                     onDoubleClick: () => {
                                       handleCheckOpenFolder(item);
@@ -1000,6 +1041,7 @@ function ExtendFolder() {
                                   user={item?.createdBy}
                                   path={item?.path}
                                   isCheckbox={true}
+                                  handleSelectData={handleMultipleData}
                                   filePassword={item?.filePassword}
                                   fileType={getFileTypeName(item?.fileType)}
                                   isPublic={
@@ -1047,6 +1089,8 @@ function ExtendFolder() {
               </Box>
             </MUI.FileListContainer>
           </Box>
+
+          <GoogleAdsenseFooter />
         </MUI.ContainerHome>
       )}
 

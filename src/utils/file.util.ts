@@ -32,6 +32,13 @@ export function cutFileName(fileName: string, maxLength = 10) {
   return `${nameWithoutExtension.slice(0, maxLength)}...${extension}`;
 }
 
+export function cutFolderName(fileName: string, maxLength = 10) {
+  if (fileName.length > maxLength) {
+    return fileName.substring(0, maxLength) + "...";
+  }
+  return fileName;
+}
+
 export function getFileNameExtension(filename: string) {
   const dotIndex = filename?.lastIndexOf(".");
   if (dotIndex !== -1) {
