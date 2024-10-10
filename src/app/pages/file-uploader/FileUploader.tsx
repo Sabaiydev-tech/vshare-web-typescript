@@ -876,7 +876,7 @@ function FileUploader() {
     const randomAd = availableAds[randomIndex];
     setUsedAds([...usedAds, randomAd._id]);
 
-    // Resolve URL
+    // Resolve the URL for the ad
     let httpData = randomAd.url;
     if (!httpData.match(/^https?:\/\//i)) {
       httpData = "http://" + randomAd.url;
@@ -885,19 +885,18 @@ function FileUploader() {
     // Open the ad in a new tab immediately with the resolved URL
     const newWindow = window.open(httpData, "_blank", "noopener,noreferrer");
 
-    // Fallback if pop-up is blocked
+    // If the new tab is blocked, do nothing, and don't change the original page
     if (
       !newWindow ||
       newWindow.closed ||
       typeof newWindow.closed === "undefined"
     ) {
-      window.location.href = httpData; // Open ad in the current tab
+      console.log("Pop-up was blocked or failed to open.");
       return;
     }
 
-    // Perform async operations in the background
+    // Perform async operations in the background without affecting the original tab
     try {
-      // Fetch user's IP address
       const responseIp = await axios.get(LOAD_GET_IP_URL);
       const _createDetailAdvertisement = await createDetailAdvertisement({
         variables: {
@@ -908,12 +907,12 @@ function FileUploader() {
         },
       });
 
-      // If ad tracking/creation fails, close the new tab
+      // Close the new tab if ad creation fails
       if (!_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
         newWindow.close();
       }
     } catch (error: any) {
-      // Close the new window in case of error and show the error message
+      // In case of an error, close the new tab and show the error message
       newWindow.close();
       errorMessage(error, 3000);
     }
