@@ -860,66 +860,67 @@ function FileUploader() {
   //   }
   // };
 
-  const handleAdvertisementPopup = async () => {
-    const availableAds = getAdvertisemment.filter(
-      (ad) => !usedAds.includes(ad._id),
-    );
-    if (availableAds.length === 0) {
-      setUsedAds([]);
-      return;
-    }
+const handleAdvertisementPopup = async () => {
+  const availableAds = getAdvertisemment.filter(
+    (ad) => !usedAds.includes(ad._id),
+  );
+  if (availableAds.length === 0) {
+    setUsedAds([]);
+    return;
+  }
 
-    const randomIndex = Math.floor(Math.random() * availableAds.length);
-    const randomAd = availableAds[randomIndex];
-    setUsedAds([...usedAds, randomAd._id]);
+  const randomIndex = Math.floor(Math.random() * availableAds.length);
+  const randomAd = availableAds[randomIndex];
+  setUsedAds([...usedAds, randomAd._id]);
 
-    let httpData = randomAd.url;
-    if (!httpData.match(/^https?:\/\//i)) {
-      httpData = "http://" + randomAd.url;
-    }
+  let httpData = randomAd.url;
+  if (!httpData.match(/^https?:\/\//i)) {
+    httpData = "http://" + randomAd.url;
+  }
 
-    // Open the ad in a new tab immediately with a placeholder content
-    const newWindow = window.open("", "_blank", "noopener,noreferrer");
+  // Open the ad in a new tab immediately with a placeholder content
+  const newWindow = window.open("", "_blank", "noopener,noreferrer");
 
-    // Set some placeholder content in the new tab to avoid it being blank
-    newWindow.document.write(
-      "<p style='text-align:center; font-size:20px;'>Loading advertisement...</p>",
-    );
+  // Set some placeholder content in the new tab to avoid it being blank
+  newWindow.document.write(
+    "<p style='text-align:center; font-size:20px;'>Loading advertisement...</p>",
+  );
 
-    if (
-      !newWindow ||
-      newWindow.closed ||
-      typeof newWindow.closed === "undefined"
-    ) {
-      // Fallback to redirect in the current tab if the pop-up is blocked
-      window.location.href = httpData;
-      return;
-    }
+  if (
+    !newWindow ||
+    newWindow.closed ||
+    typeof newWindow.closed === "undefined"
+  ) {
+    // Fallback to redirect in the current tab if the pop-up is blocked
+    window.location.href = httpData;
+    return;
+  }
 
-    try {
-      const responseIp = await axios.get(LOAD_GET_IP_URL);
-      const _createDetailAdvertisement = await createDetailAdvertisement({
-        variables: {
-          data: {
-            ip: String(responseIp?.data),
-            advertisementsID: randomAd?._id,
-          },
+  try {
+    const responseIp = await axios.get(LOAD_GET_IP_URL);
+    const _createDetailAdvertisement = await createDetailAdvertisement({
+      variables: {
+        data: {
+          ip: String(responseIp?.data),
+          advertisementsID: randomAd?._id,
         },
-      });
+      },
+    });
 
-      if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
-        // Once async operation is done, update the new tab's URL
-        newWindow.location.href = httpData;
-      } else {
-        // In case of an error in creating ad details, close the new tab
-        newWindow.close();
-      }
-    } catch (error: any) {
-      // In case of an error, close the new tab and show error
+    if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
+      // Once async operation is done, update the new tab's URL
+      newWindow.location.href = httpData;
+    } else {
+      // In case of an error in creating ad details, close the new tab
       newWindow.close();
-      errorMessage(error, 3000);
     }
-  };
+  } catch (error: any) {
+    // In case of an error, close the new tab and show error
+    newWindow.close();
+    errorMessage(error, 3000);
+  }
+};
+
 
   const handleOpenApplication = () => {
     const timeout = setTimeout(() => {
