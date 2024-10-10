@@ -32,7 +32,7 @@ import {
   BoxAdsContainer,
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
-import { cutFileName, getFileType } from "utils/file.util";
+import { cutFileName, cutFolderName, getFileType } from "utils/file.util";
 
 const IconFolderContainer = styled("div")({
   width: "28px",
@@ -157,7 +157,7 @@ function ListDataItem(props: Props) {
                   >
                     <FileIcon
                       color="white"
-                      extension={getFileType(params.row.filename) ?? ""}
+                      extension={getFileType(params.row.filename) || ""}
                       {...{
                         ...styles[getFileType(params.row.filename) as string],
                       }}
@@ -170,7 +170,11 @@ function ListDataItem(props: Props) {
                     component={"span"}
                     sx={{ fontSize: isMobile ? 12 : 14 }}
                   >
-                    {cutFileName(filename || "", isMobile ? 8 : 12)}
+                    {dataFile?.isFile ? (
+                      <>{cutFileName(filename || "", isMobile ? 8 : 12)}</>
+                    ) : (
+                      <>{cutFolderName(filename, 15)}</>
+                    )}
                   </Typography>
                   {isMobile && dataFile?.isFile && (
                     <Typography
@@ -293,11 +297,10 @@ function ListDataItem(props: Props) {
             variant="h4"
             sx={{ textAlign: "start", padding: "1rem .5rem" }}
           >
-            {cutFileName(
-              props?.dataLinks?.[0]?.filename ||
-                props?.dataLinks?.[0]?.folder_name ||
-                "",
-              20,
+            {props.dataLinks?.[0]?.isFile ? (
+              <>{cutFileName(props?.dataLinks?.[0]?.filename, 20)}</>
+            ) : (
+              <>{cutFolderName(props?.dataLinks?.[0]?.folder_name, 15)}</>
             )}
           </Typography>
         </Box>

@@ -14,6 +14,7 @@ export interface IFolder {
   path?: string;
   url?: string;
   shortUrl?: string;
+  isFile?: boolean;
   longUrl?: string;
   createdBy?: IUser;
 }
