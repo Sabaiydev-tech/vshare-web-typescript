@@ -878,8 +878,12 @@ function FileUploader() {
       httpData = "http://" + randomAd.url;
     }
 
-    // Open the ad in a new tab immediately
-    const newWindow = window.open("", "_blank", "noopener,noreferrer");
+    // Open the ad in a new tab immediately with about:blank
+    const newWindow = window.open(
+      "about:blank",
+      "_blank",
+      "noopener,noreferrer",
+    );
 
     if (
       !newWindow ||
@@ -903,15 +907,16 @@ function FileUploader() {
       });
 
       if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
-        // Update the new tab's URL after async operation
+        // Once async operation is done, update the new tab's URL
         newWindow.location.href = httpData;
-      }
-    } catch (error: any) {
-      errorMessage(error, 3000);
-      // Close the new window if there was an error
-      if (newWindow) {
+      } else {
+        // In case of an error in creating ad details, close the new tab
         newWindow.close();
       }
+    } catch (error: any) {
+      // In case of an error, close the new tab and show error
+      newWindow.close();
+      errorMessage(error, 3000);
     }
   };
 
