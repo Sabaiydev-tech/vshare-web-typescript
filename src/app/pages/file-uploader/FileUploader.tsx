@@ -808,84 +808,27 @@ function FileUploader() {
     }
   };
 
-  // const handleAdvertisementPopup = async () => {
-  //   const availableAds = getAdvertisemment.filter(
-  //     (ad) => !usedAds.includes(ad._id),
-  //   );
-  //   if (availableAds.length === 0) {
-  //     setUsedAds([]);
-  //     return;
-  //   }
-
-  //   const randomIndex = Math.floor(Math.random() * availableAds.length);
-  //   const randomAd = availableAds[randomIndex];
-  //   setUsedAds([...usedAds, randomAd._id]);
-  //   try {
-  //     const responseIp = await axios.get(LOAD_GET_IP_URL);
-  //     const _createDetailAdvertisement = await createDetailAdvertisement({
-  //       variables: {
-  //         data: {
-  //           ip: String(responseIp?.data),
-  //           advertisementsID: randomAd?._id,
-  //         },
-  //       },
-  //     });
-  //     if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
-  //       let httpData = "";
-  //       if (
-  //         !randomAd.url.match(/^https?:\/\//i) &&
-  //         !randomAd.url.match(/^http?:\/\//i)
-  //       ) {
-  //         httpData = "http://" + randomAd.url;
-  //       } else {
-  //         httpData = randomAd.url;
-  //       }
-
-  //       const newWindow = window.open(
-  //         httpData,
-  //         "_blank",
-  //         "noopener,noreferrer",
-  //       );
-  //       if (
-  //         !newWindow ||
-  //         newWindow.closed ||
-  //         typeof newWindow.closed == "undefined"
-  //       ) {
-  //         history.pushState(null, "", window.location.href);
-  //         window.location.href = httpData;
-  //       }
-  //     }
-  //   } catch (error: any) {
-  //     errorMessage(error, 3000);
-  //   }
-  // };
-
   const handleAdvertisementPopup = async () => {
     const availableAds = getAdvertisemment.filter(
       (ad) => !usedAds.includes(ad._id),
     );
 
-    // If no available ads, reset and return
     if (availableAds.length === 0) {
       setUsedAds([]);
       return;
     }
 
-    // Select a random ad
     const randomIndex = Math.floor(Math.random() * availableAds.length);
     const randomAd = availableAds[randomIndex];
     setUsedAds([...usedAds, randomAd._id]);
 
-    // Resolve the URL for the ad
     let httpData = randomAd.url;
     if (!httpData.match(/^https?:\/\//i)) {
       httpData = "http://" + randomAd.url;
     }
 
-    // Open the ad in a new tab immediately with the resolved URL
     const newWindow = window.open(httpData, "_blank", "noopener,noreferrer");
 
-    // If the new tab is blocked, do nothing, and don't change the original page
     if (
       !newWindow ||
       newWindow.closed ||
@@ -895,7 +838,6 @@ function FileUploader() {
       return;
     }
 
-    // Perform async operations in the background without affecting the original tab
     try {
       const responseIp = await axios.get(LOAD_GET_IP_URL);
       const _createDetailAdvertisement = await createDetailAdvertisement({
@@ -907,12 +849,10 @@ function FileUploader() {
         },
       });
 
-      // Close the new tab if ad creation fails
       if (!_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
         newWindow.close();
       }
     } catch (error: any) {
-      // In case of an error, close the new tab and show the error message
       newWindow.close();
       errorMessage(error, 3000);
     }
