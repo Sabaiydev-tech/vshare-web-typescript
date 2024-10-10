@@ -858,6 +858,23 @@ function FileUploader() {
     }
   };
 
+  // const handleOpenApplication = () => {
+  //   const timeout = setTimeout(() => {
+  //     if (platform === "android") {
+  //       window.location.href = ENV_KEYS.VITE_APP_PLAY_STORE;
+  //     }
+
+  //     if (platform === "ios") {
+  //       window.location.href = ENV_KEYS.VITE_APP_APPLE_STORE;
+  //     }
+  //   }, 1500);
+  //   window.location.href = appScheme;
+
+  //   window.onblur = () => {
+  //     clearTimeout(timeout);
+  //   };
+  // };
+
   const handleOpenApplication = () => {
     const timeout = setTimeout(() => {
       if (platform === "android") {
@@ -869,8 +886,25 @@ function FileUploader() {
       }
     }, 1500);
 
-    window.location.href = appScheme;
+    // Handle iOS Safari specifically by using an iframe to avoid the "invalid address" error
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+    if (isSafari && platform === "ios") {
+      // Use iframe to open the app and avoid Safari invalid URL error
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = appScheme;
+      document.body.appendChild(iframe);
+
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000); // Remove iframe after some time
+    } else {
+      // For Android or non-Safari browsers, open app using window.location
+      window.location.href = appScheme;
+    }
+
+    // Clear timeout if the app opens successfully (onblur event)
     window.onblur = () => {
       clearTimeout(timeout);
     };
