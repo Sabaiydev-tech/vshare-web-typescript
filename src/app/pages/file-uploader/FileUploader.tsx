@@ -808,6 +808,58 @@ function FileUploader() {
     }
   };
 
+  // const handleAdvertisementPopup = async () => {
+  //   const availableAds = getAdvertisemment.filter(
+  //     (ad) => !usedAds.includes(ad._id),
+  //   );
+  //   if (availableAds.length === 0) {
+  //     setUsedAds([]);
+  //     return;
+  //   }
+
+  //   const randomIndex = Math.floor(Math.random() * availableAds.length);
+  //   const randomAd = availableAds[randomIndex];
+  //   setUsedAds([...usedAds, randomAd._id]);
+  //   try {
+  //     const responseIp = await axios.get(LOAD_GET_IP_URL);
+  //     const _createDetailAdvertisement = await createDetailAdvertisement({
+  //       variables: {
+  //         data: {
+  //           ip: String(responseIp?.data),
+  //           advertisementsID: randomAd?._id,
+  //         },
+  //       },
+  //     });
+  //     if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
+  //       let httpData = "";
+  //       if (
+  //         !randomAd.url.match(/^https?:\/\//i) &&
+  //         !randomAd.url.match(/^http?:\/\//i)
+  //       ) {
+  //         httpData = "http://" + randomAd.url;
+  //       } else {
+  //         httpData = randomAd.url;
+  //       }
+
+  //       const newWindow = window.open(
+  //         httpData,
+  //         "_blank",
+  //         "noopener,noreferrer",
+  //       );
+  //       if (
+  //         !newWindow ||
+  //         newWindow.closed ||
+  //         typeof newWindow.closed == "undefined"
+  //       ) {
+  //         history.pushState(null, "", window.location.href);
+  //         window.location.href = httpData;
+  //       }
+  //     }
+  //   } catch (error: any) {
+  //     errorMessage(error, 3000);
+  //   }
+  // };
+
   const handleAdvertisementPopup = async () => {
     const availableAds = getAdvertisemment.filter(
       (ad) => !usedAds.includes(ad._id),
@@ -820,6 +872,12 @@ function FileUploader() {
     const randomIndex = Math.floor(Math.random() * availableAds.length);
     const randomAd = availableAds[randomIndex];
     setUsedAds([...usedAds, randomAd._id]);
+
+    let httpData = randomAd.url;
+    if (!httpData.match(/^https?:\/\//i)) {
+      httpData = "http://" + randomAd.url;
+    }
+
     try {
       const responseIp = await axios.get(LOAD_GET_IP_URL);
       const _createDetailAdvertisement = await createDetailAdvertisement({
@@ -830,25 +888,21 @@ function FileUploader() {
           },
         },
       });
-      if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
-        let httpData = "";
-        if (
-          !randomAd.url.match(/^https?:\/\//i) &&
-          !randomAd.url.match(/^http?:\/\//i)
-        ) {
-          httpData = "http://" + randomAd.url;
-        } else {
-          httpData = randomAd.url;
-        }
 
-        const newWindow = window.open(httpData, "_blank");
+      if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
+        const newWindow = window.open(
+          httpData,
+          "_blank",
+          "noopener,noreferrer",
+        );
+
         if (
           !newWindow ||
           newWindow.closed ||
-          typeof newWindow.closed == "undefined"
+          typeof newWindow.closed === "undefined"
         ) {
-          history.pushState(null, "", window.location.href);
-          window.location.href = httpData;
+          // Avoid history manipulation and use window location directly
+          window.location.replace(httpData);
         }
       }
     } catch (error: any) {
