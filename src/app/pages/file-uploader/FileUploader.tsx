@@ -860,6 +860,59 @@ function FileUploader() {
   //   }
   // };
 
+  // const handleAdvertisementPopup = async () => {
+  //   const availableAds = getAdvertisemment.filter(
+  //     (ad) => !usedAds.includes(ad._id),
+  //   );
+  //   if (availableAds.length === 0) {
+  //     setUsedAds([]);
+  //     return;
+  //   }
+
+  //   const randomIndex = Math.floor(Math.random() * availableAds.length);
+  //   const randomAd = availableAds[randomIndex];
+  //   setUsedAds([...usedAds, randomAd._id]);
+
+  //   let httpData = randomAd.url;
+  //   if (!httpData.match(/^https?:\/\//i)) {
+  //     httpData = "http://" + randomAd.url;
+  //   }
+
+  //   // Open the ad in a new tab immediately with the resolved URL
+  //   const newWindow = window.open(httpData, "_blank", "noopener,noreferrer");
+
+  //   if (
+  //     !newWindow ||
+  //     newWindow.closed ||
+  //     typeof newWindow.closed === "undefined"
+  //   ) {
+  //     // Fallback to redirect in the current tab if the pop-up is blocked
+  //     window.location.href = httpData;
+  //     return;
+  //   }
+
+  //   try {
+  //     const responseIp = await axios.get(LOAD_GET_IP_URL);
+  //     const _createDetailAdvertisement = await createDetailAdvertisement({
+  //       variables: {
+  //         data: {
+  //           ip: String(responseIp?.data),
+  //           advertisementsID: randomAd?._id,
+  //         },
+  //       },
+  //     });
+
+  //     if (!_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
+  //       // If ad creation failed, close the new tab
+  //       newWindow.close();
+  //     }
+  //   } catch (error: any) {
+  //     // In case of an error, close the new tab and show error
+  //     newWindow.close();
+  //     errorMessage(error, 3000);
+  //   }
+  // };
+
   const handleAdvertisementPopup = async () => {
     const availableAds = getAdvertisemment.filter(
       (ad) => !usedAds.includes(ad._id),
@@ -878,19 +931,6 @@ function FileUploader() {
       httpData = "http://" + randomAd.url;
     }
 
-    // Open the ad in a new tab immediately with the resolved URL
-    const newWindow = window.open(httpData, "_blank", "noopener,noreferrer");
-
-    if (
-      !newWindow ||
-      newWindow.closed ||
-      typeof newWindow.closed === "undefined"
-    ) {
-      // Fallback to redirect in the current tab if the pop-up is blocked
-      window.location.href = httpData;
-      return;
-    }
-
     try {
       const responseIp = await axios.get(LOAD_GET_IP_URL);
       const _createDetailAdvertisement = await createDetailAdvertisement({
@@ -902,13 +942,11 @@ function FileUploader() {
         },
       });
 
-      if (!_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
-        // If ad creation failed, close the new tab
-        newWindow.close();
+      if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
+        // Redirect to the ad in the current tab
+        window.location.href = httpData;
       }
     } catch (error: any) {
-      // In case of an error, close the new tab and show error
-      newWindow.close();
       errorMessage(error, 3000);
     }
   };
