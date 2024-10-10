@@ -878,10 +878,30 @@ function ExtendFolder() {
     }
   }, [dataLinkMemo, dataFolderLinkMemo]);
 
+  const dataFileTitle = useMemo(() => {
+    if (dataLinkMemo?.length || dataFolderLinkMemo?.length) {
+      const dataFiles = dataLinkMemo || [];
+      const result = dataFiles?.concat(dataFolderLinkMemo || []);
+      const title =
+        result?.[0]?.filename ||
+        result?.[0]?.folder_name ||
+        "data on vshare.net";
+      return title;
+    }
+
+    return [];
+  }, [dataLinkMemo, dataFolderLinkMemo]);
+
   return (
     <React.Fragment>
       <Helmet>
+        <meta name="title" content={dataFileTitle} />
         <meta name="description" key={"description"} content={_description} />
+        <meta property="og:title" content={dataFileTitle} />
+        <meta property="og:description" content={_description} />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="twitter:title" content={dataFileTitle} />
+        <meta property="twitter:description" content={_description} />
       </Helmet>
 
       {(dataFolderLinkMemo?.length > 0 || dataLinkMemo?.length > 0) && (
