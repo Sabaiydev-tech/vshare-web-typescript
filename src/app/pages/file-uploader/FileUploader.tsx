@@ -878,6 +878,19 @@ function FileUploader() {
       httpData = "http://" + randomAd.url;
     }
 
+    // Open the ad in a new tab immediately
+    const newWindow = window.open("", "_blank", "noopener,noreferrer");
+
+    if (
+      !newWindow ||
+      newWindow.closed ||
+      typeof newWindow.closed === "undefined"
+    ) {
+      // Fallback to redirect in the current tab if the pop-up is blocked
+      window.location.href = httpData;
+      return;
+    }
+
     try {
       const responseIp = await axios.get(LOAD_GET_IP_URL);
       const _createDetailAdvertisement = await createDetailAdvertisement({
@@ -890,23 +903,15 @@ function FileUploader() {
       });
 
       if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
-        const newWindow = window.open(
-          httpData,
-          "_blank",
-          "noopener,noreferrer",
-        );
-
-        if (
-          !newWindow ||
-          newWindow.closed ||
-          typeof newWindow.closed === "undefined"
-        ) {
-          // Avoid history manipulation and use window location directly
-          window.location.replace(httpData);
-        }
+        // Update the new tab's URL after async operation
+        newWindow.location.href = httpData;
       }
     } catch (error: any) {
       errorMessage(error, 3000);
+      // Close the new window if there was an error
+      if (newWindow) {
+        newWindow.close();
+      }
     }
   };
 
