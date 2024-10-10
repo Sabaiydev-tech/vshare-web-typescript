@@ -878,11 +878,12 @@ function FileUploader() {
       httpData = "http://" + randomAd.url;
     }
 
-    // Open the ad in a new tab immediately with about:blank
-    const newWindow = window.open(
-      "about:blank",
-      "_blank",
-      "noopener,noreferrer",
+    // Open the ad in a new tab immediately with a placeholder content
+    const newWindow = window.open("", "_blank", "noopener,noreferrer");
+
+    // Set some placeholder content in the new tab to avoid it being blank
+    newWindow.document.write(
+      "<p style='text-align:center; font-size:20px;'>Loading advertisement...</p>",
     );
 
     if (
