@@ -10,6 +10,7 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import { useLocation, useRoutes } from "react-router-dom";
 import createTheme from "theme";
 import { getRouteName } from "utils/url.util";
+import ImageIcon from "assets/images/vshare-black-logo.png";
 
 const emotionCache = createCache({ key: "css" });
 
@@ -82,13 +83,11 @@ function App() {
           <meta name="publisher" content={"vSHARE TECHNOLOGY"} />
           <link rel="canonical" href={canonicalUrl} />
 
-          <meta
-            property="og:title"
-            content={SEOData?.[0]?.title}
-          />
+          <meta property="og:title" content={SEOData?.[0]?.title} />
           <meta property="og:description" content={SEOData?.[0]?.description} />
           <meta property="og:url" content={canonicalUrl} />
           <meta property="og:type" content="website" />
+          <meta property="og:image" content={ImageIcon} />
           <meta name="twitter:title" content={SEOData?.[0]?.title} />
           <meta
             name="twitter:description"
