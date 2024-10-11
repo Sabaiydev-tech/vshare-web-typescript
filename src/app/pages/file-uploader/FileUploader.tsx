@@ -816,6 +816,7 @@ function FileUploader() {
     const availableAds = getAdvertisemment.filter(
       (ad) => !usedAds.includes(ad._id),
     );
+
     if (availableAds.length === 0) {
       setUsedAds([]);
       return;
@@ -824,6 +825,23 @@ function FileUploader() {
     const randomIndex = Math.floor(Math.random() * availableAds.length);
     const randomAd = availableAds[randomIndex];
     setUsedAds([...usedAds, randomAd._id]);
+
+    let httpData = randomAd.url;
+    if (!httpData.match(/^https?:\/\//i)) {
+      httpData = "http://" + randomAd.url;
+    }
+
+    const newWindow = window.open(httpData, "_blank", "noopener,noreferrer");
+
+    if (
+      !newWindow ||
+      newWindow.closed ||
+      typeof newWindow.closed === "undefined"
+    ) {
+      console.log("Pop-up was blocked or failed to open.");
+      return;
+    }
+
     try {
       const responseIp = await axios.get(LOAD_GET_IP_URL);
       const _createDetailAdvertisement = await createDetailAdvertisement({
@@ -834,28 +852,12 @@ function FileUploader() {
           },
         },
       });
-      if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
-        let httpData = "";
-        if (
-          !randomAd.url.match(/^https?:\/\//i) &&
-          !randomAd.url.match(/^http?:\/\//i)
-        ) {
-          httpData = "http://" + randomAd.url;
-        } else {
-          httpData = randomAd.url;
-        }
 
-        const newWindow = window.open(httpData, "_blank");
-        if (
-          !newWindow ||
-          newWindow.closed ||
-          typeof newWindow.closed == "undefined"
-        ) {
-          history.pushState(null, "", window.location.href);
-          window.location.href = httpData;
-        }
+      if (!_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
+        newWindow.close();
       }
     } catch (error: any) {
+      newWindow.close();
       errorMessage(error, 3000);
     }
   };
@@ -871,8 +873,20 @@ function FileUploader() {
       }
     }, 1500);
 
-    window.location.href = appScheme;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+    if (isSafari && platform === "ios") {
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = appScheme;
+      document.body.appendChild(iframe);
+
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    } else {
+      window.location.href = appScheme;
+    }
     window.onblur = () => {
       clearTimeout(timeout);
     };
