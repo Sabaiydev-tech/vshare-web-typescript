@@ -1133,7 +1133,17 @@ function FileUploader() {
       </Helmet>
 
       <MUI.ContainerHome maxWidth="xl">
-        <Box sx={{ backgroundColor: "#F8F7FA", padding: "1rem" }}>
+        <Box
+          sx={{
+            backgroundColor: "#F8F7FA",
+            padding: "1rem",
+            border: "1px solid red",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+          }}
+        >
           {(isLoading || isPassword || openInputPasswod) && (
             <Box>
               <Box sx={{ pt: 0.5 }}>
@@ -1187,17 +1197,7 @@ function FileUploader() {
             </Box>
           )}
 
-          {/* <Box
-            sx={{
-              border: "1px solid red",
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          > */}
           <GoogleAdsense />
-          {/* </Box> */}
 
           {((dataFolderLinkMemo && dataFolderLinkMemo.length > 0) ||
             (dataLinkMemo && dataLinkMemo.length > 0) ||
