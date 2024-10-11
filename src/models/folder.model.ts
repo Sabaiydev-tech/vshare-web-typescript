@@ -6,6 +6,7 @@ export interface IFolder {
   folder_name: string;
   newFolder_name?: string;
   total_size: number;
+  isFolder?: boolean;
   newPath?: string;
   is_public?: string;
   checkFolder?: string;

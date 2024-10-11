@@ -1,6 +1,7 @@
 export interface IFile {
   _id: string;
   filename: string;
+  isFile?: boolean;
   newFilename: string;
   filePassword: string;
   fileType: string;
