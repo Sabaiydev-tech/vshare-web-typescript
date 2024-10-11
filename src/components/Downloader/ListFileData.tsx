@@ -73,7 +73,7 @@ function ListFileData(props: Props) {
         headerName: "",
         editable: false,
         sortable: false,
-        maxWidth: isMobile ? 40 : 70,
+        maxWidth: isMobile ? 40 : 50,
         flex: 1,
         renderCell: (params: { row: any }) => {
           const { _id, status } = params?.row || {};
@@ -344,8 +344,8 @@ function ListFileData(props: Props) {
                   >
                     <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
                     <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
-                      This link is expired. Please access the document before
-                      this date
+                      This link will be expired. Please access the document
+                      before this date
                     </Typography>
                   </Box>
                 )}

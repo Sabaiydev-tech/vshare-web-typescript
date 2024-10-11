@@ -117,3 +117,42 @@ export const QUERY_SUB_FOLDER = gql`
     }
   }
 `;
+
+export const QUERY_SUB_FOLDER_V1 = gql`
+  query GetFolderByUIDV1(
+    $where: FoldersWhereInput
+    $manageLinkId: ID
+    $noLimit: Boolean
+    $skip: Int
+    $limit: Int
+  ) {
+    foldersByUIDV1(
+      where: $where
+      manageLinkId: $manageLinkId
+      noLimit: $noLimit
+      skip: $skip
+      limit: $limit
+    ) {
+      total
+      data {
+        _id
+        folder_name
+        total_size
+        folder_type
+        checkFolder
+        newFolder_name
+        access_password
+        longUrl
+        shortUrl
+        url
+        path
+        newPath
+        status
+        createdBy {
+          _id
+          newName
+        }
+      }
+    }
+  }
+`;

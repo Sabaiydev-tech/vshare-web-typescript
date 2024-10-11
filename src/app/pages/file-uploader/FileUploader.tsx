@@ -47,6 +47,7 @@ import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "./styles/fileUploader.style";
 import "./styles/fileUploader.style.css";
 import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
+import { IEncryptDataLink } from "models/encryptDataLink.model";
 
 const DATA_LIST_SIZE = 10;
 
@@ -162,7 +163,10 @@ function FileUploader() {
   };
   const useDataSetting = useManageSetting();
 
-  let linkClient = useMemo(() => ({ _id: "", type: "" }), []);
+  let linkClient: IEncryptDataLink = useMemo(
+    () => ({ _id: "", type: "", manageLinkId: "" }),
+    [],
+  );
 
   try {
     if (urlClient) {
@@ -179,7 +183,6 @@ function FileUploader() {
 
   function handleDecryptFile(val) {
     const decryptedData = decryptDataLink(val);
-
     return decryptedData;
   }
 
@@ -973,7 +976,7 @@ function FileUploader() {
     const baseUrl = {
       _id: folder._id,
       type: "folder",
-      manageLinkId: linkClient?.type === "multiple" ? linkClient?._id : "",
+      manageLinkId,
     };
 
     const encodeUrl = encryptDataLink(baseUrl);

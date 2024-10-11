@@ -250,9 +250,7 @@ function ListDataItem(props: Props) {
           return (
             <IconButton
               onClick={(e: any) => {
-                const url = dataFile?.longUrl || "";
-                props.handleQRGeneration?.(e, dataFile, url);
-                // handleOpenQRCode(e, dataFile);
+                handleOpenQRCode(e, dataFile);
               }}
             >
               <QrCodeIcon />
@@ -277,18 +275,24 @@ function ListDataItem(props: Props) {
     props.handleClearFileSelection?.();
   }
 
-  function handleOpenQRCode(_event: HTMLFormElement, data: IFile | IFolder) {
-    const dataPrepared = {
-      _id: data._id,
-      type: data.isFile ? "file" : "folder",
-      manageLinkId: props.manageLinkId,
-    };
+  function handleOpenQRCode(event: HTMLFormElement, data: IFile | IFolder) {
+    const url = data?.longUrl || "";
+    props.handleQRGeneration?.(event, data, url);
 
-    const encodeData = encryptDataLink(dataPrepared);
-    // console.log(encodeData);
-    const decode = decryptDataLink(encodeData);
-    console.log({ decode });
-    // props.handleQRGeneration?.(e, data, url);
+    // const dataPrepared = {
+    //   _id: props.manageLinkId,
+    //   type: data.isFile ? "file" : "folder",
+    //   // type: "multiple",
+    //   manageLinkId: props.manageLinkId,
+    // };
+
+    // const url = `${window.location.origin}/df?lc=`;
+    // const encodeData = encryptDataLink(dataPrepared);
+
+    // const longUrl = url + encodeData;
+    // console.log({ longUrl });
+
+    // props.handleQRGeneration?.(event, data, longUrl);
   }
 
   useEffect(() => {
@@ -412,8 +416,8 @@ function ListDataItem(props: Props) {
                   >
                     <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
                     <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
-                      This link is expired. Please access the document before
-                      this date
+                      This link will be expired. Please access the
+                      document before this date
                     </Typography>
                   </Box>
                 )}

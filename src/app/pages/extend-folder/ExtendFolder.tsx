@@ -5,7 +5,10 @@ import {
   QUERY_ADVERTISEMENT,
 } from "api/graphql/ad.graphql";
 import { QUERY_SUB_FILE } from "api/graphql/file.graphql";
-import { QUERY_SUB_FOLDER } from "api/graphql/folder.graphql";
+import {
+  QUERY_SUB_FOLDER,
+  QUERY_SUB_FOLDER_V1,
+} from "api/graphql/folder.graphql";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
 import axios from "axios";
 import DialogConfirmPassword from "components/dialog/DialogConfirmPassword";
@@ -38,6 +41,7 @@ import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "../file-uploader/styles/fileUploader.style";
 import "../file-uploader/styles/fileUploader.style.css";
 import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
+import { IEncryptDataLink } from "models/encryptDataLink.model";
 
 function ExtendFolder() {
   const location = useLocation();
@@ -116,7 +120,7 @@ function ExtendFolder() {
     fetchPolicy: "cache-and-network",
   });
 
-  const [getFolderLink] = useLazyQuery(QUERY_SUB_FOLDER);
+  const [getFolderLink] = useLazyQuery(QUERY_SUB_FOLDER_V1);
 
   const [getDataButtonDownload, { data: getDataButtonDL }] = useLazyQuery(
     QUERY_SETTING,
@@ -136,7 +140,10 @@ function ExtendFolder() {
   };
   const useDataSetting = useManageSetting();
 
-  let linkClient = useMemo(() => ({ _id: "", type: "" }), []);
+  let linkClient: IEncryptDataLink = useMemo(
+    () => ({ _id: "", type: "", manageLinkId: "" }),
+    [],
+  );
 
   try {
     if (urlClient) {
@@ -145,13 +152,14 @@ function ExtendFolder() {
       linkClient = {
         _id: decode?._id,
         type: decode?.type,
+        manageLinkId: decode?.manageLinkId,
       };
     }
   } catch (error) {
     console.error(error);
   }
 
-  function handleDecryptFile(val) {
+  function handleDecryptFile(val: string) {
     const decryptedData = decryptDataLink(val);
     return decryptedData;
   }
@@ -210,7 +218,7 @@ function ExtendFolder() {
     if (
       !dataSelector?.selectionFileAndFolderData.find((el) => el.id === item._id)
     ) {
-      if (item.filePassword || item.access_password) {
+      if (item.filePassword) {
         setFileQRCodePassword(item.filePassword || item.access_password);
         setIsVerifyQRCode(true);
         return;
@@ -224,10 +232,8 @@ function ExtendFolder() {
     setEventClick("checkbox");
 
     const item = dataFolderLinkMemo.find((data) => {
-      const checkType = data?.isFile ? "file" : "folder";
-      return data._id === id && checkType === "file";
+      return data._id === id;
     });
-
     setDataValue(item);
 
     if (
@@ -235,8 +241,8 @@ function ExtendFolder() {
         (el) => el.id === item!._id,
       )
     ) {
-      if (item!.access_password) {
-        setFileQRCodePassword(item!.access_password);
+      if (item?.access_password) {
+        setFileQRCodePassword(item.access_password);
         setIsVerifyQRCode(true);
         return;
       }
@@ -246,7 +252,7 @@ function ExtendFolder() {
   }
 
   function handleMultipleDataDone(item: any) {
-    const name = !item?.isFile ? item?.folder_name : item?.filename;
+    const name = item?.isFile ? item?.filename : item?.folder_name;
     const newFilename = !item.isFile ? item?.newFolder_name : item?.newFilename;
     const checkType = item.isFile ? "file" : "folder";
 
@@ -385,6 +391,7 @@ function ExtendFolder() {
               where: {
                 _id: linkClient?._id,
               },
+              manageLinkId: linkClient?.manageLinkId,
               limit: toggle === "list" ? LIMIT_DATA_PAGE : viewFolderMore,
               skip:
                 toggle === "list"
@@ -392,8 +399,7 @@ function ExtendFolder() {
                   : null,
             },
             onCompleted: (values) => {
-              const folderData = values?.foldersByUID?.data || [];
-              console.log(folderData);
+              const folderData = values?.foldersByUIDV1?.data || [];
               const total = values?.foldersByUID?.total || 0;
               setTotalFolder(total);
               setDataSubFolder(folderData);
@@ -690,33 +696,32 @@ function ExtendFolder() {
 
     if (totalClickCount >= getActionButton) {
       setTotalClickCount(0);
+
       const groupData: any[] = (await getAllData()) || [];
+      const multipleData = groupData.map((item: any) => {
+        const newPath = item?.newPath || "";
+        const newFilename = item?.newFilename || item?.newFolder_name;
 
-      console.log(groupData);
-      // const multipleData = groupData.map((item: any) => {
-      //   const newPath = item?.newPath || "";
-      //   const newFilename = item?.newFilename || item?.newFolder_name;
+        return {
+          newPath,
+          id: item._id,
+          newFilename: newFilename || "",
+          name: item?.filename || item?.folder_name,
+          checkType: item?.isFile ? "file" : "folder",
+          createdBy: item?.createdBy,
+          isPublic: linkClient?._id ? false : true,
+        };
+      });
 
-      //   return {
-      //     newPath,
-      //     id: item._id,
-      //     newFilename: newFilename || "",
-      //     name: item?.filename || item?.folder_name,
-      //     checkType: item?.isFile ? "file" : "folder",
-      //     createdBy: item?.createdBy,
-      //     isPublic: linkClient?._id ? false : true,
-      //   };
-      // });
-
-      // manageFile.handleDownloadFile(
-      //   {
-      //     multipleData,
-      //   },
-      //   {
-      //     onFailed: () => {},
-      //     onSuccess: () => {},
-      //   },
-      // );
+      manageFile.handleDownloadFile(
+        {
+          multipleData,
+        },
+        {
+          onFailed: () => {},
+          onSuccess: () => {},
+        },
+      );
     } else {
       if (getAdvertisemment.length) {
         handleAdvertisementPopup();

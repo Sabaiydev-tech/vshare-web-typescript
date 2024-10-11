@@ -76,7 +76,7 @@ function ListFolderData(props: Props) {
         headerName: "",
         editable: false,
         sortable: false,
-        flex: 1,
+        maxWidth: 50,
         renderCell: (params: { row: any }) => {
           const { _id, status } = params?.row || {};
 
@@ -116,17 +116,15 @@ function ListFolderData(props: Props) {
           return (
             <Fragment>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                {!props.isFile && (
-                  <Fragment>
-                    <IconFolderContainer>
-                      {dataFile?.total_size && dataFile.total_size > 0 ? (
-                        <FolderNotEmptyIcon />
-                      ) : (
-                        <FolderEmptyIcon />
-                      )}
-                    </IconFolderContainer>
-                  </Fragment>
-                )}
+                <Fragment>
+                  <IconFolderContainer>
+                    {dataFile?.total_size && dataFile.total_size > 0 ? (
+                      <FolderNotEmptyIcon />
+                    ) : (
+                      <FolderEmptyIcon />
+                    )}
+                  </IconFolderContainer>
+                </Fragment>
                 <Typography title={dataFile?.filename} component={"span"}>
                   {cutFileName(filename || "", 20)}
                 </Typography>
@@ -321,8 +319,8 @@ function ListFolderData(props: Props) {
                     >
                       <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
                       <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
-                        This link is expired. Please access the document before
-                        this date
+                        This link will be expired. Please access the document
+                        before this date
                       </Typography>
                     </Box>
                   </>
