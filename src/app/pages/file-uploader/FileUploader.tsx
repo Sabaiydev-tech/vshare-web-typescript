@@ -1187,7 +1187,7 @@ function FileUploader() {
             </Box>
           )}
 
-          <Box
+          {/* <Box
             sx={{
               border: "1px solid red",
               width: "100%",
@@ -1195,9 +1195,9 @@ function FileUploader() {
               alignItems: "center",
               justifyContent: "center",
             }}
-          >
-            <GoogleAdsense />
-          </Box>
+          > */}
+          <GoogleAdsense />
+          {/* </Box> */}
 
           {((dataFolderLinkMemo && dataFolderLinkMemo.length > 0) ||
             (dataLinkMemo && dataLinkMemo.length > 0) ||
