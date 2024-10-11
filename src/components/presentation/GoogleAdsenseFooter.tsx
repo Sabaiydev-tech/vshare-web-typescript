@@ -17,7 +17,7 @@ function GoogleAdsenseFooter() {
   }, []);
 
   return (
-    <AdsContainer>
+    <AdsContainer sx={{ mt: 3 }}>
       <ins
         ref={adRef}
         className="adsbygoogle"

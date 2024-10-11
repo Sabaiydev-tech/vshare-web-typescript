@@ -1348,9 +1348,8 @@ function FileUploader() {
             <NotFound />
           )}
 
-          {/* <FeedCard /> */}
+          <GoogleAdsenseFooter />
         </Box>
-        <GoogleAdsenseFooter />
       </MUI.ContainerHome>
 
       <BaseDeeplinkDownload
