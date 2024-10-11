@@ -89,6 +89,48 @@ export const QUERY_FILE_PUBLIC = gql`
   }
 `;
 
+export const QUERY_FILE_PUBLIC_V1 = gql`
+  query FilesPublicV1(
+    $where: FilesWhereInput
+    $orderBy: OrderByInput
+    $skip: Int
+    $limit: Int
+    $noLimit: Boolean
+  ) {
+    filesPublicV1(
+      where: $where
+      orderBy: $orderBy
+      skip: $skip
+      limit: $limit
+      noLimit: $noLimit
+    ) {
+      total
+      data {
+        _id
+        filename
+        newFilename
+        filePassword
+        passwordUrlAll
+        fileType
+        size
+        newPath
+        status
+        isPublic
+        path
+        urlAll
+        url
+        expired
+        createdBy {
+          _id
+          newName
+        }
+        shortUrl
+        longUrl
+      }
+    }
+  }
+`;
+
 export const QUERY_FILE_PUBLICV2 = gql`
   query FilePublic($id: [ID!]!) {
     filePublic(ID: $id) {

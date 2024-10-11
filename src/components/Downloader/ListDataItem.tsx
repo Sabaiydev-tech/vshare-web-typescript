@@ -33,6 +33,9 @@ import {
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
 import { cutFileName, cutFolderName, getFileType } from "utils/file.util";
+import { IFile } from "models/file.model";
+import { IFolder } from "models/folder.model";
+import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 
 const IconFolderContainer = styled("div")({
   width: "28px",
@@ -46,6 +49,7 @@ type Props = {
   isFile?: boolean;
   linkExpired?: string;
   toggle?: string;
+  manageLinkId?: string;
   total?: number;
   selectionFileAndFolderData: any[];
   pagination?: {
@@ -248,6 +252,7 @@ function ListDataItem(props: Props) {
               onClick={(e: any) => {
                 const url = dataFile?.longUrl || "";
                 props.handleQRGeneration?.(e, dataFile, url);
+                // handleOpenQRCode(e, dataFile);
               }}
             >
               <QrCodeIcon />
@@ -270,6 +275,20 @@ function ListDataItem(props: Props) {
 
   function handleClearSelection() {
     props.handleClearFileSelection?.();
+  }
+
+  function handleOpenQRCode(_event: HTMLFormElement, data: IFile | IFolder) {
+    const dataPrepared = {
+      _id: data._id,
+      type: data.isFile ? "file" : "folder",
+      manageLinkId: props.manageLinkId,
+    };
+
+    const encodeData = encryptDataLink(dataPrepared);
+    // console.log(encodeData);
+    const decode = decryptDataLink(encodeData);
+    console.log({ decode });
+    // props.handleQRGeneration?.(e, data, url);
   }
 
   useEffect(() => {

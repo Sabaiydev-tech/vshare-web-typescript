@@ -13,6 +13,7 @@ import {
 import {
   QUERY_FILE_GET_LINK,
   QUERY_FILE_PUBLIC,
+  QUERY_FILE_PUBLIC_V1,
 } from "api/graphql/file.graphql";
 import {
   CHECK_GET_LINK,
@@ -88,6 +89,7 @@ function FileUploader() {
   const [folderDataSelect, setFolderDataSelect] = useState<any>(null);
   const [dataMultipleFile, setDataMultipleFile] = useState<any[]>([]);
   const [dataMultipleFolder, setDataMultipleFolder] = useState<any[]>([]);
+  const [manageLinkId, setManageLinkId] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMore, setViewMore] = useState(20);
@@ -369,7 +371,7 @@ function FileUploader() {
       if (linkClient?._id)
         if (linkClient?.type === "multiple") {
           setIsLoading(true);
-
+          setManageLinkId(linkClient._id);
           await getManageLinkDetail({
             variables: {
               where: {
@@ -462,6 +464,7 @@ function FileUploader() {
     try {
       if (linkClient?._id) {
         if (linkClient?.type === "multiple") {
+          setManageLinkId(linkClient?._id);
           setIsLoading(true);
           await getOneTimeLinkDetails({
             variables: {
@@ -1210,6 +1213,7 @@ function FileUploader() {
                           dataLinks={dataFileConcat}
                           linkExpired={linkExpirdAt}
                           handleSelection={handleMultipleListData}
+                          manageLinkId={manageLinkId}
                           selectionFileAndFolderData={
                             dataSelector.selectionFileAndFolderData || []
                           }
