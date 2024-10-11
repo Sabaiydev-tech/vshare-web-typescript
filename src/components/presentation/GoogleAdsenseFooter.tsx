@@ -19,6 +19,7 @@ function GoogleAdsenseFooter() {
   return (
     <AdsContainer>
       <ins
+        ref={adRef}
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client="ca-pub-7931814511159648"
