@@ -1133,17 +1133,7 @@ function FileUploader() {
       </Helmet>
 
       <MUI.ContainerHome maxWidth="xl">
-        <Box
-          sx={{
-            backgroundColor: "#F8F7FA",
-            padding: "1rem",
-            border: "1px solid red",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "column",
-          }}
-        >
+        <Box sx={{ backgroundColor: "#F8F7FA", padding: "1rem" }}>
           {(isLoading || isPassword || openInputPasswod) && (
             <Box>
               <Box sx={{ pt: 0.5 }}>
