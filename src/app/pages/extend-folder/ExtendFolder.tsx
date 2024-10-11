@@ -1108,9 +1108,9 @@ function ExtendFolder() {
                 )}
               </Box>
             </MUI.FileListContainer>
-          </Box>
 
-          <GoogleAdsenseFooter />
+            <GoogleAdsenseFooter />
+          </Box>
         </MUI.ContainerHome>
       )}
 
