@@ -35,7 +35,6 @@ import {
 import { cutFileName, cutFolderName, getFileType } from "utils/file.util";
 import { IFile } from "models/file.model";
 import { IFolder } from "models/folder.model";
-import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 
 const IconFolderContainer = styled("div")({
   width: "28px",

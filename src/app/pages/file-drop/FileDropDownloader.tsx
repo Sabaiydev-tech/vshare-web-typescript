@@ -547,7 +547,7 @@ function FileDropDownloader() {
       });
       if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
         let httpData = "";
-        if (!randomAd.url.match(/^https?:\/\//i || /^http?:\/\//i)) {
+        if (!randomAd.url.match(/^https?:\/\//i)) {
           httpData = "http://" + randomAd.url;
         } else {
           httpData = randomAd.url;

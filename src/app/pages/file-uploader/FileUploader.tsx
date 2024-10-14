@@ -12,8 +12,7 @@ import {
 } from "api/graphql/ad.graphql";
 import {
   QUERY_FILE_GET_LINK,
-  QUERY_FILE_PUBLIC,
-  // QUERY_FILE_PUBLIC_V1,
+  QUERY_FILE_PUBLIC_V1,
 } from "api/graphql/file.graphql";
 import {
   CHECK_GET_LINK,
@@ -111,7 +110,7 @@ function FileUploader() {
 
   // const [qrcodeUser, setQrcodeUser] = useState([]);
   const [hideDownload, setHideDownload] = useState(true);
-  const [getData] = useLazyQuery(QUERY_FILE_PUBLIC, {
+  const [getData] = useLazyQuery(QUERY_FILE_PUBLIC_V1, {
     fetchPolicy: "cache-and-network",
   });
 
@@ -662,6 +661,7 @@ function FileUploader() {
       }, 500);
 
       if (dataFileLink?.queryFileGetLinks?.data) {
+        console.log(dataFileLink?.queryFileGetLinks?.data)
         setGetDataRes(dataFileLink?.queryFileGetLinks?.data || []);
       }
     } catch (error: any) {
@@ -680,10 +680,12 @@ function FileUploader() {
           },
         },
         onCompleted: (resData) => {
-          const fileData = resData?.filesPublic?.data?.[0];
+          const fileData = resData?.filesPublicV1?.data?.[0];
           document.title = fileData?.filename;
+
+          setLinkExpirdAt(fileData?.expired);
           setDescription(`${fileData?.filename} on vshare.net`);
-          setGetDataRes(resData?.filesPublic?.data || []);
+          setGetDataRes(resData?.filesPublicV1?.data || []);
         },
       });
 
