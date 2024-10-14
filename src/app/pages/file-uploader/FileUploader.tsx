@@ -13,7 +13,7 @@ import {
 import {
   QUERY_FILE_GET_LINK,
   QUERY_FILE_PUBLIC,
-  QUERY_FILE_PUBLIC_V1,
+  // QUERY_FILE_PUBLIC_V1,
 } from "api/graphql/file.graphql";
 import {
   CHECK_GET_LINK,
@@ -62,7 +62,7 @@ function FileUploader() {
   const [linkType, setLinkType] = useState("normal");
 
   const [linkExpirdAt, setLinkExpirdAt] = useState("");
-  const [getNewFileName, setGetNewFileName] = useState("");
+  const [getNewFileName, _setGetNewFileName] = useState("");
   const [fileQRCodePassword, setFileQRCodePassword] = useState("");
   const [eventClick, setEventClick] = useState("");
 
@@ -71,7 +71,7 @@ function FileUploader() {
     : "list";
   const [toggle, setToggle] = useState(toggleJson);
 
-  const [getFilenames, setGetFilenames] = useState("");
+  const [getFilenames, _setGetFilenames] = useState("");
   const [fileUrl, setFileUrl] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isVerifyQrCode, setIsVerifyQRCode] = useState(false);
@@ -92,9 +92,9 @@ function FileUploader() {
   const [dataMultipleFolder, setDataMultipleFolder] = useState<any[]>([]);
   const [manageLinkId, setManageLinkId] = useState("");
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, _setCurrentPage] = useState(1);
   const [viewMore, setViewMore] = useState(20);
-  const [total, setTotal] = useState(0);
+  const [_total, setTotal] = useState(0);
 
   const params = new URLSearchParams(location.search);
   const linkValue = params.get("l");
@@ -330,7 +330,7 @@ function FileUploader() {
     }
   }, [getDataButtonDL, getDataAdvertisement]);
 
-  const handleViewMore = () => {
+  const _handleViewMore = () => {
     setViewMore((prev) => prev + 10);
   };
 
@@ -914,9 +914,11 @@ function FileUploader() {
           name: item?.filename || item?.folder_name,
           checkType: item?.isFile ? "file" : "folder",
           createdBy: item?.createdBy,
-          isPublic: linkClient?._id ? false : true,
+          isPublic: item?.createdBy?._id !== "0" ? false : true,
         };
       });
+
+    console.log(multipleData);
 
     setTotalClickCount((prevCount) => prevCount + 1);
 

@@ -153,7 +153,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   const [numUploadedFiles, _setNumUploadedFiles] = useState(0);
   const [fileMaxSize, setFileMaxSize] = useState("");
   const [uploadSpeed, setUploadSpeed] = useState(0);
-  const [overallProgress, setOverallProgress] = useState(0);
+  const [_overallProgress, setOverallProgress] = useState(0);
   const [checkUpload, setCheckUpload] = useState(false);
   const isRunningRef = React.useRef(true);
   // const [passwordCopied, setPasswordCompied] = useState(false);
@@ -273,13 +273,16 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
     };
   });
 
-  let isLargeFile = false;
-  for (let i = 0; i < files?.length; i++) {
-    if (files[i].file?.sizeFile > dataMaxSize.action) {
-      isLargeFile = true;
-      break;
+  const isLargeFile = React.useMemo(() => {
+    let isMax = false;
+    for (let i = 0; i < files?.length; i++) {
+      if (files[i].file?.sizeFile > dataMaxSize.action) {
+        isMax = true;
+        break;
+      }
     }
-  }
+    return isMax;
+  }, [files]);
 
   const dataSizeAll = filesArray.reduce((total: number, obj: any) => {
     return total + obj.size;
@@ -1054,7 +1057,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
             {filesArray?.length > dataUploadPerTime.action || isLargeFile ? (
               <Alert severity="error" sx={{ width: "100%", mx: 2, my: 2 }}>
                 {isLargeFile
-                  ? "Some files are larger than 2GB."
+                  ? `Some files are larger than ${fileMaxSize}.`
                   : `Upload is limited ${dataUploadPerTime.action}
                  files per time.`}
               </Alert>

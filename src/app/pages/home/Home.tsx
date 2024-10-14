@@ -56,6 +56,7 @@ import "swiper/css";
 import createTheme from "theme";
 import { Id } from "types";
 import { ENV_KEYS } from "constants/env.constant";
+import { SETTING_KEYS } from "constants/setting.constant";
 const ShowFileDialog = React.lazy(
   () => import("components/dialog/DialogShowFIle"),
 );
@@ -88,9 +89,9 @@ function Home() {
     passwordLink: "HLINPFS",
     categoryKey: "AEADEFD",
     subPasswordLink: "HFPWFCE",
-    uploadPerday: "MUPFAPD",
-    uploadMaxSize: "MXULDFE",
-    uploadPerTime: "MUPEAPD",
+    uploadPerday: SETTING_KEYS.UPLOAD_PER_DAY,
+    uploadMaxSize: SETTING_KEYS.MAX_FILE_SIZE_UPLOAD,
+    uploadPerTime: SETTING_KEYS.UPLOAD_PER_TIME,
   };
 
   const handleClose = (value) => {
