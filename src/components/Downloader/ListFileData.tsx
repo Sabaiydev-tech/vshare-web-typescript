@@ -30,11 +30,14 @@ import {
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
 import { cutFileName } from "utils/file.util";
+import { IFile } from "models/file.model";
+import { encryptDataLink } from "utils/secure.util";
 
 type Props = {
   _description?: string;
   dataLinks?: any[];
   multipleIds?: any[];
+  manageLinkId?: string;
   countAction: number;
   isFile?: boolean;
   toggle?: string;
@@ -200,8 +203,7 @@ function ListFileData(props: Props) {
           return (
             <IconButton
               onClick={(e: any) => {
-                const url = dataFile?.longUrl || "";
-                props.handleQRGeneration?.(e, dataFile, url);
+                handleOpenQRCode(e, dataFile);
               }}
             >
               <QrCodeIcon />
@@ -225,6 +227,23 @@ function ListFileData(props: Props) {
 
   function handleClearSelection() {
     props.handleClearFileSelection?.();
+  }
+
+  function handleOpenQRCode(event: HTMLFormElement, data: IFile) {
+    // const url = data?.longUrl || "";
+    // props.handleQRGeneration?.(event, data, url);
+
+    const dataPrepared = {
+      _id: data._id,
+      type: "file",
+      manageLinkId: props.manageLinkId,
+    };
+
+    const url = `${window.location.origin}/df?lc=`;
+    const encodeData = encryptDataLink(dataPrepared);
+
+    const longUrl = url + encodeData;
+    props.handleQRGeneration?.(event, data, longUrl);
   }
 
   useEffect(() => {

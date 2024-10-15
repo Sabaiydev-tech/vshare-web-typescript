@@ -86,6 +86,34 @@ export const QUERY_FOLDER_PUBLIC_LINK = gql`
   }
 `;
 
+export const QUERY_FOLDER_PUBLIC_LINK_V1 = gql`
+  query QueryfoldersGetLinksV1($where: FoldersWhereInput, $manageLinkId: ID) {
+    queryfoldersGetLinksV1(where: $where, manageLinkId: $manageLinkId) {
+      total
+      data {
+        _id
+        folder_name
+        total_size
+        access_password
+        folder_type
+        checkFolder
+        newFolder_name
+        url
+        status
+        path
+        newPath
+        longUrl
+        shortUrl
+        createdBy {
+          _id
+          newName
+        }
+        updatedAt
+      }
+    }
+  }
+`;
+
 export const QUERY_SUB_FOLDER = gql`
   query GetFolderByUID(
     $where: FoldersWhereInput
@@ -147,6 +175,7 @@ export const QUERY_SUB_FOLDER_V1 = gql`
         url
         path
         newPath
+        expired
         status
         createdBy {
           _id

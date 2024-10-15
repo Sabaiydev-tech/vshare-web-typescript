@@ -152,6 +152,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   const [isDialogQRCodeOpen, setIsDialogQRCodeOpen] = useState(false);
   const [numUploadedFiles, _setNumUploadedFiles] = useState(0);
   const [fileMaxSize, setFileMaxSize] = useState("");
+  const [fileSizeValue, setFileSizeValue] = useState(0);
   const [uploadSpeed, setUploadSpeed] = useState(0);
   const [_overallProgress, setOverallProgress] = useState(0);
   const [checkUpload, setCheckUpload] = useState(false);
@@ -209,6 +210,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   useEffect(() => {
     if (dataMaxSize?.action) {
       const maxSize = convertBytetoMBandGB(dataMaxSize?.action);
+      setFileSizeValue(parseInt(dataMaxSize?.action || "0"));
       setFileMaxSize(maxSize);
     }
   }, [dataMaxSize?.action]);
@@ -860,7 +862,13 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                           <Typography sx={{ fontSize: "0.8rem !important" }}>
                             {cutFileName(item.name, 10)}
                           </Typography>
-                          <Typography sx={{ fontSize: "0.7rem !important" }}>
+                          <Typography
+                            sx={{
+                              fontSize: "0.7rem !important",
+                              color:
+                                item.size > fileSizeValue ? "#d33" : "#17766B",
+                            }}
+                          >
                             ({convertBytetoMBandGB(item.size)})
                           </Typography>
                         </Box>
@@ -886,7 +894,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                       <Typography
                         sx={{
                           fontSize: "0.7rem !important",
-                          color: "#17766B",
+                          color: item.size > fileSizeValue ? "#d33" : "#17766B",
                         }}
                       >
                         ({convertBytetoMBandGB(item.size)})
@@ -922,7 +930,13 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                         >
                           {cutFileName(item.name, 10)}
                         </Typography>
-                        <Typography sx={{ fontSize: "0.7rem !important" }}>
+                        <Typography
+                          sx={{
+                            fontSize: "0.7rem !important",
+                            color:
+                              item.size > fileSizeValue ? "#d33" : "#17766B",
+                          }}
+                        >
                           ({convertBytetoMBandGB(item.size)})
                         </Typography>
                       </Box>

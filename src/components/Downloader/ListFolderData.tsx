@@ -32,6 +32,8 @@ import {
 } from "styles/presentation/presentation.style";
 import { cutFileName } from "utils/file.util";
 import moment from "moment";
+import { IFolder } from "models/folder.model";
+import { encryptDataLink } from "utils/secure.util";
 
 const IconFolderContainer = styled("div")({
   width: "28px",
@@ -45,6 +47,7 @@ type Props = {
   isFile?: boolean;
   toggle?: string;
   total?: number;
+  manageLinkId?: string;
   linkExpired?: string;
   selectionFileAndFolderData?: any[];
   pagination?: {
@@ -184,11 +187,7 @@ function ListFolderData(props: Props) {
           return (
             <IconButton
               onClick={(e: any) => {
-                props.handleQRGeneration?.(
-                  e,
-                  dataFile,
-                  dataFile?.longUrl || "",
-                );
+                handleOpenQRCode(e, dataFile);
               }}
             >
               <QrCodeIcon />
@@ -200,6 +199,23 @@ function ListFolderData(props: Props) {
 
     return data || [];
   }, [props.selectionFileAndFolderData]);
+
+  function handleOpenQRCode(event: HTMLFormElement, data: IFolder) {
+    // const url = data?.longUrl || "";
+    // props.handleQRGeneration?.(event, data, url);
+
+    const dataPrepared = {
+      _id: data._id,
+      type: "folder",
+      manageLinkId: props.manageLinkId,
+    };
+
+    const url = `${window.location.origin}/df?lc=`;
+    const encodeData = encryptDataLink(dataPrepared);
+
+    const longUrl = url + encodeData;
+    props.handleQRGeneration?.(event, data, longUrl);
+  }
 
   useEffect(() => {
     if (props?.linkExpired || props?.dataLinks?.[0]?.expired) {

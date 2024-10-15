@@ -194,6 +194,34 @@ export const QUERY_FILE_GET_LINK = gql`
   }
 `;
 
+export const QUERY_FILE_GET_LINK_V1 = gql`
+  query QueryFileGetLinksV1($where: FilesWhereInput, $manageLinkId: ID) {
+    queryFileGetLinksV1(where: $where, manageLinkId: $manageLinkId) {
+      data {
+        _id
+        filename
+        filePassword
+        newFilename
+        expired
+        fileType
+        size
+        status
+        path
+        newPath
+        shortUrl
+        longUrl
+        url
+        urlAll
+        createdBy {
+          _id
+          newName
+        }
+      }
+      total
+    }
+  }
+`;
+
 export const QUERY_SUB_FILE = gql`
   query GetFileByUID(
     $where: FilesWhereInput
@@ -202,6 +230,45 @@ export const QUERY_SUB_FILE = gql`
     $skip: Int
   ) {
     filesByUID(where: $where, noLimit: $noLimit, limit: $limit, skip: $skip) {
+      data {
+        _id
+        filename
+        newFilename
+        filePassword
+        fileType
+        size
+        status
+        isPublic
+        path
+        newPath
+        url
+        createdBy {
+          _id
+          newName
+        }
+        shortUrl
+        longUrl
+      }
+      total
+    }
+  }
+`;
+
+export const QUERY_SUB_FILEV1 = gql`
+  query GetFileByUIDV1(
+    $where: FilesWhereInput
+    $noLimit: Boolean
+    $limit: Int
+    $skip: Int
+    $manageLinkId: ID
+  ) {
+    filesByUIDV1(
+      where: $where
+      noLimit: $noLimit
+      limit: $limit
+      skip: $skip
+      manageLinkId: $manageLinkId
+    ) {
       data {
         _id
         filename

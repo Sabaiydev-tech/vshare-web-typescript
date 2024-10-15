@@ -4,7 +4,7 @@ import {
   CREATE_DETAIL_ADVERTISEMENT,
   QUERY_ADVERTISEMENT,
 } from "api/graphql/ad.graphql";
-import { QUERY_SUB_FILE } from "api/graphql/file.graphql";
+import { QUERY_SUB_FILE, QUERY_SUB_FILEV1 } from "api/graphql/file.graphql";
 import {
   QUERY_SUB_FOLDER,
   QUERY_SUB_FOLDER_V1,
@@ -42,6 +42,7 @@ import * as MUI from "../file-uploader/styles/fileUploader.style";
 import "../file-uploader/styles/fileUploader.style.css";
 import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
 import { IEncryptDataLink } from "models/encryptDataLink.model";
+import { SETTING_KEYS } from "constants/setting.constant";
 
 function ExtendFolder() {
   const location = useLocation();
@@ -51,14 +52,11 @@ function ExtendFolder() {
   const [folderDownload, setFolderDownload] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
-  const [getNewFileName, setGetNewFileName] = useState("");
   const [fileQRCodePassword, setFileQRCodePassword] = useState("");
   const [toggle, setToggle] = useState(
     localStorage.getItem("toggle") ? localStorage.getItem("toggle") : "list",
   );
 
-  const [checkModal, setCheckModal] = useState(false);
-  const [getFilenames, setGetFilenames] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isVerifyQrCode, setIsVerifyQRCode] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
@@ -68,6 +66,7 @@ function ExtendFolder() {
   const [usedAds, setUsedAds] = useState<any[]>([]);
   const [totalClickCount, setTotalClickCount] = useState(0);
   const [adAlive, setAdAlive] = useState(0);
+  const [manageLinkId, setManageLinkId] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloadLoading, setIsDownloadLoading] = useState(false);
@@ -116,7 +115,7 @@ function ExtendFolder() {
   // hooks
   const manageFile = useManageFiles();
 
-  const [getFileLink] = useLazyQuery(QUERY_SUB_FILE, {
+  const [getFileLink] = useLazyQuery(QUERY_SUB_FILEV1, {
     fetchPolicy: "cache-and-network",
   });
 
@@ -135,9 +134,7 @@ function ExtendFolder() {
       fetchPolicy: "cache-and-network",
     },
   );
-  const settingKeys = {
-    downloadKey: "HDLABTO",
-  };
+
   const useDataSetting = useManageSetting();
 
   let linkClient: IEncryptDataLink = useMemo(
@@ -158,6 +155,12 @@ function ExtendFolder() {
   } catch (error) {
     console.error(error);
   }
+
+  useEffect(() => {
+    if (linkClient?.manageLinkId) {
+      setManageLinkId(linkClient.manageLinkId);
+    }
+  }, [linkClient.manageLinkId]);
 
   function handleDecryptFile(val: string) {
     const decryptedData = decryptDataLink(val);
@@ -282,7 +285,7 @@ function ExtendFolder() {
     function getDataSetting() {
       // Show download button
       const downloadData = useDataSetting.data?.find(
-        (data) => data?.productKey === settingKeys.downloadKey,
+        (data) => data?.productKey === SETTING_KEYS.HIDE_DOWNLOAD,
       );
       if (downloadData) {
         if (downloadData?.status === "on") {
@@ -353,6 +356,7 @@ function ExtendFolder() {
               where: {
                 folder_id: linkClient?._id,
               },
+              manageLinkId: String(linkClient?.manageLinkId),
               limit: toggle === "list" ? LIMIT_DATA_PAGE : viewFileMore,
               skip:
                 toggle === "list"
@@ -360,8 +364,8 @@ function ExtendFolder() {
                   : null,
             },
             onCompleted: (fileData) => {
-              const response = fileData?.filesByUID?.data || [];
-              const total = fileData?.filesByUID?.total || 0;
+              const response = fileData?.filesByUIDV1?.data || [];
+              const total = fileData?.filesByUIDV1?.total || 0;
 
               setTotalFile(total);
               setDataSubGetLink(response);
@@ -391,7 +395,7 @@ function ExtendFolder() {
               where: {
                 _id: linkClient?._id,
               },
-              manageLinkId: linkClient?.manageLinkId,
+              manageLinkId: String(linkClient?.manageLinkId),
               limit: toggle === "list" ? LIMIT_DATA_PAGE : viewFolderMore,
               skip:
                 toggle === "list"
@@ -400,7 +404,7 @@ function ExtendFolder() {
             },
             onCompleted: (values) => {
               const folderData = values?.foldersByUIDV1?.data || [];
-              const total = values?.foldersByUID?.total || 0;
+              const total = values?.foldersByUIDV1?.total || 0;
               setTotalFolder(total);
               setDataSubFolder(folderData);
               if (folderData?.[0]?.status === "active") {
@@ -653,7 +657,7 @@ function ExtendFolder() {
           noLimit: true,
         },
       });
-      const fileData: any[] = (await result.data?.filesByUID?.data) || [];
+      const fileData: any[] = (await result.data?.filesByUIDV1?.data) || [];
       const fileDataMap =
         fileData
           ?.filter((file) => !file.filePassword)
@@ -671,7 +675,7 @@ function ExtendFolder() {
         },
       });
       const folderData: any[] =
-        (await folderResult.data?.foldersByUID?.data) || [];
+        (await folderResult.data?.foldersByUIDV1?.data) || [];
       const folderDataMap =
         folderData
           ?.filter((file) => !file.filePassword)
@@ -943,6 +947,7 @@ function ExtendFolder() {
                         isFile={false}
                         toggle={toggle}
                         _description={_description}
+                        manageLinkId={manageLinkId}
                         dataLinks={dataFolderLinkMemo}
                         multipleIds={multipleFolderIds}
                         countAction={adAlive}
@@ -974,6 +979,7 @@ function ExtendFolder() {
                         isFile={true}
                         toggle={toggle}
                         _description={_description}
+                        manageLinkId={manageLinkId}
                         dataLinks={dataLinkMemo}
                         selectionFileAndFolderData={
                           dataSelector?.selectionFileAndFolderData || []
@@ -1124,10 +1130,10 @@ function ExtendFolder() {
       <DialogConfirmPassword
         open={open}
         isMobile={isMobile}
-        getFilenames={getFilenames}
-        getNewFileName={getNewFileName}
+        getFilenames={""}
+        getNewFileName={""}
         password={password}
-        checkModal={checkModal}
+        checkModal={false}
         setPassword={setPassword}
         handleClose={handleClose}
         _confirmPasword={_confirmPasword}

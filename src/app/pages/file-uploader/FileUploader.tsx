@@ -11,14 +11,15 @@ import {
   QUERY_MANAGE_LINK_DETAIL,
 } from "api/graphql/ad.graphql";
 import {
-  QUERY_FILE_GET_LINK,
+  // QUERY_FILE_GET_LINK,
+  QUERY_FILE_GET_LINK_V1,
   QUERY_FILE_PUBLIC_V1,
 } from "api/graphql/file.graphql";
 import {
   CHECK_GET_LINK,
   GET_ONE_TIME_LINK_DETAIL,
 } from "api/graphql/file.new.graphql";
-import { QUERY_FOLDER_PUBLIC_LINK } from "api/graphql/folder.graphql";
+import { QUERY_FOLDER_PUBLIC_LINK_V1 } from "api/graphql/folder.graphql";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
 import DialogConfirmPassword from "components/dialog/DialogConfirmPassword";
 import DialogPreviewQRcode from "components/dialog/DialogPreviewQRCode";
@@ -47,6 +48,7 @@ import * as MUI from "./styles/fileUploader.style";
 import "./styles/fileUploader.style.css";
 import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
 import { IEncryptDataLink } from "models/encryptDataLink.model";
+import { SETTING_KEYS } from "constants/setting.constant";
 
 const DATA_LIST_SIZE = 10;
 
@@ -123,7 +125,7 @@ function FileUploader() {
   const manageFile = useManageFiles();
 
   const [getFileLink, { data: dataFileLink }] = useLazyQuery(
-    QUERY_FILE_GET_LINK,
+    QUERY_FILE_GET_LINK_V1,
     {
       fetchPolicy: "cache-and-network",
     },
@@ -134,7 +136,7 @@ function FileUploader() {
   });
 
   const [getFolderLink, { data: dataFolderLink }] = useLazyQuery(
-    QUERY_FOLDER_PUBLIC_LINK,
+    QUERY_FOLDER_PUBLIC_LINK_V1,
   );
 
   const [getDataButtonDownload, { data: getDataButtonDL }] = useLazyQuery(
@@ -157,9 +159,6 @@ function FileUploader() {
     fetchPolicy: "no-cache",
   });
 
-  const settingKeys = {
-    downloadKey: "HDLABTO",
-  };
   const useDataSetting = useManageSetting();
 
   let linkClient: IEncryptDataLink = useMemo(
@@ -170,18 +169,25 @@ function FileUploader() {
   try {
     if (urlClient) {
       const decode = handleDecryptFile(urlClient);
-
       linkClient = {
         _id: decode?._id,
         type: decode?.type,
+        manageLinkId: decode?.manageLinkId,
       };
     }
   } catch (error) {
     console.error(error);
   }
 
+  useEffect(() => {
+    if (linkClient?.manageLinkId) {
+      setManageLinkId(linkClient?.manageLinkId);
+    }
+  }, [linkClient?.manageLinkId]);
+
   function handleDecryptFile(val) {
     const decryptedData = decryptDataLink(val);
+
     return decryptedData;
   }
 
@@ -264,7 +270,7 @@ function FileUploader() {
     function getDataSetting() {
       // Show download button
       const downloadData = useDataSetting.data?.find(
-        (data) => data?.productKey === settingKeys.downloadKey,
+        (data) => data?.productKey === SETTING_KEYS.HIDE_DOWNLOAD,
       );
 
       if (downloadData) {
@@ -618,9 +624,10 @@ function FileUploader() {
           where: {
             _id: linkClient?._id,
           },
+          manageLinkId: String(linkClient.manageLinkId),
         },
         onCompleted: (data) => {
-          const folderData = data?.queryfoldersGetLinks?.data || [];
+          const folderData = data?.queryfoldersGetLinksV1?.data || [];
           if (folderData?.[0]?.status === "active") {
             setGetDataRes(folderData || []);
 
@@ -652,17 +659,16 @@ function FileUploader() {
           where: {
             _id: linkClient?._id,
           },
+          manageLinkId: String(linkClient.manageLinkId),
         },
-        // onCompleted: () => {},
       });
 
       setTimeout(() => {
         setIsLoading(false);
       }, 500);
 
-      if (dataFileLink?.queryFileGetLinks?.data) {
-        console.log(dataFileLink?.queryFileGetLinks?.data)
-        setGetDataRes(dataFileLink?.queryFileGetLinks?.data || []);
+      if (dataFileLink?.queryFileGetLinksV1?.data) {
+        setGetDataRes(dataFileLink?.queryFileGetLinksV1?.data || []);
       }
     } catch (error: any) {
       setIsLoading(false);
@@ -728,8 +734,8 @@ function FileUploader() {
     function handleDetectPlatform() {
       const os = navigator.userAgent;
       if (
-        dataFileLink?.queryFileGetLinks?.data?.length ||
-        dataFolderLink?.queryfoldersGetLinks?.data?.length
+        dataFileLink?.queryFileGetLinksV1?.data?.length ||
+        dataFolderLink?.queryfoldersGetLinksV1?.data?.length
       ) {
         if (os.match(/iPhone|iPad|iPod/i)) {
           setPlatform("ios");
@@ -920,8 +926,6 @@ function FileUploader() {
         };
       });
 
-    console.log(multipleData);
-
     setTotalClickCount((prevCount) => prevCount + 1);
 
     if (totalClickCount >= getActionButton) {
@@ -1042,7 +1046,7 @@ function FileUploader() {
 
         return fileData || [];
       } else {
-        const fileData = dataFileLink?.queryFileGetLinks?.data
+        const fileData = dataFileLink?.queryFileGetLinksV1?.data
           // ?.filter((el) => el.status === "active")
           ?.map((file, index) => ({
             ...file,
