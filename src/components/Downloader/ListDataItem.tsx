@@ -278,13 +278,12 @@ function ListDataItem(props: Props) {
   function handleOpenQRCode(event: HTMLFormElement, data: IFile | IFolder) {
     // const url = data?.longUrl || "";
     // props.handleQRGeneration?.(event, data, url);
- 
+
     const dataPrepared = {
       _id: data._id,
       type: data.isFile ? "file" : "folder",
       manageLinkId: props.manageLinkId,
     };
-    console.log(dataPrepared);
 
     const url = `${window.location.origin}/df?lc=`;
     const encodeData = encryptDataLink(dataPrepared);

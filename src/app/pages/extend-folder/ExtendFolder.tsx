@@ -4,11 +4,8 @@ import {
   CREATE_DETAIL_ADVERTISEMENT,
   QUERY_ADVERTISEMENT,
 } from "api/graphql/ad.graphql";
-import { QUERY_SUB_FILE, QUERY_SUB_FILEV1 } from "api/graphql/file.graphql";
-import {
-  QUERY_SUB_FOLDER,
-  QUERY_SUB_FOLDER_V1,
-} from "api/graphql/folder.graphql";
+import { QUERY_SUB_FILEV1 } from "api/graphql/file.graphql";
+import { QUERY_SUB_FOLDER_V1 } from "api/graphql/folder.graphql";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
 import axios from "axios";
 import DialogConfirmPassword from "components/dialog/DialogConfirmPassword";
@@ -49,7 +46,6 @@ function ExtendFolder() {
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [checkConfirmPassword, setConfirmPassword] = useState(false);
   const [getDataRes, setGetDataRes] = useState<any>(null);
-  const [folderDownload, setFolderDownload] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [fileQRCodePassword, setFileQRCodePassword] = useState("");
@@ -68,7 +64,7 @@ function ExtendFolder() {
   const [adAlive, setAdAlive] = useState(0);
   const [manageLinkId, setManageLinkId] = useState("");
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const [isDownloadLoading, setIsDownloadLoading] = useState(false);
   const [dataValue, setDataValue] = useState<any>(null);
   const [platform, setPlatform] = useState("");
@@ -409,7 +405,6 @@ function ExtendFolder() {
               setDataSubFolder(folderData);
               if (folderData?.[0]?.status === "active") {
                 setGetDataRes(folderData || []);
-                setFolderDownload(folderData || []);
               }
             },
           });

@@ -23,7 +23,7 @@ import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import LockIcon from "@mui/icons-material/Lock";
 import { convertBytetoMBandGB } from "utils/storage.util";
 
-import { formatDate } from "utils/date.util";
+import { formatDate, formatDateTime } from "utils/date.util";
 import {
   BoxAdsAction,
   BoxAdsContainer,
@@ -247,10 +247,13 @@ function ListFileData(props: Props) {
   }
 
   useEffect(() => {
-    if (props?.dataLinks?.[0]?.expired) {
-      setExpireDate(props?.dataLinks?.[0]?.expired || "");
+    const expiredDate = props?.dataLinks?.[0]?.expired;
+
+    if (expiredDate) {
+      const dateTime = formatDateTime(expiredDate);
+      setExpireDate(dateTime);
     }
-  }, [props]);
+  }, [props?.dataLinks]);
 
   return (
     <FileBoxDownload className="box-download">

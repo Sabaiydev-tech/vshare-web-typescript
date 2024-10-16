@@ -20,3 +20,8 @@ export function formatDate(date: string): string {
   const dateString = moment(date).format("DD-MM-YYYY");
   return dateString;
 }
+
+export function formatDateTime(date: string) {
+  const dateTime = moment(date).format("DD/MM/YYYY HH:MM A") || "";
+  return dateTime;
+}

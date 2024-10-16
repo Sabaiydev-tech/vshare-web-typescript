@@ -31,9 +31,9 @@ import {
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
 import { cutFileName } from "utils/file.util";
-import moment from "moment";
 import { IFolder } from "models/folder.model";
 import { encryptDataLink } from "utils/secure.util";
+import { formatDateTime } from "utils/date.util";
 
 const IconFolderContainer = styled("div")({
   width: "28px",
@@ -219,11 +219,10 @@ function ListFolderData(props: Props) {
 
   useEffect(() => {
     if (props?.linkExpired || props?.dataLinks?.[0]?.expired) {
-      setExpireDate(
-        props?.linkExpired ||
-          moment(props?.dataLinks?.[0]?.expired).format("DD/MM/YYYY HH:MM A") ||
-          "",
+      const dateTime = formatDateTime(
+        props?.linkExpired || props?.dataLinks?.[0]?.expired,
       );
+      setExpireDate(dateTime);
     }
   }, [props]);
 

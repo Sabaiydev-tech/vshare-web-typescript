@@ -49,6 +49,7 @@ import "./styles/fileUploader.style.css";
 import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
 import { IEncryptDataLink } from "models/encryptDataLink.model";
 import { SETTING_KEYS } from "constants/setting.constant";
+import { formatDateTime } from "utils/date.util";
 
 const DATA_LIST_SIZE = 10;
 
@@ -56,7 +57,7 @@ function FileUploader() {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [checkConfirmPassword, setConfirmPassword] = useState(false);
-  const [getDataRes, setGetDataRes] = useState<any>(null);
+  const [getDataRes, setGetDataRes] = useState<any>([]);
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [openInputPasswod, setOpenInputPassword] = useState(false);
@@ -668,6 +669,10 @@ function FileUploader() {
       }, 500);
 
       if (dataFileLink?.queryFileGetLinksV1?.data) {
+        const expired = formatDateTime(
+          dataFileLink?.queryFileGetLinksV1?.data?.[0]?.expired || "",
+        );
+        setLinkExpirdAt(expired);
         setGetDataRes(dataFileLink?.queryFileGetLinksV1?.data || []);
       }
     } catch (error: any) {
@@ -734,7 +739,7 @@ function FileUploader() {
     function handleDetectPlatform() {
       const os = navigator.userAgent;
       if (
-        dataFileLink?.queryFileGetLinksV1?.data?.length ||
+        getDataRes?.length ||
         dataFolderLink?.queryfoldersGetLinksV1?.data?.length
       ) {
         if (os.match(/iPhone|iPad|iPod/i)) {
@@ -754,7 +759,7 @@ function FileUploader() {
     }
 
     handleDetectPlatform();
-  }, [dataFileLink, dataFolderLink, getDataRes]);
+  }, [getDataRes, dataFolderLink, getDataRes]);
 
   useEffect(() => {
     if (getDataRes) {
@@ -1036,38 +1041,39 @@ function FileUploader() {
   const dataLinkMemo = useMemo<any[]>(() => {
     if (linkClient?._id) {
       if (linkClient?.type === "multiple") {
-        const fileData = dataMultipleFile
-          // ?.filter((el) => el.status === "active")
-          ?.map((file, index) => ({
-            ...file,
-            isFile: true,
-            index,
-          }));
+        const fileData = dataMultipleFile?.map((file, index) => ({
+          ...file,
+          isFile: true,
+          index,
+        }));
 
         return fileData || [];
       } else {
-        const fileData = dataFileLink?.queryFileGetLinksV1?.data
-          // ?.filter((el) => el.status === "active")
-          ?.map((file, index) => ({
+        const fileData = dataFileLink?.queryFileGetLinksV1?.data?.map(
+          (file, index) => ({
             ...file,
             index,
             isFile: true,
-          }));
+          }),
+        );
 
         return fileData || [];
       }
     } else {
-      const fileData = getDataRes
-        // ?.filter((el) => el.status === "active")
-        ?.map((file, index) => ({
-          ...file,
-          index,
-          isFile: true,
-        }));
+      const fileData = getDataRes?.map((file, index) => ({
+        ...file,
+        index,
+        isFile: true,
+      }));
 
       return fileData || [];
     }
-  }, [linkClient, dataFileLink, getDataRes]);
+  }, [
+    linkClient,
+    dataMultipleFile,
+    getDataRes,
+    dataFileLink?.queryFileGetLinksV1?.data,
+  ]);
 
   const dataFolderLinkMemo = useMemo(() => {
     if (linkClient?._id) {
@@ -1084,13 +1090,11 @@ function FileUploader() {
       }
 
       if (linkClient?.type === "folder") {
-        folderData = getDataRes
-          // ?.filter((el) => el.status === "active")
-          ?.map((file, index) => ({
-            index,
-            isFile: false,
-            ...file,
-          }));
+        folderData = getDataRes?.map((file, index) => ({
+          index,
+          isFile: false,
+          ...file,
+        }));
 
         return folderData;
       }

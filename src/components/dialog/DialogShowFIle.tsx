@@ -32,7 +32,6 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import * as MUI from "styles/presentation/showFileDialog.style";
 import { UAParser } from "ua-parser-js";
-// react animate component
 
 import { useMutation } from "@apollo/client";
 import {
@@ -278,7 +277,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   const isLargeFile = React.useMemo(() => {
     let isMax = false;
     for (let i = 0; i < files?.length; i++) {
-      if (files[i].file?.sizeFile > dataMaxSize.action) {
+      if (files[i].file?.sizeFile > dataMaxSize?.action) {
         isMax = true;
         break;
       }
@@ -1030,7 +1029,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
             <MUI.BoxUploadAndReset sx={{ padding: "0.2rem 0.8rem" }}>
               <Button
                 disabled={
-                  isLargeFile || filesArray?.length > dataUploadPerTime.action
+                  isLargeFile || filesArray?.length > dataUploadPerTime?.action
                     ? true
                     : false
                 }
@@ -1068,11 +1067,11 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
               flexDirection: "column",
             }}
           >
-            {filesArray?.length > dataUploadPerTime.action || isLargeFile ? (
+            {filesArray?.length > dataUploadPerTime?.action || isLargeFile ? (
               <Alert severity="error" sx={{ width: "100%", mx: 2, my: 2 }}>
                 {isLargeFile
                   ? `Some files are larger than ${fileMaxSize}.`
-                  : `Upload is limited ${dataUploadPerTime.action}
+                  : `Upload is limited ${dataUploadPerTime?.action}
                  files per time.`}
               </Alert>
             ) : (
