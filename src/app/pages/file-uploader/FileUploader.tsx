@@ -631,6 +631,8 @@ function FileUploader() {
           const folderData = data?.queryfoldersGetLinksV1?.data || [];
           if (folderData?.[0]?.status === "active") {
             setGetDataRes(folderData || []);
+            const expired = formatDateTime(folderData?.[0]?.expired || "");
+            setLinkExpirdAt(expired);
 
             document.title =
               folderData?.[0]?.folder_name || "vshare download folder";
@@ -662,19 +664,19 @@ function FileUploader() {
           },
           manageLinkId: String(linkClient.manageLinkId),
         },
+
+        onCompleted: (value) => {
+          const expired = formatDateTime(
+            value?.queryFileGetLinksV1?.data?.[0]?.expired || "",
+          );
+          setLinkExpirdAt(expired);
+          setGetDataRes(value?.queryFileGetLinksV1?.data || []);
+        },
       });
 
       setTimeout(() => {
         setIsLoading(false);
       }, 500);
-
-      if (dataFileLink?.queryFileGetLinksV1?.data) {
-        const expired = formatDateTime(
-          dataFileLink?.queryFileGetLinksV1?.data?.[0]?.expired || "",
-        );
-        setLinkExpirdAt(expired);
-        setGetDataRes(dataFileLink?.queryFileGetLinksV1?.data || []);
-      }
     } catch (error: any) {
       setIsLoading(false);
       errorMessage(error);
@@ -729,11 +731,7 @@ function FileUploader() {
     };
 
     getLinkData();
-
-    // if (urlClient && linkClient && linkClient?._id) {
-    //   getManageLinkPassword(linkClient?._id);
-    // }
-  }, [linkValue, linkType]);
+  }, [linkValue, linkClient?._id, linkClient?.type]);
 
   useEffect(() => {
     function handleDetectPlatform() {

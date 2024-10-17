@@ -99,6 +99,7 @@ export const QUERY_FOLDER_PUBLIC_LINK_V1 = gql`
         checkFolder
         newFolder_name
         url
+        expired
         status
         path
         newPath
