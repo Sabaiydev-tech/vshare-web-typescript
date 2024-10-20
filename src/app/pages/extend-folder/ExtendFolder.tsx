@@ -15,16 +15,19 @@ import BaseGridDownload from "components/Downloader/BaseGridDownload";
 import ListFileData from "components/Downloader/ListFileData";
 import ListFolderData from "components/Downloader/ListFolderData";
 import NotFound from "components/NotFound";
-import Advertisement from "components/presentation/GoogleAdsense";
 import BoxSocialShare from "components/presentation/BoxSocialShare";
 import DialogConfirmQRCode from "components/presentation/DialogConfirmQRCode";
 import FileCardContainer from "components/presentation/FileCardContainer";
 import FileCardItem from "components/presentation/FileCardItem";
+import Advertisement from "components/presentation/GoogleAdsense";
+import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
 import ViewMoreAction from "components/presentation/ViewMoreAction";
 import { ENV_KEYS } from "constants/env.constant";
+import { SETTING_KEYS } from "constants/setting.constant";
 import CryptoJS from "crypto-js";
 import useManageFiles from "hooks/useManageFile";
 import useManageSetting from "hooks/useManageSetting";
+import { IEncryptDataLink } from "models/encryptDataLink.model";
 import { IFolder } from "models/folder.model";
 import React, { Fragment, useEffect, useMemo, useState } from "react";
 import Helmet from "react-helmet";
@@ -37,9 +40,6 @@ import { getFileTypeName, removeFileNameOutOfPath } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "../file-uploader/styles/fileUploader.style";
 import "../file-uploader/styles/fileUploader.style.css";
-import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
-import { IEncryptDataLink } from "models/encryptDataLink.model";
-import { SETTING_KEYS } from "constants/setting.constant";
 
 function ExtendFolder() {
   const location = useLocation();
@@ -87,7 +87,6 @@ function ExtendFolder() {
   const [viewFolderMore, setViewFolderMore] = useState(10);
 
   const params = new URLSearchParams(location.search);
-  const linkValue = params.get("l");
   const urlClient = params.get("lc");
   const currentURL = window.location.href;
   const navigate = useNavigate();
@@ -379,13 +378,14 @@ function ExtendFolder() {
     };
 
     getFileLinkData();
-  }, [linkValue, urlClient, fileCurrentPage, viewFileMore]);
+  }, [urlClient, linkClient._id, fileCurrentPage, viewFileMore, toggle]);
 
   useEffect(() => {
     const getFolderLinkData = async () => {
       try {
         if (linkClient?._id) {
           setIsLoading(true);
+
           await getFolderLink({
             variables: {
               where: {
@@ -420,7 +420,7 @@ function ExtendFolder() {
     };
 
     getFolderLinkData();
-  }, [folderCurrentPage, viewFolderMore, toggle]);
+  }, [urlClient, linkClient._id, folderCurrentPage, viewFolderMore, toggle]);
 
   useEffect(() => {
     if (getDataRes) {
@@ -649,10 +649,12 @@ function ExtendFolder() {
           where: {
             folder_id: linkClient._id,
           },
+          manageLinkId: String(linkClient?.manageLinkId),
           noLimit: true,
         },
       });
       const fileData: any[] = (await result.data?.filesByUIDV1?.data) || [];
+
       const fileDataMap =
         fileData
           ?.filter((file) => !file.filePassword)
@@ -666,17 +668,19 @@ function ExtendFolder() {
           where: {
             _id: linkClient?._id,
           },
+          manageLinkId: String(linkClient?.manageLinkId),
           noLimit: true,
         },
       });
       const folderData: any[] =
         (await folderResult.data?.foldersByUIDV1?.data) || [];
+
       const folderDataMap =
         folderData
           ?.filter((file) => !file.filePassword)
           .map((file) => ({
             ...file,
-            isFile: true,
+            isFile: false,
           })) || [];
 
       setIsDownloadLoading(false);
@@ -708,7 +712,7 @@ function ExtendFolder() {
           name: item?.filename || item?.folder_name,
           checkType: item?.isFile ? "file" : "folder",
           createdBy: item?.createdBy,
-          isPublic: linkClient?._id ? false : true,
+          isPublic: item?.createdBy?._id === "0" ? true : false,
         };
       });
 
@@ -738,7 +742,7 @@ function ExtendFolder() {
             name: item?.filename || item?.folder_name,
             checkType: item?.isFile ? "file" : "folder",
             createdBy: item?.createdBy,
-            isPublic: linkClient?._id ? false : true,
+            isPublic: item?.createdBy?._id === "0" ? true : false,
           };
         });
 
@@ -783,6 +787,7 @@ function ExtendFolder() {
     const baseUrl = {
       _id: folder._id,
       type: "folder",
+      manageLinkId,
     };
 
     const encodeUrl = encryptDataLink(baseUrl);
@@ -833,33 +838,25 @@ function ExtendFolder() {
   };
 
   const dataLinkMemo = useMemo<any[]>(() => {
-    if (linkClient?._id) {
-      const fileData = dataSubGetLink?.map((file, index) => ({
-        ...file,
-        isFile: true,
-        index,
-      }));
+    const fileData = dataSubGetLink?.map((file, index) => ({
+      ...file,
+      isFile: true,
+      index,
+    }));
 
-      return fileData || [];
-    }
-
-    return [];
-  }, [linkClient]);
+    return fileData || [];
+  }, [dataSubGetLink]);
 
   const dataFolderLinkMemo = useMemo<IFolder[]>(() => {
-    if (linkClient?._id) {
-      const folderData = dataSubFolder?.map((folder, index) => {
-        return {
-          ...folder,
-          isFile: false,
-          index,
-        };
-      });
+    const folderData = dataSubFolder?.map((folder, index) => {
+      return {
+        ...folder,
+        isFile: false,
+        index,
+      };
+    });
 
-      return folderData || [];
-    }
-
-    return [];
+    return folderData || [];
   }, [linkClient, dataSubFolder]);
 
   useEffect(() => {

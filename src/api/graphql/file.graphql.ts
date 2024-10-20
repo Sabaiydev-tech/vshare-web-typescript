@@ -274,6 +274,7 @@ export const QUERY_SUB_FILEV1 = gql`
         filename
         newFilename
         filePassword
+        expired
         fileType
         size
         status

@@ -1,4 +1,3 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Card,
@@ -12,6 +11,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { FileBoxDownload } from "app/pages/file-uploader/styles/fileUploader.style";
 import NormalButton from "components/NormalButton";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import ResponsivePagination from "react-responsive-pagination";
 import "styles/pagination.style.css";
@@ -19,18 +19,18 @@ import "styles/pagination.style.css";
 // Icons
 import InfoIcon from "@mui/icons-material/Info";
 
-import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import LockIcon from "@mui/icons-material/Lock";
+import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import { convertBytetoMBandGB } from "utils/storage.util";
 
-import { formatDate, formatDateTime } from "utils/date.util";
+import { IFile } from "models/file.model";
 import {
   BoxAdsAction,
   BoxAdsContainer,
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
+import { formatDateTime } from "utils/date.util";
 import { cutFileName } from "utils/file.util";
-import { IFile } from "models/file.model";
 import { encryptDataLink } from "utils/secure.util";
 
 type Props = {
@@ -247,13 +247,11 @@ function ListFileData(props: Props) {
   }
 
   useEffect(() => {
-    const expiredDate = props?.dataLinks?.[0]?.expired;
-
-    if (expiredDate) {
-      const dateTime = formatDateTime(expiredDate);
+    if (props?.dataLinks?.[0]?.expired) {
+      const dateTime = formatDateTime(props?.dataLinks?.[0]?.expired);
       setExpireDate(dateTime);
     }
-  }, [props?.dataLinks]);
+  }, [props.dataLinks]);
 
   return (
     <FileBoxDownload className="box-download">
@@ -351,25 +349,27 @@ function ListFileData(props: Props) {
                 >
                   <Typography component={"p"}>Expiration Date</Typography>
                   <Chip
-                    label={expireDate ? formatDate(expireDate) : "Never"}
+                    label={expireDate ? expireDate : "Never"}
                     size="small"
                     sx={{ padding: "0 1rem" }}
                   />
                 </Box>
                 {expireDate && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#FF9F43",
-                    }}
-                  >
-                    <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
-                    <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
-                      This link will be expired. Please access the document
-                      before this date
-                    </Typography>
-                  </Box>
+                  <>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: "#FF9F43",
+                      }}
+                    >
+                      <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
+                      <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
+                        This link will be expired. Please access the document
+                        before this date
+                      </Typography>
+                    </Box>
+                  </>
                 )}
               </Box>
 
