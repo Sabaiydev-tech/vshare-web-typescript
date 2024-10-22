@@ -27,6 +27,7 @@ const useResizeImage = ({
   const [imageFound, setImageFound] = useState<any>(null);
   const location = useLocation();
 
+
   const source = CancelToken.source();
   const cancelToken = source.token;
 
@@ -40,7 +41,7 @@ const useResizeImage = ({
             width: `${width}`,
             height: `${height}`,
           });
-
+          
           const res = await axios.get(
             `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/resize-image?file=${enData}`,
             {

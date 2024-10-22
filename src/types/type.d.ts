@@ -3,5 +3,5 @@ interface Window {
   google: any;
   fbAsyncInit: any;
   __reCaptcha: any;
-  adsbygoogle: any;
+  grecaptcha: any;
 }

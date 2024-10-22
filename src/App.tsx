@@ -4,6 +4,8 @@ import { CacheProvider } from "@emotion/react";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { QUERY_SEO } from "api/graphql/ad.graphql";
 import routes from "app/routes";
+import { AuthProvider } from "contexts/AuthProvider";
+import { ClientVoteProvider } from "contexts/ClientVoteProvider";
 import useTheme from "hooks/useTheme";
 import { useEffect, useState } from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
@@ -39,7 +41,7 @@ function App() {
   }).flat();
 
   // hello
- 
+
   useEffect(() => {
     if (SEOData) {
       // console.log(SEOData);
@@ -98,7 +100,9 @@ function App() {
           <meta name="twitter:url" content={canonicalUrl} />
         </Helmet>
         <MuiThemeProvider theme={createTheme(theme)}>
-          {content}
+          <AuthProvider>
+            <ClientVoteProvider>{content}</ClientVoteProvider>
+          </AuthProvider>
         </MuiThemeProvider>
       </HelmetProvider>
     </CacheProvider>

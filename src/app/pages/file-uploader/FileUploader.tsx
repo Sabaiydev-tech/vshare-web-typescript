@@ -415,6 +415,7 @@ function FileUploader() {
     // };
   }, [linkValue, urlClient, dataFileLink, dataFolderLink, resPonData]);
 
+
   useEffect(() => {
     const getMultipleFileAndFolder = async () => {
       const os = navigator.userAgent;

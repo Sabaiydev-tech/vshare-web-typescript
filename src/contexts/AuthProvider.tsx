@@ -10,7 +10,13 @@ import {
   USER_LOGIN,
   USER_SIGNUP,
 } from "api/graphql/secure.graphql";
-import React, { createContext, useEffect, useReducer, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 
 import { QUERY_USER } from "api/graphql/user.graphql";
 import axios from "axios";
@@ -100,7 +106,10 @@ const JWTReducer = (state, action) => {
 
 const AuthContext = createContext(null);
 
-function AuthProvider() {
+interface ClientVoteProviderProps {
+  children: ReactNode;
+}
+function AuthProvider({ children }: ClientVoteProviderProps) {
   const navigate = useNavigate();
   const [state, dispatch] = useReducer(JWTReducer, initialState);
   const [userLogin] = useMutation(USER_LOGIN);
@@ -424,7 +433,11 @@ function AuthProvider() {
     }
   };
 
-  const signIn = async (username, password) => {
+  const signIn = async (
+    username: string,
+    password: string,
+    voteParams: string,
+  ) => {
     try {
       const responseIp = await axios.get(
         "https://staging.load.vshare.net/getIP",
@@ -470,7 +483,7 @@ function AuthProvider() {
           },
         });
         successMessage("Login Success!!", 3000);
-        navigate("/dashboard");
+        navigate(`/vote?lc=${voteParams}`);
       } else {
         return { authen, user, checkRole, refreshId: tokenData.refreshID };
       }
@@ -534,9 +547,6 @@ function AuthProvider() {
   };
 
   const signOut = async () => {
-    // localStorage.removeItem("accessToken");
-    // localStorage.removeItem("permission");
-    // localStorage.removeItem("userData");
     localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
     localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA_KEY);
     localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL_KEY);
@@ -544,7 +554,14 @@ function AuthProvider() {
     dispatch({ type: SIGN_OUT });
   };
 
-  const signUp = async (firstName, lastName, username, email, password) => {
+  const signUp = async (
+    firstName: string,
+    lastName: string,
+    username: string,
+    email: string,
+    password: string,
+    voteParams: string,
+  ) => {
     const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
     try {
       const signUpUser = await register({
@@ -561,7 +578,7 @@ function AuthProvider() {
       });
       if (signUpUser?.data?.signup?._id) {
         successMessage("Register successful!", 3000);
-        navigate("/auth/sign-in");
+        navigate(`/auth/sign-in/${voteParams}`);
       }
     } catch (error: any) {
       const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
@@ -693,7 +710,7 @@ function AuthProvider() {
           permissionData?.role_staffs?.data[0]?.permision || localPermission,
       }}
     >
-      <Outlet />
+      {children}
       {openWarning && (
         <DialogWarning
           title="Your account is inactive now!"

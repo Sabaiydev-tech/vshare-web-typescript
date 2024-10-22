@@ -12,7 +12,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitThis": true,
     "strictNullChecks": true,
     /* Linting */
@@ -23,9 +23,10 @@
     "baseUrl": "./src",
     "paths": {
       "*": ["*"]
-    }
+    },
+    "types": ["node"]
   },
-  "include": ["src"],
+  "include": ["src","src/types"],
   "references": [
     {
       "path": "./tsconfig.node.json"
