@@ -60,7 +60,6 @@ export default function VoteDetails() {
     }));
   };
 
-  console.log(newVoteData);
 
   return (
     <React.Fragment>
@@ -224,7 +223,7 @@ export default function VoteDetails() {
             <Grid
               container
               spacing={2}
-              sx={{ overflow: "auto", height: "600px" }}
+              sx={{ overflow: "auto", height: "500px" }}
             >
               {newVoteData?.filesData?.data &&
                 newVoteData?.filesData?.data?.map(
