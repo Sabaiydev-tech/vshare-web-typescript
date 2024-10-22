@@ -16,7 +16,7 @@ type FeatureProps = {
   image: string;
 };
 
-const Future = (props: FeatureProps) => {
+const Feature = (props: FeatureProps) => {
   const { title, content, image } = props;
   const theme = createTheme();
   const isMobile = useMediaQuery("(max-width: 600px)");
@@ -73,4 +73,4 @@ const Future = (props: FeatureProps) => {
   );
 };
 
-export default Future;
+export default Feature;

@@ -163,7 +163,7 @@ function FileUploader() {
   const useDataSetting = useManageSetting();
 
   let linkClient: IEncryptDataLink = useMemo(
-    () => ({ _id: "", type: "", manageLinkId: "" }),
+    () => ({ _id: "", type: "", manageLinkId: "", dropId: "" }),
     [],
   );
 
@@ -174,6 +174,7 @@ function FileUploader() {
         _id: decode?._id,
         type: decode?.type,
         manageLinkId: decode?.manageLinkId,
+        dropId: decode?.filedropId || "",
       };
     }
   } catch (error) {
@@ -625,10 +626,11 @@ function FileUploader() {
           where: {
             _id: linkClient?._id,
           },
-          manageLinkId: String(linkClient.manageLinkId),
+          manageLinkId: linkClient.manageLinkId || "",
         },
         onCompleted: (data) => {
           const folderData = data?.queryfoldersGetLinksV1?.data || [];
+
           if (folderData?.[0]?.status === "active") {
             setGetDataRes(folderData || []);
             const expired = formatDateTime(folderData?.[0]?.expired || "");
@@ -662,15 +664,17 @@ function FileUploader() {
           where: {
             _id: linkClient?._id,
           },
-          manageLinkId: String(linkClient.manageLinkId),
+          manageLinkId: linkClient.manageLinkId || "",
+          dropId: linkClient.dropId,
         },
 
         onCompleted: (value) => {
-          const expired = formatDateTime(
-            value?.queryFileGetLinksV1?.data?.[0]?.expired || "",
-          );
-          setLinkExpirdAt(expired);
-          setGetDataRes(value?.queryFileGetLinksV1?.data || []);
+          const fileData = value?.queryFileGetLinksV1?.data || [];
+          if (fileData?.[0]?.expired) {
+            const expired = formatDateTime(fileData?.[0]?.expired);
+            setLinkExpirdAt(expired);
+          }
+          setGetDataRes(fileData);
         },
       });
 
@@ -1237,6 +1241,7 @@ function FileUploader() {
                         <ListDataItem
                           toggle={toggle}
                           _description={_description}
+                          dropId={linkClient.dropId}
                           dataLinks={dataFileConcat}
                           linkExpired={linkExpirdAt}
                           handleSelection={handleMultipleListData}

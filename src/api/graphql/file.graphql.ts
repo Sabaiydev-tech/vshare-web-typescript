@@ -195,8 +195,16 @@ export const QUERY_FILE_GET_LINK = gql`
 `;
 
 export const QUERY_FILE_GET_LINK_V1 = gql`
-  query QueryFileGetLinksV1($where: FilesWhereInput, $manageLinkId: ID) {
-    queryFileGetLinksV1(where: $where, manageLinkId: $manageLinkId) {
+  query QueryFileGetLinksV1(
+    $where: FilesWhereInput
+    $manageLinkId: ID
+    $dropId: ID
+  ) {
+    queryFileGetLinksV1(
+      where: $where
+      manageLinkId: $manageLinkId
+      dropId: $dropId
+    ) {
       data {
         _id
         filename

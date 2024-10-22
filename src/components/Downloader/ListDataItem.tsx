@@ -46,6 +46,7 @@ type Props = {
   dataLinks: any[];
   multipleIds?: any[];
   countAction: number;
+  dropId?: string;
   isFile?: boolean;
   linkExpired?: string;
   toggle?: string;
@@ -283,6 +284,7 @@ function ListDataItem(props: Props) {
       _id: data._id,
       type: data.isFile ? "file" : "folder",
       manageLinkId: props.manageLinkId,
+      filedropId: props.dropId,
     };
 
     const url = `${window.location.origin}/df?lc=`;

@@ -439,9 +439,7 @@ export default function CustomizedDialogs(props) {
                     color: "balck",
                   }}
                 >
-                  Max file size &nbsp;
-                  {fileMaxSize}
-                  /file available for unlimited time
+                  Max file size {fileMaxSize}/file available for unlimited time
                 </Typography>
               </Box>
             </MUI.BoxUploadTitle>
