@@ -416,6 +416,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   };
 
   const handleUpload = async (files: any[]) => {
+    console.log(expired);
     const totalFile = files?.length;
     const totalSize = dataFile.reduce((acc, file) => acc + file.size, 0);
     let uploadedSize = 0;
