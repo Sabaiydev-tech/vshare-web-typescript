@@ -420,9 +420,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
     voteParams: string,
   ) => {
     try {
-      const responseIp = await axios.get(
-        "https://staging.load.vshare.net/getIP",
-      );
+      const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
       const signInUser = await userLogin({
         variables: {
           where: {
@@ -449,11 +447,11 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
 
       if (enable2FA === 0) {
         const userDataEncrypt = encryptData(
-          JSON.stringify(signInUser?.data?.userLogin?.data[0]),
+          JSON.stringify(user),
         );
+        
         checkAccessToken(checkRole);
         localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, userDataEncrypt);
-
         dispatch({
           type: SIGN_IN,
           payload: {
@@ -466,8 +464,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
         return { authen, user, checkRole, refreshId: tokenData.refreshID };
       }
     } catch (error: any) {
-      console.log(error?.message);
-      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
+      const cutErr = error?.message?.replace(/(ApolloError: )?Error: /, "");
       if (cutErr === "USERNAME_OR_PASSWORD_INCORRECT") {
         errorMessage("Username or password incorrect!!", 3000);
       } else if (cutErr === "YOUR_STATUS_IS_DISABLED") {

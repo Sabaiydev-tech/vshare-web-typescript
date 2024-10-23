@@ -4,7 +4,6 @@ import { CacheProvider } from "@emotion/react";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { QUERY_SEO } from "api/graphql/ad.graphql";
 import routes from "app/routes";
-import { AuthProvider } from "contexts/AuthProvider";
 import { ClientVoteProvider } from "contexts/ClientVoteProvider";
 import useTheme from "hooks/useTheme";
 import { useEffect, useState } from "react";
@@ -13,6 +12,7 @@ import { useLocation, useRoutes } from "react-router-dom";
 import createTheme from "theme";
 import { getRouteName } from "utils/url.util";
 import ImageIcon from "assets/images/vshare-black-logo.png";
+import { AuthProvider } from "contexts/AuthProvider";
 
 const emotionCache = createCache({ key: "css" });
 

@@ -49,23 +49,21 @@ const TopItem = styled(Box)(({}) => ({
   backgroundColor: "white",
   position: "absolute",
   top: -30,
-  left: 0,
+  left: "10%",
   borderRadius: "6px 6px 0 0",
   width: "250px",
   height: "270px",
   zIndex: 2,
 }));
-// const TopItemBlur = styled(Box)(({ theme }) => ({
-//   backgroundColor: "gray",
-//   position: "absolute",
-//   top: 0,
-//   left: 0,
-//   transform: 'translate(-50%, -50%)',
-//   borderRadius: "6px 6px 0 0",
-//   width: "300px",
-//   height: "240px",
-//   zIndex: 1,
-// }));
+const TopItemBlur = styled(Box)(({ theme }) => ({
+  backgroundColor: "gray",
+  position: "absolute",
+  top: 0,
+  left: 0,
+  width: "300px",
+  height: "240px",
+  zIndex: 1,
+}));
 export default function Vote() {
   const theme = createTheme();
   const filter = useFilter();
@@ -212,9 +210,9 @@ export default function Vote() {
                     <CardTopItemLeft>NO 2</CardTopItemLeft>
                     <CardTopItemCenter>
                       <TopItem>NO 1</TopItem>
+                      <TopItemBlur>NO KKLDS</TopItemBlur>
                     </CardTopItemCenter>
-                    {/* <TopItemBlur>NO KKLDS</TopItemBlur> */}
-                    <CardTopItemRight>No 2</CardTopItemRight>
+                    <CardTopItemRight>NO 3</CardTopItemRight>
                   </CardTopContainer>
                 </Box>
               </Box>
