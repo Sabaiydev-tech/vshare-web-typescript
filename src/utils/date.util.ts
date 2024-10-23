@@ -38,3 +38,7 @@ export const FormatTime = (time: number) => {
     return `${hours} h ${minutes} m ${seconds} s`;
   }
 };
+export function formatDateTime(date: string) {
+  const dateTime = moment(date).format("DD/MM/YYYY HH:MM A") || "";
+  return dateTime;
+}

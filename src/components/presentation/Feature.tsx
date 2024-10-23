@@ -16,16 +16,17 @@ type FeatureProps = {
   image: string;
 };
 
-const Future = (props: FeatureProps) => {
+const Feature = (props: FeatureProps) => {
   const { title, content, image } = props;
   const theme = createTheme();
   const isMobile = useMediaQuery("(max-width: 600px)");
-  const previewImage = ENV_KEYS.VITE_APP_BUNNY_PREVIEW_IMAGE;
+  const newPath = ENV_KEYS.VITE_APP_LOAD_URL + "preview?path=image/";
+
   return (
     <MUI.CardFeature sx={{ minWidth: 70 }}>
       <MUI.CardContentFeature sx={{ height: isMobile ? "14rem" : "auto" }}>
         <MUI.BoxFeatureCompIcon>
-          <img src={image ? previewImage + image : ""} alt="" />
+          <img src={image ? newPath + image : ""} alt="image-feature" />
         </MUI.BoxFeatureCompIcon>
         <Box>
           <Typography
@@ -72,4 +73,4 @@ const Future = (props: FeatureProps) => {
   );
 };
 
-export default Future;
+export default Feature;

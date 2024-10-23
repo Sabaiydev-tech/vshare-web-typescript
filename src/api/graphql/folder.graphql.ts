@@ -21,50 +21,10 @@ export const QUERY_FOLDER = gql`
           _id
           newName
         }
-        parentkey {
-          _id
-        }
+        # parentkey {
+        #   _id
+        # }
       }
-    }
-  }
-`;
-
-export const QUERY_FOLDER_PUBLIC = gql`
-  query QueryFolderPublic($where: FoldersWhereInput) {
-    queryFolderPublic(where: $where) {
-      total
-      data {
-        _id
-        folder_type
-        folder_name
-        newFolder_name
-        total_size
-        newPath
-        is_public
-        checkFolder
-        restore
-        access_password
-        show_download_link
-        status
-        path
-        url
-        expired
-        createdBy {
-          _id
-          newName
-        }
-        file_id {
-          _id
-          filename
-          size
-        }
-        permissionSharePublic
-        aproveDownloadPublic
-        pin
-        createdAt
-        updatedAt
-      }
-      total
     }
   }
 `;
@@ -93,7 +53,6 @@ export const QUERY_FOLDER_PUBLICV1 = gql`
           newName
         }
       }
-      total
     }
   }
 `;
@@ -127,9 +86,43 @@ export const QUERY_FOLDER_PUBLIC_LINK = gql`
   }
 `;
 
+export const QUERY_FOLDER_PUBLIC_LINK_V1 = gql`
+  query QueryfoldersGetLinksV1($where: FoldersWhereInput, $manageLinkId: ID) {
+    queryfoldersGetLinksV1(where: $where, manageLinkId: $manageLinkId) {
+      total
+      data {
+        _id
+        folder_name
+        total_size
+        access_password
+        folder_type
+        checkFolder
+        newFolder_name
+        url
+        expired
+        status
+        path
+        newPath
+        longUrl
+        shortUrl
+        createdBy {
+          _id
+          newName
+        }
+        updatedAt
+      }
+    }
+  }
+`;
+
 export const QUERY_SUB_FOLDER = gql`
-  query GetFolderByUID($where: FoldersWhereInput, $noLimit: Boolean) {
-    foldersByUID(where: $where, noLimit: $noLimit) {
+  query GetFolderByUID(
+    $where: FoldersWhereInput
+    $noLimit: Boolean
+    $skip: Int
+    $limit: Int
+  ) {
+    foldersByUID(where: $where, noLimit: $noLimit, skip: $skip, limit: $limit) {
       total
       data {
         _id
@@ -144,6 +137,47 @@ export const QUERY_SUB_FOLDER = gql`
         url
         path
         newPath
+        status
+        createdBy {
+          _id
+          newName
+        }
+      }
+    }
+  }
+`;
+
+export const QUERY_SUB_FOLDER_V1 = gql`
+  query GetFolderByUIDV1(
+    $where: FoldersWhereInput
+    $manageLinkId: ID
+    $noLimit: Boolean
+    $skip: Int
+    $limit: Int
+  ) {
+    foldersByUIDV1(
+      where: $where
+      manageLinkId: $manageLinkId
+      noLimit: $noLimit
+      skip: $skip
+      limit: $limit
+    ) {
+      total
+      data {
+        _id
+        folder_name
+        total_size
+        folder_type
+        checkFolder
+        newFolder_name
+        access_password
+        longUrl
+        shortUrl
+        url
+        path
+        newPath
+        expired
+        status
         createdBy {
           _id
           newName

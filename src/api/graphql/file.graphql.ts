@@ -30,7 +30,6 @@ export const QUERY_FILE = gql`
         size
         status
         isPublic
-        checkFile
         path
         newPath
         urlAll
@@ -75,16 +74,52 @@ export const QUERY_FILE_PUBLIC = gql`
         newPath
         status
         isPublic
-        checkFile
         path
         urlAll
         url
-        ip
-        folder_id {
+        expired
+        createdBy {
           _id
-          path
-          folder_name
+          newName
         }
+        shortUrl
+        longUrl
+      }
+    }
+  }
+`;
+
+export const QUERY_FILE_PUBLIC_V1 = gql`
+  query FilesPublicV1(
+    $where: FilesWhereInput
+    $orderBy: OrderByInput
+    $skip: Int
+    $limit: Int
+    $noLimit: Boolean
+  ) {
+    filesPublicV1(
+      where: $where
+      orderBy: $orderBy
+      skip: $skip
+      limit: $limit
+      noLimit: $noLimit
+    ) {
+      total
+      data {
+        _id
+        filename
+        newFilename
+        filePassword
+        passwordUrlAll
+        fileType
+        size
+        newPath
+        status
+        isPublic
+        path
+        urlAll
+        url
+        expired
         createdBy {
           _id
           newName
@@ -109,17 +144,11 @@ export const QUERY_FILE_PUBLICV2 = gql`
         fileType
         size
         newPath
-        totalDownload
         status
         isPublic
-        checkFile
         path
-        detail
         urlAll
         url
-        permissionSharePublic
-        aproveDownloadPublic
-        ip
         folder_id {
           _id
           path
@@ -131,12 +160,7 @@ export const QUERY_FILE_PUBLICV2 = gql`
         }
         shortUrl
         longUrl
-        favorite
-        actionStatus
         expired
-        createdAt
-        updatedAt
-        actionDate
       }
     }
   }
@@ -150,8 +174,44 @@ export const QUERY_FILE_GET_LINK = gql`
         filename
         filePassword
         newFilename
-        checkFile
         expired
+        fileType
+        size
+        status
+        path
+        newPath
+        shortUrl
+        longUrl
+        url
+        urlAll
+        createdBy {
+          _id
+          newName
+        }
+      }
+      total
+    }
+  }
+`;
+
+export const QUERY_FILE_GET_LINK_V1 = gql`
+  query QueryFileGetLinksV1(
+    $where: FilesWhereInput
+    $manageLinkId: ID
+    $dropId: ID
+  ) {
+    queryFileGetLinksV1(
+      where: $where
+      manageLinkId: $manageLinkId
+      dropId: $dropId
+    ) {
+      data {
+        _id
+        filename
+        filePassword
+        newFilename
+        expired
+        fileType
         size
         status
         path
@@ -174,16 +234,55 @@ export const QUERY_SUB_FILE = gql`
   query GetFileByUID(
     $where: FilesWhereInput
     $noLimit: Boolean
+    $limit: Int
+    $skip: Int
   ) {
-    filesByUID(
+    filesByUID(where: $where, noLimit: $noLimit, limit: $limit, skip: $skip) {
+      data {
+        _id
+        filename
+        newFilename
+        filePassword
+        fileType
+        size
+        status
+        isPublic
+        path
+        newPath
+        url
+        createdBy {
+          _id
+          newName
+        }
+        shortUrl
+        longUrl
+      }
+      total
+    }
+  }
+`;
+
+export const QUERY_SUB_FILEV1 = gql`
+  query GetFileByUIDV1(
+    $where: FilesWhereInput
+    $noLimit: Boolean
+    $limit: Int
+    $skip: Int
+    $manageLinkId: ID
+  ) {
+    filesByUIDV1(
       where: $where
       noLimit: $noLimit
+      limit: $limit
+      skip: $skip
+      manageLinkId: $manageLinkId
     ) {
       data {
         _id
         filename
         newFilename
         filePassword
+        expired
         fileType
         size
         status

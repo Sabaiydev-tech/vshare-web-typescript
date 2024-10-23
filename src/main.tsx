@@ -18,16 +18,12 @@ import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import store from "stores/store.ts";
-import {} from "graphql";
 import App from "./App.tsx";
 import { createClient } from "graphql-ws";
 import { getMainDefinition } from "@apollo/client/utilities";
-// import { paymentState } from "stores/features/paymentSlice.ts";
 
 const authLink = setContext((_, { headers }) => {
-  let token = localStorage.getItem(
-    ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY as string,
-  );
+  let token = localStorage.getItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN as string);
 
   let pathname = window.location.pathname;
 
@@ -106,6 +102,9 @@ const client = new ApolloClient({
   }),
   connectToDevTools: false,
 });
+
+// demo
+// consoleText();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

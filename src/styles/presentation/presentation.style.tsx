@@ -311,7 +311,7 @@ export const BoxFeatureCompIcon = styled(Box)(({ theme }) => ({
   img: {
     width: "50px",
     height: "50px",
-    filter: "drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3))",
+    // filter: "drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3))",
   },
   [theme.breakpoints.down("sm")]: {
     display: "flex",
@@ -912,7 +912,7 @@ export const BoxLiveChat = styled(Box)({
 export const BoxBottomDownload = styled(Box)({
   display: "flex",
   justifyContent: "flex-end",
-  gap: "3.5rem",
+  gap: "2.5rem",
   padding: "1rem 2rem 0.5rem 2rem",
 
   [theme.breakpoints.down("md")]: {

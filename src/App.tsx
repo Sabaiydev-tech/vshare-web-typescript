@@ -4,7 +4,6 @@ import { CacheProvider } from "@emotion/react";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { QUERY_SEO } from "api/graphql/ad.graphql";
 import routes from "app/routes";
-import { AuthProvider } from "contexts/AuthProvider";
 import { ClientVoteProvider } from "contexts/ClientVoteProvider";
 import useTheme from "hooks/useTheme";
 import { useEffect, useState } from "react";
@@ -12,6 +11,8 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import { useLocation, useRoutes } from "react-router-dom";
 import createTheme from "theme";
 import { getRouteName } from "utils/url.util";
+import ImageIcon from "assets/images/vshare-black-logo.png";
+import { AuthProvider } from "contexts/AuthProvider";
 
 const emotionCache = createCache({ key: "css" });
 
@@ -19,7 +20,6 @@ function App() {
   const content = useRoutes(routes);
   const { theme } = useTheme();
 
-  // routes
   const location = useLocation();
   const currentURL = location.pathname;
   const routeName = getRouteName(currentURL);
@@ -40,11 +40,8 @@ function App() {
     });
   }).flat();
 
-  // hello
-
   useEffect(() => {
     if (SEOData) {
-      // console.log(SEOData);
       if (setSEOData?.[0]?.url) {
         setCanonicalUrl(SEOData?.[0]?.url);
       }
@@ -80,18 +77,19 @@ function App() {
         <Helmet defaultTitle={title} meta={formattedData}>
           <meta name="robots" content={SEOData?.[0]?.indexing || "noindex"} />
           <meta name="title" content={SEOData?.[0]?.title} />
-          <meta name="description" content={SEOData?.[0]?.description} />
+          {currentURL !== "/df/extend" && (
+            <meta name="description" content={SEOData?.[0]?.description} />
+          )}
           <meta name="keywords" content={SEOData?.[0]?.keywords} />
-          <meta name="author" content={"vSHARE TECHNOLOGY"} />
-          <meta name="publisher" content={"vSHARE TECHNOLOGY"} />
+          {/* <meta name="author" content={"vSHARE"} />
+          <meta name="publisher" content={"vSHARE TECHNOLOGY"} /> */}
           <link rel="canonical" href={canonicalUrl} />
-          {/* sharable info to media platform */}
+
           <meta property="og:title" content={SEOData?.[0]?.title} />
           <meta property="og:description" content={SEOData?.[0]?.description} />
           <meta property="og:url" content={canonicalUrl} />
           <meta property="og:type" content="website" />
-          {/* <meta property="og:image" content={SEOData?.[0]?.image} /> */}
-          {/* <meta name="twitter:card" content="summary_large_image" /> */}
+          <meta property="og:image" content={ImageIcon} />
           <meta name="twitter:title" content={SEOData?.[0]?.title} />
           <meta
             name="twitter:description"

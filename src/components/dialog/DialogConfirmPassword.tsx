@@ -8,6 +8,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useCallback, useEffect } from "react";
+import { errorMessage } from "utils/alert.util";
 import { combineOldAndNewFileNames, cutFileName } from "utils/file.util";
 
 type Props = {
@@ -24,6 +26,30 @@ type Props = {
 };
 
 function DialogConfirmPassword(props: Props) {
+
+  const handleEnterKey = useCallback(
+    (event: KeyboardEvent): void => {
+      if (event.key === 'Enter') {
+        if (!props.password) {
+          errorMessage('Please, input the password');
+          return;
+        }
+        props?._confirmPasword?.(props.password);
+      }
+    },
+    [props.password, props?._confirmPasword]
+  );
+  
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => handleEnterKey(event);
+
+    window.addEventListener("keydown", handleKeyDown);
+  
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleEnterKey]);
+
   return (
     <Dialog open={props.open}>
       <DialogTitle
@@ -35,7 +61,7 @@ function DialogConfirmPassword(props: Props) {
       >
         <Typography
           sx={{
-            fontSize: props.isMobile ? "0.9rem" : "1.2rem",
+            fontSize: props.isMobile ? "0.9rem" : "1.2rem"
           }}
         >
           Confirm password
@@ -48,7 +74,10 @@ function DialogConfirmPassword(props: Props) {
             alignItems: "center",
             justifyContent: "center",
             width: "100%",
-            padding: "20px 30px !important",
+            // padding: "20px 30px !important",
+            pb: '20p',
+            px: '30px',
+            pt:'5px',
             maxWidth: "600px",
           }}
         >
@@ -72,7 +101,7 @@ function DialogConfirmPassword(props: Props) {
               </span>
             </Typography>
           ) : (
-            <Typography variant="h6" sx={{ padding: "0", margin: "0" }}>
+            <Typography variant="h6" sx={{ mb: 7 }}>
               Please enter your link password
             </Typography>
           )}
@@ -105,7 +134,7 @@ function DialogConfirmPassword(props: Props) {
           variant="contained"
           color="success"
           onClick={() => props._confirmPasword?.(props.password || "")}
-          sx={{ background: "#17766B" }}
+          sx={{ background: "#17766B", px: 7, mb: 3, mx: 'auto'}}
           size="small"
         >
           Verify

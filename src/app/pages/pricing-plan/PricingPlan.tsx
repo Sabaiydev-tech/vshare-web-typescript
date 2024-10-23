@@ -134,16 +134,16 @@ const PricingPlan = () => {
                   setPaymentTypeSummary(
                     packageType !== PACKAGE_TYPE.annual
                       ? PACKAGE_TYPE.annual
-                      : PACKAGE_TYPE.monthly
-                  )
+                      : PACKAGE_TYPE.monthly,
+                  ),
                 );
                 dispatch(
                   setPaymentType(
                     packageType !== PACKAGE_TYPE.annual
-                    ? PACKAGE_TYPE.annual
-                    : PACKAGE_TYPE.monthly
-                  )
-                )
+                      ? PACKAGE_TYPE.annual
+                      : PACKAGE_TYPE.monthly,
+                  ),
+                );
               }}
               inputProps={{ "aria-label": "ant design" }}
             />
@@ -161,15 +161,7 @@ const PricingPlan = () => {
                 <PriceCard
                   details={data}
                   buttonProps={{
-                    onClick: () => {
-                      /*  props.onDialogTermsAndConditionsOpen(
-                        encryptId(
-                          packageData._id,
-                          ENV_KEYS.VITE_APP_ENCRYPTION_KEY,
-                        ),
-                        packageData,
-                      ); */
-                    },
+                    onClick: () => {},
                   }}
                 />
               </Grid>

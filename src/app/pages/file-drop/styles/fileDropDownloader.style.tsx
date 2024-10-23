@@ -88,9 +88,9 @@ export const BoxShowUploadDetail = styled(Box)(({ theme }) => ({
   padding: "1rem 0 1.2rem 0",
   background: "#EDF3F2",
   borderRadius: "10px",
+  userSelect: 'none',
   [theme.breakpoints.down("sm")]: {
-    width: "92%",
-    marginLeft: "4%",
+    width: "100%",
     minWidth: "10rem",
   },
 
@@ -99,6 +99,10 @@ export const BoxShowUploadDetail = styled(Box)(({ theme }) => ({
       color: "#5D596C",
       fontSize: "1.1rem",
       fontWeight: "600",
+
+      [theme.breakpoints.down("sm")]: {
+        fontSize: "0.9rem",
+      },
     },
   },
 }));

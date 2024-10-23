@@ -40,6 +40,7 @@ import useManageFiles from "hooks/useManageFile";
 import DialogPreviewQRcode from "components/dialog/DialogPreviewQRCode";
 import DropGridData from "./DropGridData";
 import DeepLink from "components/presentation/DeepLink";
+import { IFileDrop } from "models/file-drop";
 
 const FiledropContainer = styled(Container)({
   // marginTop: "5rem",
@@ -69,7 +70,7 @@ const UploadArea = styled(Box)(({ theme }) => ({
     width: "50%",
   },
   [theme.breakpoints.down("sm")]: {
-    padding: "2rem 1rem",
+    padding: "2rem 0",
     p: {
       fontSize: "0.8rem",
     },
@@ -117,7 +118,6 @@ function FileDropDownloader() {
   const [newPath, setNewPath] = useState("");
   const [folderNewName, setFolderNewName] = useState("");
   const [status, setStatus] = useState("");
-  const [isUploadMultiples, setIsUploadMultiples] = useState(false);
   const [getActionButton, setGetActionButton] = useState<any>();
   const [getAdvertisemment, setGetAvertisement] = useState<any>([]);
   const [usedAds, setUsedAds] = useState<any[]>([]);
@@ -126,7 +126,7 @@ function FileDropDownloader() {
   const [isHide, setIsHide] = useState<any>(false);
   const [isSuccess, setIsSuccess] = useState<any>(false);
   const isMobile = useMediaQuery("(max-width: 600px)");
-  const [dataFromUrl, setDataFromUrl] = useState<any>({});
+  const [dataFromUrl, setDataFromUrl] = useState<IFileDrop>({});
   const manageFile = useManageFiles();
   const [showQrCode, setShowQrCode] = useState(false);
   const [dataForEvent, setDataForEvent] = useState<any>({
@@ -135,12 +135,13 @@ function FileDropDownloader() {
   });
 
   const currentURL = window.location.href;
-  const appSchema = "vshare.app://download?url=" + currentURL;
+  const appSchema = ENV_KEYS.VITE_APP_DEEP_LINK + currentURL;
   const [showDeepLink, setShowDeepLink] = useState(false);
 
   const [timeLeft, setTimeLeft] = useState("");
   const [multiId, setMultiId] = useState<any>([]);
   const [platform, setPlatform] = useState("");
+  const [isUploadMultiples, setIsUploadMultiples] = useState(false);
   // const [selectedRow, setSelectedRow] = React.useState([]);
   const [getDataButtonDownload, { data: getDataButtonDL }] = useLazyQuery(
     QUERY_SETTING,
@@ -424,10 +425,6 @@ function FileDropDownloader() {
       onError: (err) => {
         setStatus("expired");
         const cutErr = err?.message?.replace(/(ApolloError: )?Error: /, "");
-        
-        if(err?.message === 'Url not allow to upload'){
-          setStatus('locked');
-        }
 
         errorMessage(
           manageGraphqlError.handleErrorMessage(
@@ -452,21 +449,20 @@ function FileDropDownloader() {
         }
 
         ///check permission allow to upload/upload multi
-        if(!item?.allowUpload){
-          setStatus('locked');
-        }
+        // if (!item?.allowUpload) {
+        //   setStatus("locked");
+        // }
 
-        if(item?.allowMultiples){
+        if (item?.allowMultiples) {
           setIsUploadMultiples(item?.allowMultiples);
         }
-
       },
     });
   }, [currentUrl, dropData]);
 
   React.useEffect(() => {
     queryGetFileDropUrl();
-  }, [currentUrl]);
+  }, [currentUrl, dataIp]);
 
   const handleClose = () => {
     setOpen(false);
@@ -485,7 +481,7 @@ function FileDropDownloader() {
         variables: {
           where: {
             dropUrl: currentUrl,
-            ip: dataIp,
+            // ip: dataIp,
             status: "active",
           },
         },
@@ -552,7 +548,7 @@ function FileDropDownloader() {
       });
       if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
         let httpData = "";
-        if (!randomAd.url.match(/^https?:\/\//i || /^http?:\/\//i)) {
+        if (!randomAd.url.match(/^https?:\/\//i)) {
           httpData = "http://" + randomAd.url;
         } else {
           httpData = randomAd.url;
@@ -564,6 +560,7 @@ function FileDropDownloader() {
           newWindow.closed ||
           typeof newWindow.closed == "undefined"
         ) {
+          history.pushState(null, "", window.location.href);
           window.location.href = httpData;
         }
       }
@@ -625,7 +622,13 @@ function FileDropDownloader() {
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    multiple: isUploadMultiples
+    multiple: isUploadMultiples,
+    noClick:
+      dataFromUrl?.allowUpload === true
+        ? false
+        : isUploadMultiples === true
+        ? false
+        : true,
   });
 
   useEffect(() => {
@@ -677,7 +680,7 @@ function FileDropDownloader() {
 
   return (
     <React.Fragment>
-      {status == "expired" || status === 'locked' ? (
+      {status == "expired" || status === "locked" ? (
         <ExpiredArea>
           <Box
             sx={{
@@ -704,11 +707,13 @@ function FileDropDownloader() {
                   fontFamily="Arial"
                   fontWeight="bold"
                 >
-                  OMG!
+                  ( •̀_•́ )
                 </text>
               </svg>
             </Typography>
-            {`Unfortunately, the link was ${status === 'locked' ? status+' by the owner' : status}.`}
+            {`Unfortunately, the link was ${
+              status === "locked" ? status + " by the owner" : status
+            }.`}
           </Box>
           <Box
             sx={{
@@ -718,13 +723,7 @@ function FileDropDownloader() {
               fontWeight: 500,
             }}
           >
-            You do not have permission to view this page using the credentials
-            that you have provided while login.
-          </Box>
-          <Box
-            sx={{ textAlign: "center", fontSize: "0.9rem", fontWeight: 500 }}
-          >
-            Please contact your site administrator.
+            The link you're trying to access is no longer valid.
           </Box>
           <Button
             variant="contained"
@@ -765,26 +764,41 @@ function FileDropDownloader() {
                   />
                 </Box>
 
-                <Box className="box-drag" sx={{ m: 2 }}>
+                <Box className="box-drag" sx={{ m: 3 }}>
                   <Typography component="span">
-                    Drag and drop your files here to upload
+                    {dataFromUrl?.allowUpload || dataFromUrl?.allowMultiples ? (
+                      "Drag and drop your files here to upload"
+                    ) : (
+                      <Typography
+                        component={"span"}
+                        sx={{
+                          color: "#e31f09 !important",
+                          fontWeight: "300 !important",
+                        }}
+                      >
+                        File upload not supported through this link.
+                      </Typography>
+                    )}
                   </Typography>
                 </Box>
-                <Mui.ButtonUpload
-                  variant="contained"
-                  onClick={() => {
-                    setOpen(true);
-                    setClickUpload(!clickUpload);
-                  }}
-                  startIcon={
-                    <FileUploadOutlinedIcon
-                      sx={{ color: "#fff", verticalAlign: "middle" }}
-                    />
-                  }
-                >
-                  Select files
-                  <input {...getInputProps()} hidden={true} />
-                </Mui.ButtonUpload>
+
+                {dataFromUrl?.allowUpload && (
+                  <Mui.ButtonUpload
+                    variant="contained"
+                    onClick={() => {
+                      setOpen(true);
+                      setClickUpload(!clickUpload);
+                    }}
+                    startIcon={
+                      <FileUploadOutlinedIcon
+                        sx={{ color: "#fff", verticalAlign: "middle" }}
+                      />
+                    }
+                  >
+                    Select files
+                    <input {...getInputProps()} hidden={true} />
+                  </Mui.ButtonUpload>
+                )}
               </Mui.BoxShowUploadDetail>
               <br />
               <Typography component="p" sx={{ color: "#e31f09 !important" }}>
@@ -818,7 +832,8 @@ function FileDropDownloader() {
                 data.push(updatedFile);
                 return <Fragment key={index}></Fragment>;
               })}
-              {data.length > 0 ? (
+              {data.length > 0 &&
+              (dataFromUrl?.allowUpload || dataFromUrl?.allowMultiples) ? (
                 <DialogShowFiledrop
                   open={open}
                   files={data}
@@ -867,6 +882,7 @@ function FileDropDownloader() {
                           }}
                         >
                           <DropGridData
+                            dropId=""
                             queryFile={queryFile}
                             dataFromUrl={dataFromUrl}
                             multipleIds={multiId}
@@ -875,7 +891,9 @@ function FileDropDownloader() {
                             isMobile={isMobile}
                             setMultiId={setMultiId}
                             handleDownloadFile={handleDownloadFile}
-                            handleMultipleDownloadFiles={handleMultipleDownloadFiles}
+                            handleMultipleDownloadFiles={
+                              handleMultipleDownloadFiles
+                            }
                             handleClearSelection={handleClearSelectDataGrid}
                             handleQrCode={(data, action) => {
                               setDataForEvent({

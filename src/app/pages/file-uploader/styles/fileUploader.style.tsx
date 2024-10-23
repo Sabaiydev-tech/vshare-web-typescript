@@ -920,7 +920,7 @@ export const FileListContainer = styled(Box)(({ theme }) => ({
   gridTemplateColumns: "1.6fr 1fr",
   gap: "1.2rem",
 
-  [theme.breakpoints.down("md")]: {
+  [theme.breakpoints.down(960)]: {
     gridTemplateColumns: "1fr",
   },
 
@@ -939,21 +939,47 @@ export const FileListContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
+export const NotFoundData = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flex: 1,
+  justifyContent: "end",
+  alignItems: "center",
+  minHeight: "43vh",
+  fontSize: "1.5rem",
+  borderRadius: "10px",
+  paddingRight: "4rem",
+  color: "grey",
+  [theme.breakpoints.down("sm")]: {
+    paddingRight: 0,
+    justifyContent: "center",
+  },
+}));
+
 export const FileBoxDownload = styled("div")({
   overflow: "hidden",
 });
 
 export const FileBoxToggle = styled("div")({
   display: "flex",
-  justifyContent: "flex-end",
-  marginBottom: "1.2rem",
+  justifyContent: "flex-start",
+  marginBottom: "0.8rem",
   gap: "0.7rem",
   alignItems: "center",
 });
 
+export const FileBoxPopup = styled("div")({
+  position: "sticky",
+  top: 100,
+  right: 0,
+
+  [theme.breakpoints.down("md")]: {
+    position: "relative",
+    top: 0,
+  },
+});
+
 export const FileBoxSocial = styled("div")({
-  // width: "35%",
-  borderRadius: 1.5,
+  borderRadius: 10,
   boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
   overflow: "hidden",
 
@@ -974,35 +1000,32 @@ export const FilBoxBottomContainer = styled("div")({
   zIndex: 999,
   borderRadius: "30px",
 
-
   marginRight: "2rem",
   gap: "1rem",
   justifyContent: "center",
   backgroundColor: "#fff",
   boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
 
-  [theme.breakpoints.down(997)]: {
+  [theme.breakpoints.down(960)]: {
     display: "flex",
+  },
+
+  button: { padding: "0.5rem", borderRadius: "30px" },
+});
+
+export const FileBoxHeader = styled("div")({
+  margin: "1rem 0",
+
+  h2: {
+    fontSize: "1.2rem",
+    fontWeight: "500",
   },
 });
 
 ////Ads
-export const AdsContainer = styled(Box)(({ theme }) => ({
-  background: "#fff",
-  display: "flex",
-  flex: 1,
-  flexDirection: "row",
-  justifyContent: "center",
-  alignItems: "center",
-  width: "50%",
-  margin: "0 auto",
-  padding: ".5rem",
-  [theme.breakpoints.down("sm")]: {
-    width: "100%",
-    padding: "0",
-  },
-  marginBottom: "3rem",
-}));
+export const AdsContainer = styled(Box)({
+  marginBottom: "1rem",
+});
 
 export const AdsContent = styled(Box)(({ theme }) => ({
   padding: "1rem",

@@ -1,4 +1,6 @@
+import axios from "axios";
 import { ENV_KEYS } from "constants/env.constant";
+import { IDownloadQueueType } from "models/downloadQueue";
 import { removeFileNameOutOfPath } from "utils/file.util";
 import { encryptDownloadData } from "utils/secure.util";
 
@@ -33,10 +35,11 @@ const useManageFiles = () => {
         return {
           path,
           isFolder: file.checkType === "folder" ? true : false,
-          _id: file.id,
           createdBy: file.createdBy?._id,
         };
       });
+
+      console.log(newMoldelData);
 
       const headers = {
         accept: "*/*",
@@ -46,6 +49,7 @@ const useManageFiles = () => {
 
       const encryptedData = encryptDownloadData(headers);
       const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
+
       startDownload({ baseUrl });
       onSuccess?.();
     } catch (error) {
@@ -120,10 +124,46 @@ const useManageFiles = () => {
     }
   };
 
+  const handlePreparedDownloadQueue = async (
+    data: IDownloadQueueType,
+  ): Promise<string> => {
+    try {
+      const dataJson = JSON.stringify(data);
+      const res = await axios.post<{ tag: string }>(
+        `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files/queues`,
+        dataJson,
+      );
+
+      return res.data.tag || "";
+    } catch (error: any) {
+      console.log(error?.message);
+      return "";
+    }
+  };
+
+  const handleDownloadQueue = ({
+    tag,
+    onSuccess,
+  }: {
+    tag: string;
+    onSuccess?: () => void;
+  }) => {
+    if (tag) {
+      const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?queues=${tag}`;
+
+      startDownload({ baseUrl });
+      setTimeout(() => {
+        onSuccess?.();
+      }, 1000);
+    }
+  };
+
   return {
     handleDownloadFile,
     handleDownloadFolder,
     handleDownloadPublicFile,
+    handlePreparedDownloadQueue,
+    handleDownloadQueue,
   };
 };
 

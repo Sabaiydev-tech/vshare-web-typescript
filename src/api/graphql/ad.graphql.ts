@@ -49,12 +49,56 @@ export const QUERY_GENERAL_BUTTON_DOWNLOAD = gql`
 `;
 
 export const QUERY_MANAGE_LINK_DETAIL = gql`
-  query GetManageLinkDetails($where: ManageLinkWhereInput) {
-    getManageLinkDetails(where: $where) {
+  query GetManageLinkDetails(
+    $where: ManageLinkWhereInput
+    $limit: Int
+    $skip: Int
+  ) {
+    getManageLinkDetails(where: $where, limit: $limit, skip: $skip) {
       data {
         _id
         fileId
         folderId
+        fileData {
+          _id
+          filename
+          newFilename
+          filePassword
+          fileType
+          size
+          status
+          isPublic
+          longUrl
+          shortUrl
+          newPath
+          path
+          fileType
+          url
+          downloadAt
+          createdBy {
+            _id
+            newName
+          }
+        }
+        folderData {
+          _id
+          folder_type
+          folder_name
+          newPath
+          newFolder_name
+          path
+          total_size
+          access_password
+          status
+          shortUrl
+          longUrl
+          url
+          downloadAt
+          createdBy {
+            _id
+            newName
+          }
+        }
         type
       }
       total

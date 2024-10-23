@@ -12,10 +12,14 @@ import QrCode from "@mui/icons-material/QrCode";
 import DownloadIcon from "@mui/icons-material/Download";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import NormalButton from "components/NormalButton";
+import { IFile } from "models/file.model";
+import { encryptDataLink } from "utils/secure.util";
+import { IFileDrop } from "models/file-drop";
 
 type Props = {
+  dropId?: string;
   queryFile?: any[];
-  dataFromUrl?: any;
+  dataFromUrl?: IFileDrop;
   isSuccess?: any;
   isHide?: any;
   isMobile?: boolean;
@@ -23,7 +27,7 @@ type Props = {
 
   setSelectedRow?: (id: string | number) => void;
   setMultiId?: (id: string | number | any) => void;
-  handleQrCode?: (id: string | number, preview: string) => void;
+  handleQrCode?: (data?: IFileDrop, preview?: string) => void;
   handleDownloadFile?: (value: any, index: number, data: any) => void;
   handleMultipleDownloadFiles?: () => void;
   handleClearSelection?: () => void;
@@ -47,7 +51,7 @@ function DropGridData(props: Props) {
     {
       field: "no",
       headerName: "ID",
-      width: 70,
+      minWidth: 70,
       headerAlign: "center",
       align: "center",
     },
@@ -60,7 +64,7 @@ function DropGridData(props: Props) {
     {
       field: "size",
       headerName: "Size",
-      width: 70,
+      minWidth: 70,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
@@ -72,7 +76,7 @@ function DropGridData(props: Props) {
       field: "status",
       headerName: "Status",
       headerAlign: "center",
-      width: 70,
+      minWidth: 70,
       align: "center",
       renderCell: (params) => {
         const status = params?.row?.status || "Inactive";
@@ -99,60 +103,10 @@ function DropGridData(props: Props) {
       field: "action",
       headerName: "Action",
       flex: 1,
+      minWidth: 100,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
-        // const status = params?.row?.status || "Inactive";
-        // status?.toLowerCase() === "active" &&
-        // (userId > 0 ? (
-        //   <FileDownloadDoneIcon sx={{ color: "#17766B" }} />
-        // ) : (
-        //   <>
-        //     <Box>
-        //       {isSuccess[params?.row?.no] ? (
-        //         <FileDownloadDoneIcon sx={{ color: "#17766B" }} />
-        //       ) : isHide[params?.row?.no] ? (
-        //         <CircularProgress
-        //           color="success"
-        //           sx={{ color: "#17766B" }}
-        //           size={isMobile ? "18px" : "22px"}
-        //         />
-        //       ) : (
-        //         <Tooltip title="Download" placement="top">
-        //           <IconButton
-        //             onClick={(e) => {
-        //               handleDownloadFile(e, 1, params?.row);
-        //             }}
-        //           >
-        //             <DownloadIcon sx={{ ":hover": { color: "#17766B" } }} />
-        //           </IconButton>
-        //         </Tooltip>
-        //       )}
-        //     </Box>
-        //     <Box
-        //       sx={{
-        //         "&:hover": {
-        //           transform: "scale(1.05)",
-        //           cursor: "pointer",
-        //         },
-        //       }}
-        //     >
-        //       <QRCode
-        //         style={{
-        //           backgroundColor: "#fff",
-        //           padding: "7px",
-        //           borderRadius: "7px",
-        //         }}
-        //         value={params?.row?.dropUrl}
-        //         size={50}
-        //         level="H"
-        //         fgColor="#000000"
-        //         bgColor="#FFFFFF"
-        //       />
-        //     </Box>
-        //   </>
-        // ))
-
         return (
           <Fragment>
             <Box>
@@ -165,20 +119,27 @@ function DropGridData(props: Props) {
                   size={isMobile ? "18px" : "22px"}
                 />
               ) : (
-                <Tooltip title="Download" placement="top">
-                  <IconButton
-                    onClick={(e) => {
-                      handleDownloadFile?.(e, params?.row?.no, params?.row);
-                    }}
-                  >
-                    <DownloadIcon sx={{ ":hover": { color: "#17766B" } }} />
-                  </IconButton>
-                </Tooltip>
+                dataFromUrl?.allowDownload && (
+                  <Tooltip title="Download" placement="top">
+                    <IconButton
+                      onClick={(e) => {
+                        if (!dataFromUrl?.allowDownload) {
+                          return;
+                        } else {
+                          handleDownloadFile?.(e, params?.row?.no, params?.row);
+                        }
+                      }}
+                    >
+                      <DownloadIcon sx={{ ":hover": { color: "#17766B" } }} />
+                    </IconButton>
+                  </Tooltip>
+                )
               )}
             </Box>
             <IconButton
               onClick={() => {
-                handleQrCode?.(params?.row, "preview-qr");
+                // handleQrCode?.(params?.row, "preview-qr");
+                handlePreparedQRCode(params?.row);
               }}
             >
               <QrCode />
@@ -188,6 +149,23 @@ function DropGridData(props: Props) {
       },
     },
   ];
+
+  function handlePreparedQRCode(file: IFile) {
+    const header = {
+      _id: file._id,
+      type: "file",
+      filedropId: dataFromUrl?._id,
+    }; 
+
+    const encode = encryptDataLink(header);
+    const newLongUrl = `${window.location.origin}/df?lc=${encode}`;
+    const dataEvents: IFile = {
+      ...file,
+      longUrl: newLongUrl,
+    };
+
+    handleQrCode?.(dataEvents, "preview-qr");
+  }
 
   return (
     <Fragment>
@@ -260,16 +238,17 @@ function DropGridData(props: Props) {
           <NormalButton
             sx={{
               padding: (theme) => `${theme.spacing(1.5)} ${theme.spacing(3)}`,
-              borderRadius: (theme) => theme.spacing(2),
-              color: "#828282 !important",
+              borderRadius: (theme) => theme.spacing(1.5),
+              color:
+                props?.multipleIds?.length > 0 ? "#fff" : "#828282 !important",
               fontWeight: "bold",
-              backgroundColor: "#fff",
-              border: "2px solid #DCEAE9",
-              width: "inherit",
+              backgroundColor:
+                props?.multipleIds?.length > 0 ? "#17766B" : "#fff",
 
+              width: "inherit",
               ":disabled": {
                 border: "2px solid #ddd",
-                cursor: "not-allowed",
+                cursor: "inherit",
               },
             }}
             disabled={props?.multipleIds?.length > 0 ? false : true}
@@ -281,18 +260,19 @@ function DropGridData(props: Props) {
           <NormalButton
             sx={{
               padding: (theme) => `${theme.spacing(1.5)} ${theme.spacing(3)}`,
-              borderRadius: (theme) => theme.spacing(2),
-              color: "#828282 !important",
+              borderRadius: (theme) => theme.spacing(1.5),
+              color:
+                props?.multipleIds?.length > 0 ? "#fff" : "#828282 !important",
               fontWeight: "bold",
-              backgroundColor: "#fff",
-              border: "2px solid #DCEAE9",
+              backgroundColor:
+                props?.multipleIds?.length > 0 ? "#17766B" : "#fff",
               width: "inherit",
-
               ":disabled": {
                 border: "2px solid #ddd",
-                cursor: "not-allowed",
+                cursor: "inherit",
               },
             }}
+            disabled={props?.multipleIds?.length > 0 ? false : true}
             onClick={props?.handleClearSelection}
           >
             Cancel

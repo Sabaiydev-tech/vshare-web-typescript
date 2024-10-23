@@ -31,7 +31,7 @@ function AppBar() {
   React.useEffect(() => {
     // const loggedInUser = localStorage.getItem("accessToken");
     const loggedInUser = localStorage.getItem(
-      ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY as string,
+      ENV_KEYS.VITE_APP_ACCESS_TOKEN as string,
     );
     if (loggedInUser) {
       const foundUser = loggedInUser;
@@ -143,7 +143,7 @@ function AppBar() {
         >
           <span>Feedback</span>
         </ListItemButton>
-        {token == "" ? (
+        {!token ? (
           <>
             <ListItemButton
               component={NavLink}
@@ -271,7 +271,7 @@ function AppBar() {
                 Feedback
               </Button>
             </Tooltip>
-            {token == "" ? (
+            {!token ? (
               <>
                 <Tooltip title="Sign in">
                   <Button

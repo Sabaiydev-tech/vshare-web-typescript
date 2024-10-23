@@ -46,7 +46,6 @@ export const MUTATION_GOOGLE_AUTH = gql`
         state
         zipCode
         country
-        ip
         device
         browser
         status
@@ -118,7 +117,6 @@ export const MUTATION_FACEBOOK_OAUTH = gql`
         state
         zipCode
         country
-        ip
         device
         browser
         status
@@ -157,7 +155,6 @@ export const MUTATION_SOCIAL_AUTH = gql`
         state
         zipCode
         country
-        ip
         device
         browser
         status

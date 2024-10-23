@@ -169,20 +169,17 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
 
   // const accessToken = window.localStorage.getItem("accessToken");
   const accessToken = window.localStorage.getItem(
-    ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY,
+    ENV_KEYS.VITE_APP_ACCESS_TOKEN,
   );
 
   useEffect(() => {
     const initialize = async () => {
       setIsLoading(true);
-      const userStaff = localStorage.getItem(ENV_KEYS.VITE_APP_USER_DATA_KEY);
+      const userStaff = localStorage.getItem(ENV_KEYS.VITE_APP_USER_DATA);
       try {
         if (accessToken && isValidToken(accessToken)) {
           const decoded = accessToken;
-          const userPayload = decryptToken(
-            decoded,
-            ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
-          );
+          const userPayload = decryptToken(decoded, ENV_KEYS.VITE_APP_TOKEN);
 
           const dataDecode = JSON.parse(decryptData(userStaff) as string);
 
@@ -197,7 +194,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
                 const user = data?.queryStaffs?.data[0];
                 const userEncrypted = encryptData(JSON.stringify(user));
                 localStorage.setItem(
-                  ENV_KEYS.VITE_APP_USER_DATA_KEY,
+                  ENV_KEYS.VITE_APP_USER_DATA,
                   userEncrypted,
                 );
                 dispatch({
@@ -220,7 +217,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
                 const user = data?.getUser?.data[0];
                 const userEncrypted = encryptData(JSON.stringify(user));
                 localStorage.setItem(
-                  ENV_KEYS.VITE_APP_USER_DATA_KEY,
+                  ENV_KEYS.VITE_APP_USER_DATA,
                   userEncrypted,
                 );
                 // localStorage.setItem("userData", JSON.stringify(user));
@@ -261,9 +258,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
   const [localPermission, setLocalPermission] = useState(null);
   useEffect(() => {
     // const storeValue = localStorage.getItem("permission");
-    const storeValue = localStorage.getItem(
-      ENV_KEYS.VITE_APP_PERMISSION_LOCAL_KEY,
-    );
+    const storeValue = localStorage.getItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL);
 
     if (storeValue) {
       const storeParseJson = JSON.parse(decryptData(storeValue) as string);
@@ -274,9 +269,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
 
   useEffect(() => {
     // const dateJson = localStorage.getItem("dateForgetPassword");
-    const dateJson = localStorage.getItem(
-      ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY,
-    );
+    const dateJson = localStorage.getItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL);
     if (dateJson) {
       dispatch({
         type: FORGET_PASSWORD,
@@ -301,7 +294,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
               JSON.stringify(data?.role_staffs?.data[0]?.permision),
             );
             localStorage.setItem(
-              ENV_KEYS.VITE_APP_USER_DATA_KEY,
+              ENV_KEYS.VITE_APP_USER_DATA,
               permissionEncrypted,
             );
           }
@@ -311,7 +304,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
   };
 
   const generateNewToken = async () => {
-    const existToken = localStorage.getItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
+    const existToken = localStorage.getItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN);
     const newToken = (
       await refreshToken({
         variables: {
@@ -323,10 +316,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
     const accessToken = newToken?.accessToken;
     if (accessToken) {
       const decoded = accessToken;
-      const userPayload = decryptToken(
-        decoded,
-        ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
-      );
+      const userPayload = decryptToken(decoded, ENV_KEYS.VITE_APP_TOKEN);
       await getUsers({
         variables: {
           where: {
@@ -338,7 +328,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
           checkAccessToken(accessToken);
           // localStorage.setItem("userData", JSON.stringify(user));
           localStorage.setItem(
-            ENV_KEYS.VITE_APP_USER_DATA_KEY,
+            ENV_KEYS.VITE_APP_USER_DATA,
             JSON.stringify(user),
           );
           dispatch({
@@ -364,16 +354,10 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
       const enable2FA = data?.twoFactorIsEnabled;
       const authen = true;
       const decoded = checkRole;
-      const tokenData = decryptToken(
-        decoded,
-        ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
-      );
+      const tokenData = decryptToken(decoded, ENV_KEYS.VITE_APP_TOKEN);
       if (enable2FA === 0) {
         checkAccessToken(token);
-        localStorage.setItem(
-          ENV_KEYS.VITE_APP_USER_DATA_KEY,
-          JSON.stringify(data),
-        );
+        localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, JSON.stringify(data));
         dispatch({
           type: SIGN_IN,
           payload: {
@@ -404,10 +388,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
           }
 
           const userDataEncrypted = encryptData(JSON.stringify(user));
-          localStorage.setItem(
-            ENV_KEYS.VITE_APP_USER_DATA_KEY,
-            userDataEncrypted,
-          );
+          localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, userDataEncrypted);
 
           const tokenData = data?.staffLogin?.token;
           checkAccessToken(tokenData);
@@ -439,9 +420,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
     voteParams: string,
   ) => {
     try {
-      const responseIp = await axios.get(
-        "https://staging.load.vshare.net/getIP",
-      );
+      const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
       const signInUser = await userLogin({
         variables: {
           where: {
@@ -457,10 +436,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
       const enable2FA = user?.twoFactorIsEnabled;
       const authen = true;
 
-      const tokenData = decryptToken(
-        checkRole,
-        ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
-      );
+      const tokenData = decryptToken(checkRole, ENV_KEYS.VITE_APP_TOKEN);
 
       await handleCreateLog(
         user?._id,
@@ -471,11 +447,11 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
 
       if (enable2FA === 0) {
         const userDataEncrypt = encryptData(
-          JSON.stringify(signInUser?.data?.userLogin?.data[0]),
+          JSON.stringify(user),
         );
+        
         checkAccessToken(checkRole);
-        localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA_KEY, userDataEncrypt);
-
+        localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, userDataEncrypt);
         dispatch({
           type: SIGN_IN,
           payload: {
@@ -488,8 +464,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
         return { authen, user, checkRole, refreshId: tokenData.refreshID };
       }
     } catch (error: any) {
-      console.log(error?.message);
-      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
+      const cutErr = error?.message?.replace(/(ApolloError: )?Error: /, "");
       if (cutErr === "USERNAME_OR_PASSWORD_INCORRECT") {
         errorMessage("Username or password incorrect!!", 3000);
       } else if (cutErr === "YOUR_STATUS_IS_DISABLED") {
@@ -506,7 +481,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
 
   const authentication2FA = async (user, token) => {
     // localStorage.setItem("userData", JSON.stringify(user));
-    localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA_KEY, JSON.stringify(user));
+    localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, JSON.stringify(user));
     checkAccessToken(token);
     dispatch({
       type: SIGN_IN,
@@ -539,17 +514,20 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
     // localStorage.removeItem("accessToken");
     // localStorage.removeItem("userData");
     // localStorage.removeItem("permission");
-    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL_KEY);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL);
     oAuthLogOut();
     dispatch({ type: LOG_OUT });
   };
 
   const signOut = async () => {
-    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL_KEY);
+    // localStorage.removeItem("accessToken");
+    // localStorage.removeItem("permission");
+    // localStorage.removeItem("userData");
+    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL);
     oAuthLogOut();
     dispatch({ type: SIGN_OUT });
   };
@@ -612,10 +590,10 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
   };
 
   const resetForgetPassword = () => {
-    const data = localStorage.getItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY);
+    const data = localStorage.getItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL);
 
     if (data) {
-      localStorage.removeItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY);
+      localStorage.removeItem(ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL);
       dispatch({
         type: RESET_FORGET_PASSWORD,
       });
@@ -661,7 +639,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
             //   moment(dateFormat).format("HH:mm"),
             // );
             localStorage.setItem(
-              ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY,
+              ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL,
               moment(dateFormat).format("HH:mm"),
             );
 

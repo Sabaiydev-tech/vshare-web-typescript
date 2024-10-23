@@ -2,7 +2,13 @@ import React, { Fragment, useEffect, useRef, useState } from "react";
 
 //mui component and style
 import CheckBoxOutlineBlankRoundedIcon from "@mui/icons-material/CheckBoxOutlineBlankRounded";
-import { Box, Checkbox, IconButton, Tooltip } from "@mui/material";
+import {
+  Box,
+  Checkbox,
+  Tooltip,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import { styled } from "@mui/material/styles";
@@ -11,19 +17,16 @@ import FolderEmptyIcon from "assets/images/folder-empty.svg?react";
 import FolderNotEmptyIcon from "assets/images/folder-not-empty.svg?react";
 
 import lockIcon from "assets/images/lock-icon.png";
-import useHover from "hooks/useHover";
 import useOuterClick from "hooks/useOuterClick";
 import useResizeImage from "hooks/useResizeImage";
 import { FileIcon, defaultStyles } from "react-file-icon";
-import { BsPinAngleFill } from "react-icons/bs";
-import { FiDownload } from "react-icons/fi";
+
 import * as MdIcon from "react-icons/md";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import * as selectorAction from "stores/features/selectorSlice";
 import { getFileType } from "utils/file.util";
 import { cutStringWithEllipsis } from "utils/string.util";
 import Loader from "./Loader";
-import MenuDropdown from "./MenuDropdown";
 
 export const SelectionContainer = styled("div")({
   position: "absolute",
@@ -40,7 +43,7 @@ const CustomCheckbox = styled(Checkbox)({
 
 const Item = styled(Paper)(({ theme, ...props }: any) => ({
   boxShadow: "rgb(0 0 0 / 9%) 0px 2px 8px",
-  borderRadius: "10px",
+  borderRadius: "6px",
   overflow: "hidden",
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "white",
   ...theme.typography.body2,
@@ -142,15 +145,6 @@ const ItemTitle = muiStyled("div")(({ ...props }: any) => ({
   zIndex: 1,
 }));
 
-const Pin = muiStyled("div")({
-  position: "absolute",
-  bottom: "8px",
-  left: "8px",
-  color: "#3C384A",
-  fontSize: "18px",
-  zIndex: 1,
-});
-
 const GridItem = styled("div")(() => ({
   display: "flex",
   width: "100%",
@@ -173,28 +167,6 @@ const GridItemWrapper = styled("div")(() => ({
   justifyContent: "center",
 }));
 
-const Download = muiStyled("div")({
-  position: "absolute",
-  bottom: "2px",
-  right: "2px",
-  color: "#3C384A",
-  fontSize: "18px",
-  zIndex: 1,
-  svg: {
-    color: "#817E8D",
-    width: "20px",
-    height: "20px",
-  },
-});
-
-const MenuButtonContainer = muiStyled("div")({
-  position: "absolute",
-  top: 0,
-  right: 0,
-  zIndex: 2,
-  margin: "5px",
-});
-
 const FileCardItem: React.FC<any> = ({
   item,
   imagePath,
@@ -204,6 +176,7 @@ const FileCardItem: React.FC<any> = ({
   onOuterClick,
   styleSelectedCard,
   fileType,
+  handleSelectData,
   ...props
 }) => {
   const resizeImage = useResizeImage({
@@ -215,11 +188,13 @@ const FileCardItem: React.FC<any> = ({
     width: 200,
   });
 
-  const [isOpenMenu, setIsOpenMenu] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownOpen] = useState(false);
   const itemRef = useRef(null);
-  const isFileCardItemHover = useHover(itemRef);
   const isFileCardOuterClicked = useOuterClick(itemRef);
+
+  const isTablet = useMediaQuery("(max-width: 992px)");
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const {
     isNormalCard,
     sx,
@@ -230,48 +205,42 @@ const FileCardItem: React.FC<any> = ({
   const dataSelector = useSelector(
     selectorAction.checkboxFileAndFolderSelector,
   );
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
-  const handleSelect = () => {
-    const name = fileType === "folder" ? item?.folder_name : item?.filename;
-    const newFilename =
-      fileType === "folder" ? item?.newFolder_name : item?.newFilename;
-    const checkType = fileType === "folder" ? "folder" : "file";
+  // const handleSelect = () => {
+  //   const name = fileType === "folder" ? item?.folder_name : item?.filename;
+  //   const newFilename =
+  //     fileType === "folder" ? item?.newFolder_name : item?.newFilename;
+  //   const checkType = fileType === "folder" ? "folder" : "file";
 
-    const value = {
-      id: item?._id,
-      name,
-      newPath: item?.newPath || "",
-      newFilename,
-      checkType,
-      dataPassword: item?.filePassword || item?.access_password,
-      shortLink: item?.shortUrl,
-      createdBy: {
-        _id: item?.createdBy?._id,
-        newName: item?.createdBy?.newName,
-      },
-    };
+  //   const value = {
+  //     id: item?._id,
+  //     name,
+  //     newPath: item?.newPath || "",
+  //     newFilename,
+  //     checkType,
+  //     dataPassword: item?.filePassword || item?.access_password,
+  //     shortLink: item?.shortUrl,
+  //     createdBy: {
+  //       _id: item?.createdBy?._id,
+  //       newName: item?.createdBy?.newName,
+  //     },
+  //   };
 
-    dispatch(
-      selectorAction.setFileAndFolderData({
-        data: value,
-      }),
-    );
-  };
-
-  const handleDropdownOpen = (isOpen) => {
-    setIsDropdownOpen(isOpen);
-  };
+  //   dispatch(
+  //     selectorAction.setFileAndFolderData({
+  //       data: value,
+  //     }),
+  //   );
+  // };
 
   const handleItemClick = () => {
     if (props?.isCheckbox) {
-      handleSelect();
+      const fileType = item?.isFile ? "file" : "folder";
+      handleSelectData?.(item._id, fileType);
+      // handleSelect();
     }
   };
-
-  useEffect(() => {
-    setIsOpenMenu(isFileCardItemHover);
-  }, [isFileCardItemHover]);
 
   useEffect(() => {
     onOuterClick?.();
@@ -282,7 +251,8 @@ const FileCardItem: React.FC<any> = ({
       item
       xs={6}
       sm={6}
-      lg={4}
+      md={4}
+      lg={3}
       sx={{
         width: "100%",
         height: "100%",
@@ -297,7 +267,7 @@ const FileCardItem: React.FC<any> = ({
       <Item
         ref={itemRef}
         className="card-item"
-        onClick={handleItemClick}
+        // onClick={item.status === "active" ? handleItemClick : () => {}}
         {...{
           ...(styleSelectedCard && {
             isstyledselectedcard: styleSelectedCard,
@@ -323,43 +293,66 @@ const FileCardItem: React.FC<any> = ({
           },
         }}
       >
-        {props?.isCheckbox && (
-          <SelectionContainer>
-            <CustomCheckbox
+        {item.status !== "active" && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 12,
+              right: 10,
+              borderRadius: "50px",
+              background: fileType === "folder" ? "#F5E3E2" : "#F5E3E2",
+              padding: "2px 10px",
+            }}
+          >
+            <Typography
               sx={{
-                display:
-                  !!dataSelector?.selectionFileAndFolderData?.find(
-                    (el) => el?.id === props?.id,
-                  ) && true
-                    ? "block"
-                    : "none",
+                fontSize: "10px",
+                color: "#EA5455",
+                fontWeight: "bold",
+                verticalAlign: "middle",
               }}
-              className="checkbox-selected"
-              checked={
-                !!dataSelector?.selectionFileAndFolderData?.find(
-                  (el) => el?.id === props?.id,
-                ) && true
-              }
-              icon={
-                <CheckBoxOutlineBlankRoundedIcon
-                  sx={{ borderRadius: "30px !important" }}
+              component={"span"}
+            >
+              Deleted
+            </Typography>
+          </Box>
+        )}
+        {item.status === "active" && (
+          <Fragment>
+            {props?.isCheckbox && (
+              <SelectionContainer>
+                <CustomCheckbox
+                  onClick={
+                    item.status === "active" ? handleItemClick : () => {}
+                  }
+                  sx={{
+                    display:
+                      !!dataSelector?.selectionFileAndFolderData?.find(
+                        (el) =>
+                          el?.id === props?.id &&
+                          el.checkType === props?.selectType,
+                      ) && true
+                        ? "block"
+                        : "none",
+                  }}
+                  className="checkbox-selected"
+                  checked={
+                    !!dataSelector?.selectionFileAndFolderData?.find(
+                      (el) => el?.id === props?.id,
+                    ) && true
+                  }
+                  icon={
+                    <CheckBoxOutlineBlankRoundedIcon
+                      sx={{ borderRadius: "30px !important" }}
+                    />
+                  }
+                  aria-label={"checkbox" + props?.id}
                 />
-              }
-              aria-label={"checkbox" + props?.id}
-            />
-          </SelectionContainer>
+              </SelectionContainer>
+            )}
+          </Fragment>
         )}
 
-        {props?.menuItems && isOpenMenu && (
-          <MenuButtonContainer>
-            <MenuDropdown
-              customButton={props?.customButton}
-              onOpenChange={handleDropdownOpen}
-            >
-              {props.menuItems}
-            </MenuDropdown>
-          </MenuButtonContainer>
-        )}
         <GridItem className="file-card-item">
           <GridItemWrapper>
             {fileType === "image" ? (
@@ -404,30 +397,58 @@ const FileCardItem: React.FC<any> = ({
                       marginBottom: "30px",
                     }}
                   >
-                    {isContainFiles ? (
-                      <FolderNotEmptyIcon
-                        style={{
-                          width: "150px",
-                        }}
+                    {props.filePassword ? (
+                      <LockImage
+                        className="lock-icon-preview"
+                        src={lockIcon}
+                        alt={props.name}
                       />
                     ) : (
-                      <FolderEmptyIcon
-                        style={{
-                          width: "150px",
-                        }}
-                      />
+                      <>
+                        {isContainFiles ? (
+                          <FolderNotEmptyIcon
+                            style={{
+                              width: isTablet
+                                ? "120px"
+                                : isMobile
+                                ? "50px"
+                                : "130px",
+                            }}
+                          />
+                        ) : (
+                          <FolderEmptyIcon
+                            style={{
+                              width: isTablet
+                                ? "120px"
+                                : isMobile
+                                ? "50px"
+                                : "130px",
+                            }}
+                          />
+                        )}
+                      </>
                     )}
                   </Box>
                 )}
                 {fileType !== "folder" && (
-                  <FileIconContainer>
-                    <FileIcon
-                      extension={getFileType(props.name)}
-                      {...{
-                        ...defaultStyles[getFileType(props.name) as string],
-                      }}
-                    />
-                  </FileIconContainer>
+                  <Fragment>
+                    {props?.filePassword ? (
+                      <LockImage
+                        className="lock-icon-preview"
+                        src={lockIcon}
+                        alt={props.name}
+                      />
+                    ) : (
+                      <FileIconContainer>
+                        <FileIcon
+                          extension={getFileType(props.name)}
+                          {...{
+                            ...defaultStyles[getFileType(props.name) as string],
+                          }}
+                        />
+                      </FileIconContainer>
+                    )}
+                  </Fragment>
                 )}
               </React.Fragment>
             )}
@@ -457,25 +478,6 @@ const FileCardItem: React.FC<any> = ({
                   </ItemTitle>
                 )}
               </React.Fragment>
-            )}
-
-            {props.isPinned && (
-              <Pin>
-                <BsPinAngleFill style={{ color: "#17766B" }} />
-              </Pin>
-            )}
-
-            {props.downloadIcon?.isShow && (
-              <Download>
-                <IconButton
-                  onClick={props.downloadIcon.handleOnClick}
-                  sx={{
-                    padding: "5px",
-                  }}
-                >
-                  <FiDownload color="black" />
-                </IconButton>
-              </Download>
             )}
           </GridItemWrapper>
         </GridItem>
