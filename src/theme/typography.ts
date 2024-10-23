@@ -48,6 +48,7 @@ const typography = {
     fontWeight: 500,
     lineHeight: 1.25,
   },
+
   body1: {
     fontSize: 13,
   },

@@ -281,6 +281,7 @@ function Home() {
         const updatedFile = { file: newFile };
         return updatedFile;
       });
+      
       setData(fileList);
     } else {
       setData([]);

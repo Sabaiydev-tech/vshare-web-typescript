@@ -6,5 +6,6 @@ declare global {
     fbAsyncInit: any;
     __reCaptcha: any;
     adsbygoogle: any;
+    grecaptcha: any;
   }
 }
