@@ -1,47 +1,38 @@
 import React, { useMemo } from "react";
 
 const initialState = {
-  pageRow: null,
   status: null,
   pageLimit: 10,
-  currentPageNumber: 1,
+  page: 0,
   search: null,
-  select: "score_DESC",
+  select: "createdAt_DESC",
   startDate: null,
   endDate: null,
+  offset: 3,
 };
 
 const ACTION_TYPE = {
-  PAGE_LIMIT: "limit",
+  PAGE_LIMIT: "pageLimit",
   STATUS: "status",
-  PAGE_ROW: "page_row",
-  PAGINATION: "pagination",
+  PAGE: "page",
   SEARCH: "search",
   SELECT: "select",
   START_DATE: "start_date",
   END_DATE: "end_date",
+  LIMIT: "offset",
 };
 
 const reducer = (state: any, action: any) => {
-  
   switch (action.type) {
     case ACTION_TYPE.PAGE_LIMIT:
-      return { ...state, pageLimit: action.payload || null };
+      return { ...state, pageLimit: action.payload || 10 };
     case ACTION_TYPE.STATUS:
-      return { ...state, status: action.payload || null, currentPageNumber: 1 };
-    case ACTION_TYPE.PAGE_ROW:
+      return { ...state, status: action.payload || null, page: 0 };
+
+    case ACTION_TYPE.PAGE:
       return {
         ...state,
-        pageRow: action.payload || null,
-        ...(action.payload && {
-          pageLimit: action.payload,
-        }),
-        currentPageNumber: 1,
-      };
-    case ACTION_TYPE.PAGINATION:
-      return {
-        ...state,
-        currentPageNumber: action.payload || null,
+        page: action.payload || 0,
       };
     case ACTION_TYPE.SEARCH:
       return {
@@ -51,17 +42,28 @@ const reducer = (state: any, action: any) => {
     case ACTION_TYPE.SELECT:
       return {
         ...state,
+        startDate: null,
+        endDate: null,
+        page: 0,
         select: action.payload || null,
       };
     case ACTION_TYPE.START_DATE:
       return {
         ...state,
+        page: 0,
         startDate: action.payload || null,
       };
     case ACTION_TYPE.END_DATE:
       return {
         ...state,
+        page: 0,
         endDate: action.payload || null,
+      };
+    case ACTION_TYPE.LIMIT:
+      return {
+        ...state,
+        page: 0,
+        offset: action.payload || 3,
       };
     default:
       return;

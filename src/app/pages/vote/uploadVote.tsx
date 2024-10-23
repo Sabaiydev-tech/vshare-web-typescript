@@ -17,7 +17,7 @@ import FileImagIcon from "assets/images/vote/imageIcon.svg?react";
 import axios from "axios";
 import { ENV_KEYS } from "constants/env.constant";
 import useAuth from "hooks/useAuth";
-import { useFetchVoteResult } from "hooks/vote/useFetchVote";
+import { useFetchVoteFiles, useFetchVoteResult } from "hooks/vote/useFetchVote";
 import useFilter from "hooks/vote/useFilter";
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -50,6 +50,10 @@ export default function UploadVote({ handleClose }: TypeProps) {
     id: decryptedData?._id,
     filter: filter,
   });
+  const { refetch } = useFetchVoteFiles({
+    id: decryptedData?._id,
+    filter: filter,
+  });
   const isToken = localStorage.getItem("alBBtydfsTtW@wdVV");
   const [isErrorMessage, setIsErrorMessage] = useState(false);
   const LOAD_UPLOAD_URL = ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL;
@@ -74,12 +78,12 @@ export default function UploadVote({ handleClose }: TypeProps) {
     [files],
   );
   let acceptFileType = "image/*";
-  if (dataVote?.voteData?.fileType[0] === "PHOTO") {
-    acceptFileType = "image/*";
+  if (dataVote?.voteData?.fileType[0] === "VIDEO") {
+    acceptFileType = "video/*";
   } else if (dataVote?.voteData?.fileType[0] === "SOUND") {
     acceptFileType = "audio/*";
   } else {
-    acceptFileType = "video/*";
+    acceptFileType = "image/*";
   }
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -193,6 +197,7 @@ export default function UploadVote({ handleClose }: TypeProps) {
               setOverallProgress(0);
               setFiles([]);
               setIsSumitting(false);
+              refetch();
             }, 2000);
             successMessage("Upload successful!!", 3000);
           } catch (error) {
@@ -468,7 +473,9 @@ export default function UploadVote({ handleClose }: TypeProps) {
                   )}
                 </Grid>
                 {isErrorMessage && (
-                  <Alert severity="error">You have reached the upload limit</Alert>
+                  <Alert severity="error">
+                    You have reached the upload limit
+                  </Alert>
                 )}
                 <Typography sx={{ mb: 2, width: "100%" }} component="p">
                   Expired date: {formatDate(dataVote?.voteData?.expiredAt)}

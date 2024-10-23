@@ -16,11 +16,10 @@ import Home from "./pages/home/Home";
 import PricingCheckout from "./pages/pricing-checkout/PricingCheckout";
 import PricingPlan from "./pages/pricing-plan/PricingPlan";
 import PrivacyPolicy from "./pages/privacy-and-policy/PrivacyPolicy";
-import TermCondition from "./pages/term-and-condition/TermCondition";
-import UploadVote from "./pages/vote/uploadVote";
-import Vote from "./pages/vote/vote";
 import SignIn from "./pages/sign-in/SignIn";
 import SignUp from "./pages/sign-up/SignUp";
+import TermCondition from "./pages/term-and-condition/TermCondition";
+import Vote from "./pages/vote/vote";
 
 const routes: RouteObject[] = [
   {
@@ -39,14 +38,7 @@ const routes: RouteObject[] = [
         element: <SignIn />,
       },
       { path: "auth/sign-up/:id", element: <SignUp /> },
-      {
-        path: "vote/upload",
-        element: (
-          <Landing>
-              <UploadVote />
-          </Landing>
-        ),
-      },
+      
       {
         path: "df",
         element: (

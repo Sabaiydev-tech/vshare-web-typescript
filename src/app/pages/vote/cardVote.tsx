@@ -28,9 +28,10 @@ export default function CardVote({ item, data }: TypeProps) {
     <React.Fragment>
       <ImageListItem
         sx={{
-          border: `1px solid ${
-            item.isSelected ? "#17766B" : theme.palette.grey[400]
-          }`,
+          border: item.isSelected
+            ? "none"
+            : `1px solid ${theme.palette.grey[400]}`,
+          bgcolor: `${item.isSelected ? theme.palette.grey[200] : "white"}`,
           borderRadius: "6px",
           overflow: "hidden",
           cursor: "pointer",
@@ -51,9 +52,7 @@ export default function CardVote({ item, data }: TypeProps) {
         <div
           style={{
             marginTop: "2px",
-            borderBottom: `1px solid ${
-              item.isSelected ? "#17766B" : theme.palette.grey[400]
-            }`,
+            borderBottom: `1px solid ${theme.palette.grey[400]}`,
           }}
         ></div>
         <ImageListItemBar
@@ -61,7 +60,9 @@ export default function CardVote({ item, data }: TypeProps) {
           title={data?.voteData?.topic}
           subtitle={
             <span style={{ fontSize: "12px" }}>
-              {item.filename.substring(0, item.filename.lastIndexOf("."))}
+              {item.filename.includes(".")
+                ? item.filename.substring(0, item.filename.lastIndexOf("."))
+                : item.filename}
             </span>
           }
           position="below"

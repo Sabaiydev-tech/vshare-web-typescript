@@ -8,15 +8,64 @@ import {
   ImageListItemBar,
   Typography,
 } from "@mui/material";
-import { useFetchVoteFiles, useFetchVoteResult } from "hooks/vote/useFetchVote";
+import VoteAction from "components/vote/VoteAction";
+import VoteDialog from "components/vote/VoteDialog";
+import { ENV_KEYS } from "constants/env.constant";
+import { useFetchTopVote, useFetchVoteResult } from "hooks/vote/useFetchVote";
 import useFilter from "hooks/vote/useFilter";
 import React from "react";
+import { IoFilter } from "react-icons/io5";
+import { ITopVoteType } from "types/voteType";
 import { decryptDataLink } from "utils/secure.util";
 import ShareVote from "./shareVote";
 import VoteDetails from "./votedetail";
-import VoteDialog from "components/vote/VoteDialog";
-import { IoFilter } from "react-icons/io5";
-import VoteAction from "components/vote/VoteAction";
+import { styled, useMediaQuery } from "@mui/material";
+
+const CardTopContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  backgroundColor: "gray",
+  position: "relative",
+}));
+
+const CardTopItemLeft = styled(Box)(({ theme }) => ({
+  backgroundColor: "white",
+  width: "250px",
+  height: "240px",
+  borderRadius: "8px 0 0 8px",
+}));
+const CardTopItemCenter = styled(Box)(({ theme }) => ({
+  backgroundColor: "white",
+  position: "relative",
+  width: "250px",
+  height: "240px",
+}));
+const CardTopItemRight = styled(Box)(({ theme }) => ({
+  backgroundColor: "white",
+  width: "250px",
+  height: "240px",
+  borderRadius: "0 8px 8px 0",
+}));
+const TopItem = styled(Box)(({ theme }) => ({
+  backgroundColor: "white",
+  position: "absolute",
+  top: -30,
+  left: 0,
+  borderRadius: "6px 6px 0 0",
+  width: "250px",
+  height: "270px",
+  zIndex: 2,
+}));
+// const TopItemBlur = styled(Box)(({ theme }) => ({
+//   backgroundColor: "gray",
+//   position: "absolute",
+//   top: 0,
+//   left: 0,
+//   transform: 'translate(-50%, -50%)',
+//   borderRadius: "6px 6px 0 0",
+//   width: "300px",
+//   height: "240px",
+//   zIndex: 1,
+// }));
 export default function Vote() {
   const theme = createTheme();
   const filter = useFilter();
@@ -28,36 +77,15 @@ export default function Vote() {
     id: decryptedData?._id,
     filter: filter,
   });
-  const { data: voteFiles } = useFetchVoteFiles({
+  const { data: topVote } = useFetchTopVote({
     id: decryptedData?._id,
-    filter: filter,
+    filter: filter.data,
   });
+  const newUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}preview?path=`;
 
   const handleClose = () => {
     setIsUploadOpen(false);
   };
-  const itemData = [
-    {
-      img: "https://images.unsplash.com/photo-1551963831-b3b1ca40c98e",
-      title: "Breakfast",
-      author: "@bkristastucchio",
-    },
-    {
-      img: "https://images.unsplash.com/photo-1551782450-a2132b4ba21d",
-      title: "Burger",
-      author: "@rollelflex_graphy726",
-    },
-    {
-      img: "https://images.unsplash.com/photo-1522770179533-24471fcdba45",
-      title: "Camera",
-      author: "@helloimnik",
-    },
-    {
-      img: "https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c",
-      title: "Coffee",
-      author: "@nolanissac",
-    },
-  ];
   const HotVote = [
     {
       img: "https://images.unsplash.com/photo-1522770179533-24471fcdba45",
@@ -80,9 +108,6 @@ export default function Vote() {
       author: "@arwinneil",
     },
   ];
-  const handleEvents = (action: string) => {
-    console.log(action);
-  };
 
   return (
     <React.Fragment>
@@ -117,7 +142,11 @@ export default function Vote() {
           </Typography>
         </Box>
         <Card
-          sx={{ my: 5, boxShadow: "rgba(149, 157, 165, 0.2) 5px 8px 24px" }}
+          sx={{
+            my: 5,
+            backgroundImage: "linear-gradient(180deg, #17766B 0%, #20A697 13%)",
+            boxShadow: "rgba(149, 157, 165, 0.2) 5px 8px 24px",
+          }}
         >
           <Box sx={{ m: 4 }}>
             <Typography
@@ -128,7 +157,7 @@ export default function Vote() {
                 color: theme.palette.grey[700],
               }}
             >
-              Vote image
+              {data?.voteData?.topic}
             </Typography>
             <Typography
               component="h6"
@@ -138,7 +167,7 @@ export default function Vote() {
                 color: theme.palette.grey[600],
               }}
             >
-              Vote for you like the most! Join the fun and share your thoughts.
+              {data?.voteData?.description}
             </Typography>
             <Box sx={{ my: 3 }}>
               <Box
@@ -152,7 +181,10 @@ export default function Vote() {
                 <VoteAction
                   icon={<IoFilter size={20} style={{ cursor: "pointer" }} />}
                   onEvent={(action: string) => {
-                    handleEvents(action);
+                    filter.dispatch({
+                      type: filter.ACTION_TYPE.LIMIT,
+                      payload: action,
+                    });
                   }}
                 />
 
@@ -163,120 +195,180 @@ export default function Vote() {
                   Upload
                 </Button>
               </Box>
-              <Typography
-                component="h6"
+              <Box
                 sx={{
-                  fontSize: "1rem",
-                  fontWeight: 500,
-                  color: theme.palette.grey[700],
+                  display: "flex",
+                  justifyContent: "center",
                 }}
               >
-                Top vote.
-              </Typography>
-              <Grid container spacing={2}>
-                {itemData.map((item) => (
-                  <Grid item xs={6} sm={4} md={3}>
-                    <ImageListItem
-                      key={item.img}
-                      sx={{
-                        border: `1px solid ${theme.palette.grey[500]}`,
-                        borderRadius: "6px",
-                      }}
-                    >
-                      <img
-                        srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                        src={`${item.img}?w=248&fit=crop&auto=format`}
-                        alt={item.title}
-                        loading="lazy"
-                        style={{ borderRadius: "12px", padding: "6px" }}
-                      />
-                      <div
-                        style={{
-                          marginTop: "2px",
-                          borderBottom: `1px solid ${theme.palette.grey[500]}`,
-                        }}
-                      ></div>
-                      <ImageListItemBar
-                        sx={{ px: 2 }}
-                        title={item.title}
-                        subtitle={<span>by: {item.author}</span>}
-                        position="below"
-                      />
-                    </ImageListItem>
-                    <Typography
-                      component="h6"
-                      sx={{
-                        fontSize: "1rem",
-                        fontWeight: 500,
-                        color: "#17766B",
-                      }}
-                    >
-                      Top 1:3100 vote.
-                    </Typography>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-            <Box sx={{ my: 4 }}>
-              <Typography
-                component="h6"
-                sx={{
-                  fontSize: "1rem",
-                  fontWeight: 500,
-                  color: theme.palette.grey[700],
-                }}
-              >
-                Hot vote.
-              </Typography>
+                <Box
+                  sx={{
+                    width: "60%",
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
+                  <CardTopContainer>
+                    <CardTopItemLeft>NO 2</CardTopItemLeft>
+                    <CardTopItemCenter>
+                      <TopItem>NO 1</TopItem>
+                    </CardTopItemCenter>
+                    {/* <TopItemBlur>NO KKLDS</TopItemBlur> */}
+                    <CardTopItemRight>No 2</CardTopItemRight>
+                  </CardTopContainer>
+                </Box>
+              </Box>
+              {topVote?.topVotes?.length > 0 && (
+                <Box>
+                  <Typography
+                    component="h6"
+                    sx={{
+                      fontSize: "1rem",
+                      fontWeight: 500,
+                      color: theme.palette.grey[700],
+                    }}
+                  >
+                    Top vote.
+                  </Typography>
 
-              <Grid container spacing={2}>
-                {HotVote.map((item) => (
-                  <Grid item xs={6} sm={4} md={3}>
-                    <ImageListItem
-                      key={item.img}
-                      sx={{
-                        border: `1px solid ${theme.palette.grey[500]}`,
-                        borderRadius: "6px",
-                      }}
-                    >
-                      <img
-                        srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                        src={`${item.img}?w=248&fit=crop&auto=format`}
-                        alt={item.title}
-                        loading="lazy"
-                        style={{ borderRadius: "12px", padding: "6px" }}
-                      />
-                      <div
-                        style={{
-                          marginTop: "2px",
-                          borderBottom: `1px solid ${theme.palette.grey[500]}`,
-                        }}
-                      ></div>
-                      <ImageListItemBar
-                        sx={{ px: 2 }}
-                        title={item.title}
-                        subtitle={<span>by: {item.author}</span>}
-                        position="below"
-                      />
-                    </ImageListItem>
-                    <Typography
-                      component="h6"
-                      sx={{
-                        fontSize: "1rem",
-                        fontWeight: 500,
-                        color: "#17766B",
-                      }}
-                    >
-                      Top 1:3100 vote.
-                    </Typography>
+                  <Grid container spacing={2}>
+                    {topVote?.topVotes?.map(
+                      (item: ITopVoteType, index: number) => {
+                        const sourcePath = `${data?.voteData?.createdBy?.newName}-${data?.voteData?.createdBy?._id}/${item?.newFilename}`;
+
+                        return (
+                          <Grid key={index} item xs={6} sm={4} md={3}>
+                            <ImageListItem
+                              sx={{
+                                border: `1px solid ${theme.palette.grey[500]}`,
+                                borderRadius: "6px",
+                              }}
+                            >
+                              <img
+                                src={newUrl + sourcePath}
+                                alt={item.filename}
+                                loading="lazy"
+                                style={{
+                                  width: "100%",
+                                  height: "200px",
+                                  borderRadius: "12px",
+                                  objectFit: "contain",
+                                  padding: "6px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  marginTop: "2px",
+                                  borderBottom: `1px solid ${theme.palette.grey[500]}`,
+                                }}
+                              ></div>
+                              <ImageListItemBar
+                                sx={{ px: 2 }}
+                                title={data?.voteData?.topic}
+                                subtitle={
+                                  <span>
+                                    by:
+                                    {item.filename.includes(".")
+                                      ? item.filename.substring(
+                                          0,
+                                          item.filename.lastIndexOf("."),
+                                        )
+                                      : item.filename}
+                                  </span>
+                                }
+                                position="below"
+                              />
+                            </ImageListItem>
+                            <Typography
+                              component="h6"
+                              sx={{
+                                fontSize: "1rem",
+                                fontWeight: 500,
+                                color: "#17766B",
+                              }}
+                            >
+                              Top 1:3100 vote.
+                            </Typography>
+                          </Grid>
+                        );
+                      },
+                    )}
                   </Grid>
-                ))}
-              </Grid>
+                </Box>
+              )}
             </Box>
+            {topVote?.hotVotes?.length > 0 && (
+              <Box sx={{ my: 4 }}>
+                <Typography
+                  component="h6"
+                  sx={{
+                    fontSize: "1rem",
+                    fontWeight: 500,
+                    color: theme.palette.grey[700],
+                  }}
+                >
+                  Hot vote.
+                </Typography>
+
+                <Grid container spacing={2}>
+                  {topVote?.hotVotes?.map(
+                    (item: ITopVoteType, index: number) => {
+                      const sourcePath = `${data?.voteData?.createdBy?.newName}-${data?.voteData?.createdBy?._id}/${item?.newFilename}`;
+
+                      return (
+                        <Grid key={index} item xs={6} sm={4} md={3}>
+                          <ImageListItem
+                            sx={{
+                              border: `1px solid ${theme.palette.grey[500]}`,
+                              borderRadius: "6px",
+                            }}
+                          >
+                            <img
+                              src={newUrl + sourcePath}
+                              alt={item.filename}
+                              loading="lazy"
+                              style={{
+                                width: "100%",
+                                height: "200px",
+                                borderRadius: "12px",
+                                objectFit: "contain",
+                                padding: "6px",
+                              }}
+                            />
+                            <div
+                              style={{
+                                marginTop: "2px",
+                                borderBottom: `1px solid ${theme.palette.grey[500]}`,
+                              }}
+                            ></div>
+                            <ImageListItemBar
+                              sx={{ px: 2 }}
+                              title={data?.voteData?.topic}
+                              subtitle={<span>by: {"item.author"}</span>}
+                              position="below"
+                            />
+                          </ImageListItem>
+                          <Typography
+                            component="h6"
+                            sx={{
+                              fontSize: "1rem",
+                              fontWeight: 500,
+                              color: "#17766B",
+                            }}
+                          >
+                            Top 1:3100 vote.
+                          </Typography>
+                        </Grid>
+                      );
+                    },
+                  )}
+                </Grid>
+              </Box>
+            )}
           </Box>
         </Card>
         <VoteDialog handleClose={handleClose} isOpen={isUploadOpen} />
-        <VoteDetails />
+        <VoteDetails topVote={topVote} />
         <ShareVote data={data} />
       </Box>
     </React.Fragment>

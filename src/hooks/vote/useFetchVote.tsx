@@ -1,5 +1,9 @@
 import { useLazyQuery } from "@apollo/client";
-import { QUERY_VOTE_FILES, QUERY_VOTE_RESULT } from "api/graphql/vote.graphql";
+import {
+  QUERY_TOP_VOTE,
+  QUERY_VOTE_FILES,
+  QUERY_VOTE_RESULT,
+} from "api/graphql/vote.graphql";
 import React from "react";
 
 const useFetchVoteResult = ({ id, filter }: { id: string; filter: any }) => {
@@ -38,16 +42,12 @@ const useFetchVoteResult = ({ id, filter }: { id: string; filter: any }) => {
 const useFetchVoteFiles = ({ id, filter }: { id: string; filter: any }) => {
   const [fetchVoteFiles, { data, loading, refetch }] =
     useLazyQuery(QUERY_VOTE_FILES);
-  const { pageLimit, currentPageNumber, startDate, endDate, select } =
-    filter.data;
-  const skip = (currentPageNumber - 1) * pageLimit;
-  console.log(startDate);
+  const { pageLimit, page, startDate, endDate, select } = filter.data;
 
   const fetchVariables = {
     orderBy: filter.data.select,
     limit: pageLimit,
-    page: currentPageNumber,
-    skip,
+    skip: page,
     where: {
       id,
       ...(startDate && endDate && { createdAtBetween: [startDate, endDate] }),
@@ -62,7 +62,7 @@ const useFetchVoteFiles = ({ id, filter }: { id: string; filter: any }) => {
   React.useEffect(() => {
     refetch();
     fetchVotesFiles();
-  }, [pageLimit, currentPageNumber, id, select, filter.data]);
+  }, [pageLimit, id, select, filter.data]);
 
   return {
     data: data?.getVoteWithFiles?.data,
@@ -73,4 +73,35 @@ const useFetchVoteFiles = ({ id, filter }: { id: string; filter: any }) => {
   };
 };
 
-export { useFetchVoteResult, useFetchVoteFiles };
+const useFetchTopVote = ({ id, filter }: { id: string; filter: any }) => {
+  const [fetchTopVote, { data, loading, refetch }] =
+    useLazyQuery(QUERY_TOP_VOTE);
+  const { offset } = filter;
+
+  const fetchVariables = {
+    limit: parseInt(offset),
+    where: {
+      id,
+    },
+  };
+
+  const fetchTopVotes = () => {
+    fetchTopVote({
+      variables: fetchVariables,
+    });
+  };
+  React.useEffect(() => {
+    refetch();
+    fetchTopVotes();
+  }, [filter]);
+
+  return {
+    data: data?.getTopHotVotes?.data,
+    loading,
+    status: data?.getTopHotVotes?.code,
+    fetchTopVotes,
+    refetch,
+  };
+};
+
+export { useFetchTopVote, useFetchVoteFiles, useFetchVoteResult };
