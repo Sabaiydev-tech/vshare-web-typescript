@@ -55,7 +55,7 @@ const TopItem = styled(Box)(({}) => ({
   height: "270px",
   zIndex: 2,
 }));
-const TopItemBlur = styled(Box)(({ theme }) => ({
+const TopItemBlur = styled(Box)(({  }) => ({
   backgroundColor: "gray",
   position: "absolute",
   top: 0,
