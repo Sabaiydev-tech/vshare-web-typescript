@@ -64,6 +64,8 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
     maxLength = newVoteData?.voteData?.voteOption.value[1];
   }
 
+  console.log(maxExtract);
+
   const handleClose = () => {
     setIsUploadOpen(false);
   };
@@ -156,7 +158,7 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
             }),
           },
         };
-      }else{
+      } else {
         return {
           ...prev,
           filesData: {
@@ -170,7 +172,6 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
           },
         };
       }
-      return prev;
     });
     setEventVote((prev: string[]) => {
       if (!prev.includes(data._id)) {
@@ -209,6 +210,7 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
     }
   };
 
+  
   return (
     <React.Fragment>
       <Card sx={{ my: 5, boxShadow: "rgba(149, 157, 165, 0.2) 5px 8px 24px" }}>
@@ -221,8 +223,7 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
             }}
           >
             <Box sx={{ display: "flex", gap: 2 }}>
-              {(topVote?.hotVotes?.length > 0 ||
-                topVote?.hotVotes?.length > 0) && (
+              {topVote?.topVotes?.length == 0 && (
                 <Button
                   sx={{ mt: 3, height: 40 }}
                   variant="contained"
