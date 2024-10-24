@@ -85,7 +85,6 @@ export default function ShareVote({ data }: VoteResultProps) {
     };
   };
 
-
   const _shareEmail = async () => {
     const url = data?.voteData?.voteLink;
     const subject = "Hello";
@@ -134,7 +133,7 @@ export default function ShareVote({ data }: VoteResultProps) {
           <Box sx={{ my: 3, display: "flex", justifyContent: "center" }}>
             <Box
               sx={{
-                width: "60%",
+                width: { lg: "60%", sm: "100%", xs: "100%" },
                 p: 4,
                 fontSize: "1rem",
                 color: theme.palette.grey[700],

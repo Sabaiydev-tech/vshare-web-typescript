@@ -214,432 +214,442 @@ export default function Vote() {
         </Box>
         {data?.fileData?.length !== 0 ? (
           <Box>
-            <Card
-              sx={{
-                my: 5,
-                backgroundImage:
-                  "linear-gradient(180deg, #17766B 0%, #20A697 13%)",
-                boxShadow: "rgba(149, 157, 165, 0.2) 5px 8px 24px",
-              }}
-            >
-              <Box sx={{ m: 4 }}>
-                {!data?.voteData?.hideResultbtn && (
-                  <Box sx={{ my: 3 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 5,
-                        justifyContent: "flex-start",
-                      }}
-                    >
-                      <FormControl>
-                        <Select
+            {topVote?.hotVotes?.length > 0 ||
+              (topVote?.hotVotes?.length > 0 && (
+                <Card
+                  sx={{
+                    my: 5,
+                    backgroundImage:
+                      "linear-gradient(180deg, #17766B 0%, #20A697 13%)",
+                    boxShadow: "rgba(149, 157, 165, 0.2) 5px 8px 24px",
+                  }}
+                >
+                  <Box sx={{ m: 4 }}>
+                    {!data?.voteData?.hideResultbtn && (
+                      <Box sx={{ my: 3 }}>
+                        <Box
                           sx={{
-                            height: 40,
-                            fontSize: "1rem",
-                            minWidth: "100px",
-                            border: "none",
-                            borderRadius: "6px",
-                            bgcolor: "white !important",
-                            "&:focus": {
-                              bgcolor: "white",
-                              border: "1px solid white",
-                            },
-                            "&hover": {
-                              border: "1px solid white",
-                            },
-                          }}
-                          value={filter.data.offset}
-                          onChange={(e) =>
-                            filter.dispatch({
-                              type: filter.ACTION_TYPE.LIMIT,
-                              payload: e.target.value,
-                            })
-                          }
-                          MenuProps={{
-                            PaperProps: {
-                              sx: {
-                                boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.2)",
-                              },
-                            },
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 5,
+                            justifyContent: "flex-start",
                           }}
                         >
-                          <MenuItem sx={{ fontSize: "1rem" }} value="3">
-                            Top3
-                          </MenuItem>
-                          <MenuItem sx={{ fontSize: "1rem" }} value="10">
-                            Top10
-                          </MenuItem>
-                        </Select>
-                      </FormControl>
+                          <FormControl>
+                            <Select
+                              sx={{
+                                height: 40,
+                                fontSize: "1rem",
+                                minWidth: "100px",
+                                border: "none",
+                                borderRadius: "6px",
+                                bgcolor: "white !important",
+                                "&:focus": {
+                                  bgcolor: "white",
+                                  border: "1px solid white",
+                                },
+                                "&hover": {
+                                  border: "1px solid white",
+                                },
+                              }}
+                              value={filter.data.offset}
+                              onChange={(e) =>
+                                filter.dispatch({
+                                  type: filter.ACTION_TYPE.LIMIT,
+                                  payload: e.target.value,
+                                })
+                              }
+                              MenuProps={{
+                                PaperProps: {
+                                  sx: {
+                                    boxShadow:
+                                      "0px 4px 20px rgba(0, 0, 0, 0.2)",
+                                  },
+                                },
+                              }}
+                            >
+                              <MenuItem sx={{ fontSize: "1rem" }} value="3">
+                                Top3
+                              </MenuItem>
+                              <MenuItem sx={{ fontSize: "1rem" }} value="10">
+                                Top10
+                              </MenuItem>
+                            </Select>
+                          </FormControl>
 
-                      <Button
-                        sx={{ height: 40 }}
-                        variant="contained"
-                        onClick={() => setIsUploadOpen(true)}
-                      >
-                        Upload
-                      </Button>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: { lg: "60%", sx: "100%" },
-                          display: "flex",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <CardTopContainer>
-                          <CardTopItemLeft>
-                            <Box>
-                              <Box
-                                sx={{
-                                  mt: 2,
-                                  mb: 1,
-                                  display: "flex",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <Top1StartIcon />
-                              </Box>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "center",
-                                  position: "relative",
-                                }}
-                              >
-                                <ImageContainer23
-                                  src={top3Items[1]?.path}
-                                  alt={top3Items[1]?.filename}
-                                />
-                                <Box
-                                  sx={{
-                                    m: 1,
-                                    position: "absolute",
-                                    bottom: { lg: -60, xs: -40 },
-                                    left: { lg: 45, xs: 0 },
-                                    zIndex: 4,
-                                  }}
-                                >
+                          <Button
+                            sx={{ height: 40 }}
+                            variant="contained"
+                            onClick={() => setIsUploadOpen(true)}
+                          >
+                            Upload
+                          </Button>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: { lg: "60%", sx: "100%" },
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <CardTopContainer>
+                              <CardTopItemLeft>
+                                <Box>
+                                  <Box
+                                    sx={{
+                                      mt: 2,
+                                      mb: 1,
+                                      display: "flex",
+                                      justifyContent: "center",
+                                    }}
+                                  >
+                                    <Top1StartIcon />
+                                  </Box>
                                   <Box
                                     sx={{
                                       display: "flex",
                                       justifyContent: "center",
+                                      position: "relative",
                                     }}
                                   >
-                                    <div className="ribbon23">
-                                      No. {top3Items[1]?.top}
-                                    </div>
-                                  </Box>
-                                  <Typography
-                                    component="p"
-                                    sx={{
-                                      mt: { lg: 1, xs: 0 },
-                                      fontSize: {
-                                        lg: "14px",
-                                        xs: "10px",
-                                      },
-                                      display: "flex",
-                                      justifyContent: "center",
-                                      textOverflow: "ellipsis",
-                                      width: "100%",
-                                      overflow: "hidden",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {SubstringFilename(top3Items[1]?.filename)}
-                                  </Typography>
-                                  <Typography
-                                    component="p"
-                                    sx={{
-                                      width: "100%",
-                                      fontSize: {
-                                        lg: "14px",
-                                        xs: "10px",
-                                      },
-                                      display: "flex",
-                                      justifyContent: "center",
-                                      color: "#17766B",
-                                      fontWeight: "600",
-                                    }}
-                                  >
-                                    {top3Items[1]?.score} Vote
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </Box>
-                          </CardTopItemLeft>
-                          <CardTopItemCenter>
-                            <TopItem>
-                              <Box sx={{ position: "relative" }}>
-                                <Box
-                                  sx={{
-                                    mt: 2,
-                                    mb: 1,
-                                    display: "flex",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <Top1StartIcon />
-                                </Box>
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <ImageContainer
-                                    src={top3Items[0]?.path}
-                                    alt={top3Items[0]?.filename}
-                                  />
-                                </Box>
-                                <Box
-                                  sx={{
-                                    m: 1,
-                                    position: "absolute",
-                                    bottom: { lg: 30, xs: -15 },
-                                    left: 0,
-                                    zIndex: 4,
-                                  }}
-                                >
-                                  <Box>
-                                    <div className="ribbon">
-                                      No. {top3Items[0]?.top}
-                                    </div>
-                                  </Box>
-                                  <Typography
-                                    component="p"
-                                    sx={{
-                                      mt: { lg: 3, xs: 0 },
-                                      fontSize: { lg: "14px", xs: "10px" },
-                                      display: "flex",
-                                      justifyContent: "center",
-                                      width: "100%",
-                                      textOverflow: "ellipsis",
-                                      overflow: "hidden",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {SubstringFilename(top3Items[0]?.filename)}
-                                  </Typography>
-                                  <Typography
-                                    component="p"
-                                    sx={{
-                                      width: "100%",
-                                      fontSize: { lg: "14px", xs: "10px" },
-                                      display: "flex",
-                                      justifyContent: "center",
-                                      color: "#17766B",
-                                      fontWeight: "600",
-                                    }}
-                                  >
-                                    {top3Items[0]?.score} Vote
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </TopItem>
-                            <TopItemBlur />
-                          </CardTopItemCenter>
-                          <CardTopItemRight>
-                            <Box>
-                              <Box
-                                sx={{
-                                  mt: 2,
-                                  mb: 1,
-                                  display: "flex",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <Top1StartIcon />
-                              </Box>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "center",
-                                  position: "relative",
-                                }}
-                              >
-                                <ImageContainer23
-                                  src={top3Items[2]?.path}
-                                  alt={top3Items[2]?.filename}
-                                />
-                                <Box
-                                  sx={{
-                                    m: 1,
-                                    position: "absolute",
-                                    bottom: { lg: -60, xs: -40 },
-                                    left: { lg: 45, xs: 0 },
-                                    zIndex: 4,
-                                  }}
-                                >
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      justifyContent: "center",
-                                    }}
-                                  >
-                                    <div className="ribbon23">
-                                      No. {top3Items[2]?.top}
-                                    </div>
-                                  </Box>
-                                  <Typography
-                                    component="p"
-                                    sx={{
-                                      width: "100%",
-                                      fontSize: {
-                                        lg: "14px",
-                                        xs: "10px",
-                                      },
-                                      display: "flex",
-                                      justifyContent: "center",
-                                    }}
-                                  >
-                                    {SubstringFilename(top3Items[2]?.filename)}
-                                  </Typography>
-                                  <Typography
-                                    component="p"
-                                    sx={{
-                                      width: "100%",
-                                      fontSize: {
-                                        lg: "14px",
-                                        xs: "10px",
-                                      },
-                                      display: "flex",
-                                      justifyContent: "center",
-                                      color: "#17766B",
-                                      fontWeight: "600",
-                                    }}
-                                  >
-                                    {top3Items[2]?.score} Vote
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </Box>
-                          </CardTopItemRight>
-                        </CardTopContainer>
-                      </Box>
-                    </Box>
-                  </Box>
-                )}
-                {topVote?.hotVotes?.length > 0 && (
-                  <Box sx={{ my: 5 }}>
-                    <Typography
-                      component="h6"
-                      sx={{
-                        fontSize: "1rem",
-                        fontWeight: 500,
-                        color: "white !important",
-                      }}
-                    >
-                      Hot vote.
-                    </Typography>
-
-                    <Grid container spacing={2}>
-                      {topVote?.hotVotes?.map(
-                        (item: ITopVoteType, index: number) => {
-                          const sourcePath = `${data?.voteData?.createdBy?.newName}-${data?.voteData?.createdBy?._id}/${item?.newFilename}`;
-
-                          return (
-                            <Grid key={index} item xs={6} sm={4} md={3}>
-                              <Box
-                                sx={{
-                                  bgcolor: "white !important",
-                                  borderRadius: "6px",
-                                  pt: 1,
-                                }}
-                              >
-                                <ImageListItem
-                                  sx={{
-                                    m: 2,
-                                    borderRadius: "6px",
-                                    bgcolor: "white !important",
-                                    position: "relative",
-                                    minHeight: "200px",
-                                    maxHeight: "200px",
-                                    overflow: "hidden",
-                                  }}
-                                >
-                                  <img
-                                    src={newUrl + sourcePath}
-                                    alt={item.filename}
-                                    loading="lazy"
-                                    style={{
-                                      // width: "100%",
-                                      // minHeight: "100%",
-                                      objectFit: "cover",
-                                    }}
-                                  />
-
-                                  <Box
-                                    sx={{
-                                      bgcolor: "rgba(0, 0, 0, 0.4)",
-                                      position: "absolute",
-                                      top: 0,
-                                      left: 0,
-                                      width: "100%",
-                                      height: "40px",
-                                      borderTopLeftRadius: "6px",
-                                      borderTopRightRadius: "6px",
-                                    }}
-                                  >
-                                    <Typography
+                                    <ImageContainer23
+                                      src={top3Items[1]?.path}
+                                      alt={top3Items[1]?.filename}
+                                    />
+                                    <Box
                                       sx={{
-                                        py: 2,
-                                        px: 3,
-                                        color: "white !important",
+                                        m: 1,
+                                        position: "absolute",
+                                        bottom: { lg: -60, xs: -40 },
+                                        left: { lg: 45, xs: 0 },
+                                        zIndex: 4,
                                       }}
                                     >
-                                      {item?.score} Votes
-                                    </Typography>
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          justifyContent: "center",
+                                        }}
+                                      >
+                                        <div className="ribbon23">
+                                          No. {top3Items[1]?.top}
+                                        </div>
+                                      </Box>
+                                      <Typography
+                                        component="p"
+                                        sx={{
+                                          mt: { lg: 1, xs: 0 },
+                                          fontSize: {
+                                            lg: "14px",
+                                            xs: "10px",
+                                          },
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          textOverflow: "ellipsis",
+                                          width: "100%",
+                                          overflow: "hidden",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {SubstringFilename(
+                                          top3Items[1]?.filename,
+                                        )}
+                                      </Typography>
+                                      <Typography
+                                        component="p"
+                                        sx={{
+                                          width: "100%",
+                                          fontSize: {
+                                            lg: "14px",
+                                            xs: "10px",
+                                          },
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          color: "#17766B",
+                                          fontWeight: "600",
+                                        }}
+                                      >
+                                        {top3Items[1]?.score} Vote
+                                      </Typography>
+                                    </Box>
                                   </Box>
-                                </ImageListItem>
-                                <div
-                                  style={{
-                                    marginTop: "2px",
-                                    borderBottom: `1px solid ${theme.palette.grey[300]}`,
-                                  }}
-                                ></div>
-                                <Box
-                                  sx={{
-                                    mx: 3,
-                                    p: 2,
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <Typography
-                                    component="h6"
+                                </Box>
+                              </CardTopItemLeft>
+                              <CardTopItemCenter>
+                                <TopItem>
+                                  <Box sx={{ position: "relative" }}>
+                                    <Box
+                                      sx={{
+                                        mt: 2,
+                                        mb: 1,
+                                        display: "flex",
+                                        justifyContent: "center",
+                                      }}
+                                    >
+                                      <Top1StartIcon />
+                                    </Box>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                      }}
+                                    >
+                                      <ImageContainer
+                                        src={top3Items[0]?.path}
+                                        alt={top3Items[0]?.filename}
+                                      />
+                                    </Box>
+                                    <Box
+                                      sx={{
+                                        m: 1,
+                                        position: "absolute",
+                                        bottom: { lg: 30, xs: -15 },
+                                        left: 0,
+                                        zIndex: 4,
+                                      }}
+                                    >
+                                      <Box>
+                                        <div className="ribbon">
+                                          No. {top3Items[0]?.top}
+                                        </div>
+                                      </Box>
+                                      <Typography
+                                        component="p"
+                                        sx={{
+                                          mt: { lg: 3, xs: 0 },
+                                          fontSize: { lg: "14px", xs: "10px" },
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          width: "100%",
+                                          textOverflow: "ellipsis",
+                                          overflow: "hidden",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {SubstringFilename(
+                                          top3Items[0]?.filename,
+                                        )}
+                                      </Typography>
+                                      <Typography
+                                        component="p"
+                                        sx={{
+                                          width: "100%",
+                                          fontSize: { lg: "14px", xs: "10px" },
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          color: "#17766B",
+                                          fontWeight: "600",
+                                        }}
+                                      >
+                                        {top3Items[0]?.score} Vote
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                </TopItem>
+                                <TopItemBlur />
+                              </CardTopItemCenter>
+                              <CardTopItemRight>
+                                <Box>
+                                  <Box
                                     sx={{
-                                      fontSize: "1rem",
-                                      fontWeight: 400,
-                                      color: theme.palette.grey[700],
+                                      mt: 2,
+                                      mb: 1,
+                                      display: "flex",
+                                      justifyContent: "center",
                                     }}
                                   >
-                                    {SubstringFilenameCard(item.filename)}
-                                  </Typography>
-                                  <IoMdRadioButtonOn
-                                    style={{ color: "#17766B" }}
-                                    size={18}
-                                  />
+                                    <Top1StartIcon />
+                                  </Box>
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      justifyContent: "center",
+                                      position: "relative",
+                                    }}
+                                  >
+                                    <ImageContainer23
+                                      src={top3Items[2]?.path}
+                                      alt={top3Items[2]?.filename}
+                                    />
+                                    <Box
+                                      sx={{
+                                        m: 1,
+                                        position: "absolute",
+                                        bottom: { lg: -60, xs: -40 },
+                                        left: { lg: 45, xs: 0 },
+                                        zIndex: 4,
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          justifyContent: "center",
+                                        }}
+                                      >
+                                        <div className="ribbon23">
+                                          No. {top3Items[2]?.top}
+                                        </div>
+                                      </Box>
+                                      <Typography
+                                        component="p"
+                                        sx={{
+                                          width: "100%",
+                                          fontSize: {
+                                            lg: "14px",
+                                            xs: "10px",
+                                          },
+                                          display: "flex",
+                                          justifyContent: "center",
+                                        }}
+                                      >
+                                        {SubstringFilename(
+                                          top3Items[2]?.filename,
+                                        )}
+                                      </Typography>
+                                      <Typography
+                                        component="p"
+                                        sx={{
+                                          width: "100%",
+                                          fontSize: {
+                                            lg: "14px",
+                                            xs: "10px",
+                                          },
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          color: "#17766B",
+                                          fontWeight: "600",
+                                        }}
+                                      >
+                                        {top3Items[2]?.score} Vote
+                                      </Typography>
+                                    </Box>
+                                  </Box>
                                 </Box>
-                              </Box>
-                            </Grid>
-                          );
-                        },
-                      )}
-                    </Grid>
+                              </CardTopItemRight>
+                            </CardTopContainer>
+                          </Box>
+                        </Box>
+                      </Box>
+                    )}
+                    {topVote?.hotVotes?.length > 0 && (
+                      <Box sx={{ my: 5 }}>
+                        <Typography
+                          component="h6"
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: 500,
+                            color: "white !important",
+                          }}
+                        >
+                          Hot vote.
+                        </Typography>
+
+                        <Grid container spacing={2}>
+                          {topVote?.hotVotes?.map(
+                            (item: ITopVoteType, index: number) => {
+                              const sourcePath = `${data?.voteData?.createdBy?.newName}-${data?.voteData?.createdBy?._id}/${item?.newFilename}`;
+
+                              return (
+                                <Grid key={index} item xs={6} sm={4} md={3}>
+                                  <Box
+                                    sx={{
+                                      bgcolor: "white !important",
+                                      borderRadius: "6px",
+                                      pt: 1,
+                                    }}
+                                  >
+                                    <ImageListItem
+                                      sx={{
+                                        m: 2,
+                                        borderRadius: "6px",
+                                        bgcolor: "white !important",
+                                        position: "relative",
+                                        minHeight: "200px",
+                                        maxHeight: "200px",
+                                        overflow: "hidden",
+                                      }}
+                                    >
+                                      <img
+                                        src={newUrl + sourcePath}
+                                        alt={item.filename}
+                                        loading="lazy"
+                                        style={{
+                                          // width: "100%",
+                                          // minHeight: "100%",
+                                          objectFit: "cover",
+                                        }}
+                                      />
+
+                                      <Box
+                                        sx={{
+                                          bgcolor: "rgba(0, 0, 0, 0.4)",
+                                          position: "absolute",
+                                          top: 0,
+                                          left: 0,
+                                          width: "100%",
+                                          height: "40px",
+                                          borderTopLeftRadius: "6px",
+                                          borderTopRightRadius: "6px",
+                                        }}
+                                      >
+                                        <Typography
+                                          sx={{
+                                            py: 2,
+                                            px: 3,
+                                            color: "white !important",
+                                          }}
+                                        >
+                                          {item?.score} Votes
+                                        </Typography>
+                                      </Box>
+                                    </ImageListItem>
+                                    <div
+                                      style={{
+                                        marginTop: "2px",
+                                        borderBottom: `1px solid ${theme.palette.grey[300]}`,
+                                      }}
+                                    ></div>
+                                    <Box
+                                      sx={{
+                                        mx: 3,
+                                        p: 2,
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                      }}
+                                    >
+                                      <Typography
+                                        component="h6"
+                                        sx={{
+                                          fontSize: "1rem",
+                                          fontWeight: 400,
+                                          color: theme.palette.grey[700],
+                                        }}
+                                      >
+                                        {SubstringFilenameCard(item.filename)}
+                                      </Typography>
+                                      <IoMdRadioButtonOn
+                                        style={{ color: "#17766B" }}
+                                        size={18}
+                                      />
+                                    </Box>
+                                  </Box>
+                                </Grid>
+                              );
+                            },
+                          )}
+                        </Grid>
+                      </Box>
+                    )}
                   </Box>
-                )}
-              </Box>
-            </Card>
+                </Card>
+              ))}
             <VoteDetails topVote={topVote} />
             <ShareVote data={data} />
             <VoteDialog handleClose={handleClose} isOpen={isUploadOpen} />
