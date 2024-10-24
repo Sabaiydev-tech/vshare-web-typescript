@@ -45,6 +45,7 @@ import { getFileTypeName, removeFileNameOutOfPath } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "./styles/fileUploader.style";
 import "./styles/fileUploader.style.css";
+import FeedCard from "components/Downloader/FeedCard";
 
 const DATA_LIST_SIZE = 10;
 
@@ -1447,15 +1448,15 @@ function FileUploader() {
                   />
                 )}
               </MUI.FileListContainer>
+              
+              <FeedCard />
             </>
           ) : (
             (!isLoading && !isPassword && !openInputPasswod) &&
             <NotFound />
           )}
-          {/* <FeedCard /> */}
         </Box>
       </MUI.ContainerHome>
-
       <BaseDeeplinkDownload
         selectionData={
           dataSelector?.selectionFileAndFolderData?.length > 0 && true
