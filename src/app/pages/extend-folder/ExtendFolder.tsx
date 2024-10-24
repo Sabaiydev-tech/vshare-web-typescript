@@ -4,8 +4,8 @@ import {
   CREATE_DETAIL_ADVERTISEMENT,
   QUERY_ADVERTISEMENT,
 } from "api/graphql/ad.graphql";
-import { QUERY_SUB_FILE } from "api/graphql/file.graphql";
-import { QUERY_SUB_FOLDER } from "api/graphql/folder.graphql";
+import { QUERY_SUB_FILEV1 } from "api/graphql/file.graphql";
+import { QUERY_SUB_FOLDER_V1 } from "api/graphql/folder.graphql";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
 import axios from "axios";
 import DialogConfirmPassword from "components/dialog/DialogConfirmPassword";
@@ -15,16 +15,19 @@ import BaseGridDownload from "components/Downloader/BaseGridDownload";
 import ListFileData from "components/Downloader/ListFileData";
 import ListFolderData from "components/Downloader/ListFolderData";
 import NotFound from "components/NotFound";
-import Advertisement from "components/presentation/GoogleAdsense";
 import BoxSocialShare from "components/presentation/BoxSocialShare";
 import DialogConfirmQRCode from "components/presentation/DialogConfirmQRCode";
 import FileCardContainer from "components/presentation/FileCardContainer";
 import FileCardItem from "components/presentation/FileCardItem";
+import Advertisement from "components/presentation/GoogleAdsense";
+import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
 import ViewMoreAction from "components/presentation/ViewMoreAction";
 import { ENV_KEYS } from "constants/env.constant";
+import { SETTING_KEYS } from "constants/setting.constant";
 import CryptoJS from "crypto-js";
 import useManageFiles from "hooks/useManageFile";
 import useManageSetting from "hooks/useManageSetting";
+import { IEncryptDataLink } from "models/encryptDataLink.model";
 import { IFolder } from "models/folder.model";
 import React, { Fragment, useEffect, useMemo, useState } from "react";
 import Helmet from "react-helmet";
@@ -37,24 +40,19 @@ import { getFileTypeName, removeFileNameOutOfPath } from "utils/file.util";
 import { decryptDataLink, encryptDataLink } from "utils/secure.util";
 import * as MUI from "../file-uploader/styles/fileUploader.style";
 import "../file-uploader/styles/fileUploader.style.css";
-import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
 
 function ExtendFolder() {
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [checkConfirmPassword, setConfirmPassword] = useState(false);
   const [getDataRes, setGetDataRes] = useState<any>(null);
-  const [folderDownload, setFolderDownload] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
-  const [getNewFileName, setGetNewFileName] = useState("");
   const [fileQRCodePassword, setFileQRCodePassword] = useState("");
   const [toggle, setToggle] = useState(
     localStorage.getItem("toggle") ? localStorage.getItem("toggle") : "list",
   );
 
-  const [checkModal, setCheckModal] = useState(false);
-  const [getFilenames, setGetFilenames] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isVerifyQrCode, setIsVerifyQRCode] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
@@ -64,8 +62,9 @@ function ExtendFolder() {
   const [usedAds, setUsedAds] = useState<any[]>([]);
   const [totalClickCount, setTotalClickCount] = useState(0);
   const [adAlive, setAdAlive] = useState(0);
+  const [manageLinkId, setManageLinkId] = useState("");
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const [isDownloadLoading, setIsDownloadLoading] = useState(false);
   const [dataValue, setDataValue] = useState<any>(null);
   const [platform, setPlatform] = useState("");
@@ -88,7 +87,6 @@ function ExtendFolder() {
   const [viewFolderMore, setViewFolderMore] = useState(10);
 
   const params = new URLSearchParams(location.search);
-  const linkValue = params.get("l");
   const urlClient = params.get("lc");
   const currentURL = window.location.href;
   const navigate = useNavigate();
@@ -112,11 +110,11 @@ function ExtendFolder() {
   // hooks
   const manageFile = useManageFiles();
 
-  const [getFileLink] = useLazyQuery(QUERY_SUB_FILE, {
+  const [getFileLink] = useLazyQuery(QUERY_SUB_FILEV1, {
     fetchPolicy: "cache-and-network",
   });
 
-  const [getFolderLink] = useLazyQuery(QUERY_SUB_FOLDER);
+  const [getFolderLink] = useLazyQuery(QUERY_SUB_FOLDER_V1);
 
   const [getDataButtonDownload, { data: getDataButtonDL }] = useLazyQuery(
     QUERY_SETTING,
@@ -131,12 +129,13 @@ function ExtendFolder() {
       fetchPolicy: "cache-and-network",
     },
   );
-  const settingKeys = {
-    downloadKey: "HDLABTO",
-  };
+
   const useDataSetting = useManageSetting();
 
-  let linkClient = useMemo(() => ({ _id: "", type: "" }), []);
+  let linkClient: IEncryptDataLink = useMemo(
+    () => ({ _id: "", type: "", manageLinkId: "" }),
+    [],
+  );
 
   try {
     if (urlClient) {
@@ -145,13 +144,20 @@ function ExtendFolder() {
       linkClient = {
         _id: decode?._id,
         type: decode?.type,
+        manageLinkId: decode?.manageLinkId,
       };
     }
   } catch (error) {
     console.error(error);
   }
 
-  function handleDecryptFile(val) {
+  useEffect(() => {
+    if (linkClient?.manageLinkId) {
+      setManageLinkId(linkClient.manageLinkId);
+    }
+  }, [linkClient.manageLinkId]);
+
+  function handleDecryptFile(val: string) {
     const decryptedData = decryptDataLink(val);
     return decryptedData;
   }
@@ -210,7 +216,7 @@ function ExtendFolder() {
     if (
       !dataSelector?.selectionFileAndFolderData.find((el) => el.id === item._id)
     ) {
-      if (item.filePassword || item.access_password) {
+      if (item.filePassword) {
         setFileQRCodePassword(item.filePassword || item.access_password);
         setIsVerifyQRCode(true);
         return;
@@ -224,10 +230,8 @@ function ExtendFolder() {
     setEventClick("checkbox");
 
     const item = dataFolderLinkMemo.find((data) => {
-      const checkType = data?.isFile ? "file" : "folder";
-      return data._id === id && checkType === "file";
+      return data._id === id;
     });
-
     setDataValue(item);
 
     if (
@@ -235,8 +239,8 @@ function ExtendFolder() {
         (el) => el.id === item!._id,
       )
     ) {
-      if (item!.access_password) {
-        setFileQRCodePassword(item!.access_password);
+      if (item?.access_password) {
+        setFileQRCodePassword(item.access_password);
         setIsVerifyQRCode(true);
         return;
       }
@@ -246,7 +250,7 @@ function ExtendFolder() {
   }
 
   function handleMultipleDataDone(item: any) {
-    const name = !item?.isFile ? item?.folder_name : item?.filename;
+    const name = item?.isFile ? item?.filename : item?.folder_name;
     const newFilename = !item.isFile ? item?.newFolder_name : item?.newFilename;
     const checkType = item.isFile ? "file" : "folder";
 
@@ -276,7 +280,7 @@ function ExtendFolder() {
     function getDataSetting() {
       // Show download button
       const downloadData = useDataSetting.data?.find(
-        (data) => data?.productKey === settingKeys.downloadKey,
+        (data) => data?.productKey === SETTING_KEYS.HIDE_DOWNLOAD,
       );
       if (downloadData) {
         if (downloadData?.status === "on") {
@@ -347,6 +351,7 @@ function ExtendFolder() {
               where: {
                 folder_id: linkClient?._id,
               },
+              manageLinkId: String(linkClient?.manageLinkId),
               limit: toggle === "list" ? LIMIT_DATA_PAGE : viewFileMore,
               skip:
                 toggle === "list"
@@ -354,8 +359,8 @@ function ExtendFolder() {
                   : null,
             },
             onCompleted: (fileData) => {
-              const response = fileData?.filesByUID?.data || [];
-              const total = fileData?.filesByUID?.total || 0;
+              const response = fileData?.filesByUIDV1?.data || [];
+              const total = fileData?.filesByUIDV1?.total || 0;
 
               setTotalFile(total);
               setDataSubGetLink(response);
@@ -373,18 +378,20 @@ function ExtendFolder() {
     };
 
     getFileLinkData();
-  }, [linkValue, urlClient, fileCurrentPage, viewFileMore]);
+  }, [urlClient, linkClient._id, fileCurrentPage, viewFileMore, toggle]);
 
   useEffect(() => {
     const getFolderLinkData = async () => {
       try {
         if (linkClient?._id) {
           setIsLoading(true);
+
           await getFolderLink({
             variables: {
               where: {
                 _id: linkClient?._id,
               },
+              manageLinkId: String(linkClient?.manageLinkId),
               limit: toggle === "list" ? LIMIT_DATA_PAGE : viewFolderMore,
               skip:
                 toggle === "list"
@@ -392,14 +399,12 @@ function ExtendFolder() {
                   : null,
             },
             onCompleted: (values) => {
-              const folderData = values?.foldersByUID?.data || [];
-              console.log(folderData);
-              const total = values?.foldersByUID?.total || 0;
+              const folderData = values?.foldersByUIDV1?.data || [];
+              const total = values?.foldersByUIDV1?.total || 0;
               setTotalFolder(total);
               setDataSubFolder(folderData);
               if (folderData?.[0]?.status === "active") {
                 setGetDataRes(folderData || []);
-                setFolderDownload(folderData || []);
               }
             },
           });
@@ -415,7 +420,7 @@ function ExtendFolder() {
     };
 
     getFolderLinkData();
-  }, [folderCurrentPage, viewFolderMore, toggle]);
+  }, [urlClient, linkClient._id, folderCurrentPage, viewFolderMore, toggle]);
 
   useEffect(() => {
     if (getDataRes) {
@@ -644,10 +649,12 @@ function ExtendFolder() {
           where: {
             folder_id: linkClient._id,
           },
+          manageLinkId: String(linkClient?.manageLinkId),
           noLimit: true,
         },
       });
-      const fileData: any[] = (await result.data?.filesByUID?.data) || [];
+      const fileData: any[] = (await result.data?.filesByUIDV1?.data) || [];
+
       const fileDataMap =
         fileData
           ?.filter((file) => !file.filePassword)
@@ -661,17 +668,19 @@ function ExtendFolder() {
           where: {
             _id: linkClient?._id,
           },
+          manageLinkId: String(linkClient?.manageLinkId),
           noLimit: true,
         },
       });
       const folderData: any[] =
-        (await folderResult.data?.foldersByUID?.data) || [];
+        (await folderResult.data?.foldersByUIDV1?.data) || [];
+
       const folderDataMap =
         folderData
           ?.filter((file) => !file.filePassword)
           .map((file) => ({
             ...file,
-            isFile: true,
+            isFile: false,
           })) || [];
 
       setIsDownloadLoading(false);
@@ -690,33 +699,32 @@ function ExtendFolder() {
 
     if (totalClickCount >= getActionButton) {
       setTotalClickCount(0);
+
       const groupData: any[] = (await getAllData()) || [];
+      const multipleData = groupData.map((item: any) => {
+        const newPath = item?.newPath || "";
+        const newFilename = item?.newFilename || item?.newFolder_name;
 
-      console.log(groupData);
-      // const multipleData = groupData.map((item: any) => {
-      //   const newPath = item?.newPath || "";
-      //   const newFilename = item?.newFilename || item?.newFolder_name;
+        return {
+          newPath,
+          id: item._id,
+          newFilename: newFilename || "",
+          name: item?.filename || item?.folder_name,
+          checkType: item?.isFile ? "file" : "folder",
+          createdBy: item?.createdBy,
+          isPublic: item?.createdBy?._id === "0" ? true : false,
+        };
+      });
 
-      //   return {
-      //     newPath,
-      //     id: item._id,
-      //     newFilename: newFilename || "",
-      //     name: item?.filename || item?.folder_name,
-      //     checkType: item?.isFile ? "file" : "folder",
-      //     createdBy: item?.createdBy,
-      //     isPublic: linkClient?._id ? false : true,
-      //   };
-      // });
-
-      // manageFile.handleDownloadFile(
-      //   {
-      //     multipleData,
-      //   },
-      //   {
-      //     onFailed: () => {},
-      //     onSuccess: () => {},
-      //   },
-      // );
+      manageFile.handleDownloadFile(
+        {
+          multipleData,
+        },
+        {
+          onFailed: () => {},
+          onSuccess: () => {},
+        },
+      );
     } else {
       if (getAdvertisemment.length) {
         handleAdvertisementPopup();
@@ -734,7 +742,7 @@ function ExtendFolder() {
             name: item?.filename || item?.folder_name,
             checkType: item?.isFile ? "file" : "folder",
             createdBy: item?.createdBy,
-            isPublic: linkClient?._id ? false : true,
+            isPublic: item?.createdBy?._id === "0" ? true : false,
           };
         });
 
@@ -779,6 +787,7 @@ function ExtendFolder() {
     const baseUrl = {
       _id: folder._id,
       type: "folder",
+      manageLinkId,
     };
 
     const encodeUrl = encryptDataLink(baseUrl);
@@ -829,33 +838,25 @@ function ExtendFolder() {
   };
 
   const dataLinkMemo = useMemo<any[]>(() => {
-    if (linkClient?._id) {
-      const fileData = dataSubGetLink?.map((file, index) => ({
-        ...file,
-        isFile: true,
-        index,
-      }));
+    const fileData = dataSubGetLink?.map((file, index) => ({
+      ...file,
+      isFile: true,
+      index,
+    }));
 
-      return fileData || [];
-    }
-
-    return [];
-  }, [linkClient]);
+    return fileData || [];
+  }, [dataSubGetLink]);
 
   const dataFolderLinkMemo = useMemo<IFolder[]>(() => {
-    if (linkClient?._id) {
-      const folderData = dataSubFolder?.map((folder, index) => {
-        return {
-          ...folder,
-          isFile: false,
-          index,
-        };
-      });
+    const folderData = dataSubFolder?.map((folder, index) => {
+      return {
+        ...folder,
+        isFile: false,
+        index,
+      };
+    });
 
-      return folderData || [];
-    }
-
-    return [];
+    return folderData || [];
   }, [linkClient, dataSubFolder]);
 
   useEffect(() => {
@@ -938,6 +939,7 @@ function ExtendFolder() {
                         isFile={false}
                         toggle={toggle}
                         _description={_description}
+                        manageLinkId={manageLinkId}
                         dataLinks={dataFolderLinkMemo}
                         multipleIds={multipleFolderIds}
                         countAction={adAlive}
@@ -969,6 +971,7 @@ function ExtendFolder() {
                         isFile={true}
                         toggle={toggle}
                         _description={_description}
+                        manageLinkId={manageLinkId}
                         dataLinks={dataLinkMemo}
                         selectionFileAndFolderData={
                           dataSelector?.selectionFileAndFolderData || []
@@ -1108,9 +1111,9 @@ function ExtendFolder() {
                 )}
               </Box>
             </MUI.FileListContainer>
-          </Box>
 
-          <GoogleAdsenseFooter />
+            <GoogleAdsenseFooter />
+          </Box>
         </MUI.ContainerHome>
       )}
 
@@ -1119,10 +1122,10 @@ function ExtendFolder() {
       <DialogConfirmPassword
         open={open}
         isMobile={isMobile}
-        getFilenames={getFilenames}
-        getNewFileName={getNewFileName}
+        getFilenames={""}
+        getNewFileName={""}
         password={password}
-        checkModal={checkModal}
+        checkModal={false}
         setPassword={setPassword}
         handleClose={handleClose}
         _confirmPasword={_confirmPasword}

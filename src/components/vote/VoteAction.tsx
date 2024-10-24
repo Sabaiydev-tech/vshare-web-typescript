@@ -29,13 +29,12 @@ export default function VoteAction(props: any) {
       >
         {VoteMenuItems.map((menuItem, index) => {
           return (
-            <Box
+            <Box key={index}
               sx={{
                 width: "200px",
               }}
             >
-              <MenuDropdownItem
-                key={index}
+              <MenuDropdownItem 
                 title={menuItem.title}
                 icon={menuItem?.icon ?? ""}
                 onClick={() => {

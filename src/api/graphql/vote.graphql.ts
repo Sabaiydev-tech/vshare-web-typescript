@@ -49,9 +49,9 @@ export const QUERY_VOTE_RESULT = gql`
             newPath
             path
             createdBy {
-            _id
-            newName
-          }
+              _id
+              newName
+            }
           }
         }
         voteData {
@@ -151,6 +151,48 @@ export const QUERY_VOTE_FILES = gql`
             size
             fileType
           }
+        }
+      }
+    }
+  }
+`;
+
+export const MUTION_VOTE_FILE = gql`
+  mutation VoteFiles($where: VoteFileWhereInput, $data: VoteFileInput) {
+    voteFiles(where: $where, data: $data) {
+      message
+      code
+      data
+    }
+  }
+`;
+
+export const QUERY_TOP_VOTE = gql`
+  query GetTopHotVotes($where: VoteWhereOneInput, $limit: Int) {
+    getTopHotVotes(where: $where, limit: $limit) {
+      message
+      code
+      data {
+        topVotes {
+          percent
+          score
+          isVoted
+          _id
+          filename
+          newFilename
+          fileType
+          size
+          status
+        }
+        hotVotes {
+          score
+          isVoted
+          _id
+          filename
+          newFilename
+          fileType
+          size
+          percent
         }
       }
     }

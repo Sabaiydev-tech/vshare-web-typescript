@@ -127,6 +127,8 @@ export const isValidToken = (accessToken: string) => {
 };
 
 export const checkAccessToken = (accessToken: string) => {
+  console.log(accessToken);
+  
   if (accessToken) {
     localStorage.setItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN, accessToken);
     axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;

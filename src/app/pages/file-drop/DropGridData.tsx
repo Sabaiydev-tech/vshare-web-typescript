@@ -12,10 +12,14 @@ import QrCode from "@mui/icons-material/QrCode";
 import DownloadIcon from "@mui/icons-material/Download";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import NormalButton from "components/NormalButton";
+import { IFile } from "models/file.model";
+import { encryptDataLink } from "utils/secure.util";
+import { IFileDrop } from "models/file-drop";
 
 type Props = {
+  dropId?: string;
   queryFile?: any[];
-  dataFromUrl?: any;
+  dataFromUrl?: IFileDrop;
   isSuccess?: any;
   isHide?: any;
   isMobile?: boolean;
@@ -23,7 +27,7 @@ type Props = {
 
   setSelectedRow?: (id: string | number) => void;
   setMultiId?: (id: string | number | any) => void;
-  handleQrCode?: (id: string | number, preview: string) => void;
+  handleQrCode?: (data?: IFileDrop, preview?: string) => void;
   handleDownloadFile?: (value: any, index: number, data: any) => void;
   handleMultipleDownloadFiles?: () => void;
   handleClearSelection?: () => void;
@@ -115,27 +119,27 @@ function DropGridData(props: Props) {
                   size={isMobile ? "18px" : "22px"}
                 />
               ) : (
-                dataFromUrl?.allowDownload &&
-                <Tooltip title="Download" placement="top">
-                  <IconButton
-                    onClick={(e) => {
-                      if(!dataFromUrl?.allowDownload){
-                        return;
-                      }
-                      else
-                      {
-                        handleDownloadFile?.(e, params?.row?.no, params?.row);
-                      }
-                    }}
-                  >
-                    <DownloadIcon sx={{ ":hover": { color: "#17766B" } }} />
-                  </IconButton>
-                </Tooltip>
+                dataFromUrl?.allowDownload && (
+                  <Tooltip title="Download" placement="top">
+                    <IconButton
+                      onClick={(e) => {
+                        if (!dataFromUrl?.allowDownload) {
+                          return;
+                        } else {
+                          handleDownloadFile?.(e, params?.row?.no, params?.row);
+                        }
+                      }}
+                    >
+                      <DownloadIcon sx={{ ":hover": { color: "#17766B" } }} />
+                    </IconButton>
+                  </Tooltip>
+                )
               )}
             </Box>
             <IconButton
               onClick={() => {
-                handleQrCode?.(params?.row, "preview-qr");
+                // handleQrCode?.(params?.row, "preview-qr");
+                handlePreparedQRCode(params?.row);
               }}
             >
               <QrCode />
@@ -145,6 +149,23 @@ function DropGridData(props: Props) {
       },
     },
   ];
+
+  function handlePreparedQRCode(file: IFile) {
+    const header = {
+      _id: file._id,
+      type: "file",
+      filedropId: dataFromUrl?._id,
+    }; 
+
+    const encode = encryptDataLink(header);
+    const newLongUrl = `${window.location.origin}/df?lc=${encode}`;
+    const dataEvents: IFile = {
+      ...file,
+      longUrl: newLongUrl,
+    };
+
+    handleQrCode?.(dataEvents, "preview-qr");
+  }
 
   return (
     <Fragment>

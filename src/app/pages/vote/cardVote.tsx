@@ -20,7 +20,6 @@ interface TypeProps {
 }
 export default function CardVote({ item, data }: TypeProps) {
   const theme = createTheme();
-  const { user }: any = useAuth();
   const sourcePath = `${data?.voteData?.createdBy?.newName}-${data?.voteData?.createdBy?._id}/${item?.newFilename}`;
   const newUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}preview?path=`;
 
@@ -28,9 +27,10 @@ export default function CardVote({ item, data }: TypeProps) {
     <React.Fragment>
       <ImageListItem
         sx={{
-          border: `1px solid ${
-            item.isSelected ? "#17766B" : theme.palette.grey[400]
-          }`,
+          border: item.isSelected
+            ? "none"
+            : `1px solid ${theme.palette.grey[400]}`,
+          bgcolor: `${item.isSelected ? theme.palette.grey[200] : "white"}`,
           borderRadius: "6px",
           overflow: "hidden",
           cursor: "pointer",
@@ -42,7 +42,8 @@ export default function CardVote({ item, data }: TypeProps) {
           loading="lazy"
           style={{
             width: "100%",
-            height: "200px",
+            minHeight: "200px",
+            maxHeight: "200px",
             borderRadius: "12px",
             objectFit: "contain",
             padding: "6px",
@@ -51,17 +52,28 @@ export default function CardVote({ item, data }: TypeProps) {
         <div
           style={{
             marginTop: "2px",
-            borderBottom: `1px solid ${
-              item.isSelected ? "#17766B" : theme.palette.grey[400]
-            }`,
+            borderBottom: `1px solid ${theme.palette.grey[400]}`,
           }}
-        ></div>
+        />
         <ImageListItemBar
-          sx={{ px: 2, textOverflow: "ellipsis", maxWidth: "200px" }}
+          sx={{
+            px: 2,
+            textOverflow: "ellipsis",
+            maxWidth: {
+              xs: "180px",
+              sm: "200px",
+              md: "300px",
+              lg: "400px",
+            },
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+          }}
           title={data?.voteData?.topic}
           subtitle={
             <span style={{ fontSize: "12px" }}>
-              {item.filename.substring(0, item.filename.lastIndexOf("."))}
+              {item.filename.includes(".")
+                ? item.filename.substring(0, item.filename.lastIndexOf("."))
+                : item.filename}
             </span>
           }
           position="below"

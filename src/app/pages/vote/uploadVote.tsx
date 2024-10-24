@@ -17,7 +17,7 @@ import FileImagIcon from "assets/images/vote/imageIcon.svg?react";
 import axios from "axios";
 import { ENV_KEYS } from "constants/env.constant";
 import useAuth from "hooks/useAuth";
-import { useFetchVoteResult } from "hooks/vote/useFetchVote";
+import { useFetchVoteFiles, useFetchVoteResult } from "hooks/vote/useFetchVote";
 import useFilter from "hooks/vote/useFilter";
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -32,8 +32,9 @@ import LinearProgressWithLabel from "./progress";
 
 interface TypeProps {
   handleClose: () => void;
+  hideClose?: boolean;
 }
-export default function UploadVote({ handleClose }: TypeProps) {
+export default function UploadVote({ handleClose, hideClose }: TypeProps) {
   const theme = createTheme();
   const navigate = useNavigate();
   const { user }: any = useAuth();
@@ -47,6 +48,10 @@ export default function UploadVote({ handleClose }: TypeProps) {
   const [overallProgress, setOverallProgress] = useState(0);
   const filter = useFilter();
   const { data: dataVote } = useFetchVoteResult({
+    id: decryptedData?._id,
+    filter: filter,
+  });
+  const { refetch } = useFetchVoteFiles({
     id: decryptedData?._id,
     filter: filter,
   });
@@ -74,12 +79,12 @@ export default function UploadVote({ handleClose }: TypeProps) {
     [files],
   );
   let acceptFileType = "image/*";
-  if (dataVote?.voteData?.fileType[0] === "PHOTO") {
-    acceptFileType = "image/*";
+  if (dataVote?.voteData?.fileType[0] === "VIDEO") {
+    acceptFileType = "video/*";
   } else if (dataVote?.voteData?.fileType[0] === "SOUND") {
     acceptFileType = "audio/*";
   } else {
-    acceptFileType = "video/*";
+    acceptFileType = "image/*";
   }
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -193,6 +198,7 @@ export default function UploadVote({ handleClose }: TypeProps) {
               setOverallProgress(0);
               setFiles([]);
               setIsSumitting(false);
+              refetch();
             }, 2000);
             successMessage("Upload successful!!", 3000);
           } catch (error) {
@@ -277,26 +283,28 @@ export default function UploadVote({ handleClose }: TypeProps) {
                     </Box>
                   </Box>
                 </Box>
-                <Box
-                  sx={{ display: "flex", justifyContent: "flex-end", mr: 5 }}
-                >
-                  <Button
-                    variant="contained"
-                    type="button"
-                    sx={{
-                      borderRadius: "6px",
-                      border: `1px solid ${theme.palette.grey[400]}`,
-                      bgcolor: "white !important",
-                      color: theme.palette.grey[600],
-                      "&hover": {
-                        bgcolor: theme.palette.grey[300],
-                      },
-                    }}
-                    onClick={() => handleClose()}
+                {!hideClose && (
+                  <Box
+                    sx={{ display: "flex", justifyContent: "flex-end", mr: 5 }}
                   >
-                    Close
-                  </Button>
-                </Box>
+                    <Button
+                      variant="contained"
+                      type="button"
+                      sx={{
+                        borderRadius: "6px",
+                        border: `1px solid ${theme.palette.grey[400]}`,
+                        bgcolor: "white !important",
+                        color: theme.palette.grey[600],
+                        "&hover": {
+                          bgcolor: theme.palette.grey[300],
+                        },
+                      }}
+                      onClick={() => handleClose()}
+                    >
+                      Close
+                    </Button>
+                  </Box>
+                )}
               </Box>
             ) : (
               <Box sx={{ mx: 4 }}>
@@ -468,7 +476,9 @@ export default function UploadVote({ handleClose }: TypeProps) {
                   )}
                 </Grid>
                 {isErrorMessage && (
-                  <Alert severity="error">You have reached the upload limit</Alert>
+                  <Alert severity="error">
+                    You have reached the upload limit
+                  </Alert>
                 )}
                 <Typography sx={{ mb: 2, width: "100%" }} component="p">
                   Expired date: {formatDate(dataVote?.voteData?.expiredAt)}

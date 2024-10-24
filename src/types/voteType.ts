@@ -58,3 +58,15 @@ export interface IVoteDataType {
   totalVoteParticipant: number;
   totalVote: number;
 }
+
+export interface ITopVoteType {
+  percent: number | null;
+  score: number;
+  isVoted: boolean | null;
+  _id: string;
+  filename: string;
+  newFilename: string;
+  fileType: string;
+  size: string;
+  status: string;
+}

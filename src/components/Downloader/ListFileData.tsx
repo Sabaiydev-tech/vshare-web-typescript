@@ -1,4 +1,3 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Card,
@@ -12,6 +11,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { FileBoxDownload } from "app/pages/file-uploader/styles/fileUploader.style";
 import NormalButton from "components/NormalButton";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import ResponsivePagination from "react-responsive-pagination";
 import "styles/pagination.style.css";
@@ -19,22 +19,25 @@ import "styles/pagination.style.css";
 // Icons
 import InfoIcon from "@mui/icons-material/Info";
 
-import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import LockIcon from "@mui/icons-material/Lock";
+import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import { convertBytetoMBandGB } from "utils/storage.util";
 
-import { formatDate } from "utils/date.util";
+import { IFile } from "models/file.model";
 import {
   BoxAdsAction,
   BoxAdsContainer,
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
+import { formatDateTime } from "utils/date.util";
 import { cutFileName } from "utils/file.util";
+import { encryptDataLink } from "utils/secure.util";
 
 type Props = {
   _description?: string;
   dataLinks?: any[];
   multipleIds?: any[];
+  manageLinkId?: string;
   countAction: number;
   isFile?: boolean;
   toggle?: string;
@@ -73,7 +76,7 @@ function ListFileData(props: Props) {
         headerName: "",
         editable: false,
         sortable: false,
-        maxWidth: isMobile ? 40 : 70,
+        maxWidth: isMobile ? 40 : 50,
         flex: 1,
         renderCell: (params: { row: any }) => {
           const { _id, status } = params?.row || {};
@@ -200,8 +203,7 @@ function ListFileData(props: Props) {
           return (
             <IconButton
               onClick={(e: any) => {
-                const url = dataFile?.longUrl || "";
-                props.handleQRGeneration?.(e, dataFile, url);
+                handleOpenQRCode(e, dataFile);
               }}
             >
               <QrCodeIcon />
@@ -227,11 +229,29 @@ function ListFileData(props: Props) {
     props.handleClearFileSelection?.();
   }
 
+  function handleOpenQRCode(event: HTMLFormElement, data: IFile) {
+    // const url = data?.longUrl || "";
+    // props.handleQRGeneration?.(event, data, url);
+
+    const dataPrepared = {
+      _id: data._id,
+      type: "file",
+      manageLinkId: props.manageLinkId,
+    };
+
+    const url = `${window.location.origin}/df?lc=`;
+    const encodeData = encryptDataLink(dataPrepared);
+
+    const longUrl = url + encodeData;
+    props.handleQRGeneration?.(event, data, longUrl);
+  }
+
   useEffect(() => {
     if (props?.dataLinks?.[0]?.expired) {
-      setExpireDate(props?.dataLinks?.[0]?.expired || "");
+      const dateTime = formatDateTime(props?.dataLinks?.[0]?.expired);
+      setExpireDate(dateTime);
     }
-  }, [props]);
+  }, [props.dataLinks]);
 
   return (
     <FileBoxDownload className="box-download">
@@ -329,25 +349,27 @@ function ListFileData(props: Props) {
                 >
                   <Typography component={"p"}>Expiration Date</Typography>
                   <Chip
-                    label={expireDate ? formatDate(expireDate) : "Never"}
+                    label={expireDate ? expireDate : "Never"}
                     size="small"
                     sx={{ padding: "0 1rem" }}
                   />
                 </Box>
                 {expireDate && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#FF9F43",
-                    }}
-                  >
-                    <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
-                    <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
-                      This link is expired. Please access the document before
-                      this date
-                    </Typography>
-                  </Box>
+                  <>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: "#FF9F43",
+                      }}
+                    >
+                      <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
+                      <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
+                        This link will be expired. Please access the document
+                        before this date
+                      </Typography>
+                    </Box>
+                  </>
                 )}
               </Box>
 

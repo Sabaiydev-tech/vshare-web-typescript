@@ -38,7 +38,7 @@ import { SETTING_KEYS } from "constants/setting.constant";
 // import useGoogleOauth from "hooks/useGoogleOauth";
 // import useManageGraphqlError from "hooks/useManageGraphqlError";
 import useManageSetting from "hooks/useManageSetting";
-import useVoteAuth from "hooks/useVoteAuth";
+// import useVoteAuth from "hooks/useVoteAuth";
 import moment from "moment";
 import { errorMessage, warningMessage } from "utils/alert.util";
 import { v4 as uuidv4 } from "uuid";
@@ -59,7 +59,7 @@ function SignIn() {
   const [initialTimeMessage, setInitialTimeMessage] = useState("");
   const mobileScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const voteParams = useParams<{ id: string }>();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!voteParams) {
@@ -103,9 +103,9 @@ function SignIn() {
     [initialTime],
   );
 
-  function findDataSetting(productKey:any) {
+  function findDataSetting(productKey: any) {
     const res = useDataSetting.data?.find(
-      (data:any) => data?.productKey === productKey,
+      (data: any) => data?.productKey === productKey,
     );
 
     return res;

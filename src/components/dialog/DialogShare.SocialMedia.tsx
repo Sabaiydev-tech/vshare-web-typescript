@@ -26,6 +26,7 @@ const DialogShare = (props) => {
             backgroundColor: "white !important",
             borderRadius: "6px",
             padding: 0,
+            // border: '2px solid red'
         },
         }}
         disableOnClose={true}

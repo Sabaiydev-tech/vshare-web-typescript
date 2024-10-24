@@ -31,7 +31,9 @@ import {
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
 import { cutFileName } from "utils/file.util";
-import moment from "moment";
+import { IFolder } from "models/folder.model";
+import { encryptDataLink } from "utils/secure.util";
+import { formatDateTime } from "utils/date.util";
 
 const IconFolderContainer = styled("div")({
   width: "28px",
@@ -45,6 +47,7 @@ type Props = {
   isFile?: boolean;
   toggle?: string;
   total?: number;
+  manageLinkId?: string;
   linkExpired?: string;
   selectionFileAndFolderData?: any[];
   pagination?: {
@@ -76,7 +79,7 @@ function ListFolderData(props: Props) {
         headerName: "",
         editable: false,
         sortable: false,
-        flex: 1,
+        maxWidth: 50,
         renderCell: (params: { row: any }) => {
           const { _id, status } = params?.row || {};
 
@@ -116,17 +119,15 @@ function ListFolderData(props: Props) {
           return (
             <Fragment>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                {!props.isFile && (
-                  <Fragment>
-                    <IconFolderContainer>
-                      {dataFile?.total_size && dataFile.total_size > 0 ? (
-                        <FolderNotEmptyIcon />
-                      ) : (
-                        <FolderEmptyIcon />
-                      )}
-                    </IconFolderContainer>
-                  </Fragment>
-                )}
+                <Fragment>
+                  <IconFolderContainer>
+                    {dataFile?.total_size && dataFile.total_size > 0 ? (
+                      <FolderNotEmptyIcon />
+                    ) : (
+                      <FolderEmptyIcon />
+                    )}
+                  </IconFolderContainer>
+                </Fragment>
                 <Typography title={dataFile?.filename} component={"span"}>
                   {cutFileName(filename || "", 20)}
                 </Typography>
@@ -186,11 +187,7 @@ function ListFolderData(props: Props) {
           return (
             <IconButton
               onClick={(e: any) => {
-                props.handleQRGeneration?.(
-                  e,
-                  dataFile,
-                  dataFile?.longUrl || "",
-                );
+                handleOpenQRCode(e, dataFile);
               }}
             >
               <QrCodeIcon />
@@ -203,13 +200,29 @@ function ListFolderData(props: Props) {
     return data || [];
   }, [props.selectionFileAndFolderData]);
 
+  function handleOpenQRCode(event: HTMLFormElement, data: IFolder) {
+    // const url = data?.longUrl || "";
+    // props.handleQRGeneration?.(event, data, url);
+
+    const dataPrepared = {
+      _id: data._id,
+      type: "folder",
+      manageLinkId: props.manageLinkId,
+    };
+
+    const url = `${window.location.origin}/df?lc=`;
+    const encodeData = encryptDataLink(dataPrepared);
+
+    const longUrl = url + encodeData;
+    props.handleQRGeneration?.(event, data, longUrl);
+  }
+
   useEffect(() => {
     if (props?.linkExpired || props?.dataLinks?.[0]?.expired) {
-      setExpireDate(
-        props?.linkExpired ||
-          moment(props?.dataLinks?.[0]?.expired).format("DD/MM/YYYY HH:MM A") ||
-          "",
+      const dateTime = formatDateTime(
+        props?.linkExpired || props?.dataLinks?.[0]?.expired,
       );
+      setExpireDate(dateTime);
     }
   }, [props]);
 
@@ -321,8 +334,8 @@ function ListFolderData(props: Props) {
                     >
                       <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
                       <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
-                        This link is expired. Please access the document before
-                        this date
+                        This link will be expired. Please access the document
+                        before this date
                       </Typography>
                     </Box>
                   </>

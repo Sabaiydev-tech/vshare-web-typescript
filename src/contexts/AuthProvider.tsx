@@ -25,7 +25,7 @@ import { ENV_KEYS } from "constants/env.constant";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
 import { jwtDecode } from "jwt-decode";
 import moment from "moment";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { UAParser } from "ua-parser-js";
 import { errorMessage, successMessage, warningMessage } from "utils/alert.util";
 import {
@@ -420,15 +420,14 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
     voteParams: string,
   ) => {
     try {
-      const responseIp = await axios.get(
-        "https://staging.load.vshare.net/getIP",
-      );
+      const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
       const signInUser = await userLogin({
         variables: {
           where: {
             username: username || "",
             password: password || "",
             ip: responseIp.data || "",
+            captcha: window.__reCaptcha! || "",
           },
         },
       });
@@ -448,12 +447,10 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
       );
 
       if (enable2FA === 0) {
-        const userDataEncrypt = encryptData(
-          JSON.stringify(signInUser?.data?.userLogin?.data[0]),
-        );
+        const userDataEncrypt = encryptData(JSON.stringify(user));
+
         checkAccessToken(checkRole);
         localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, userDataEncrypt);
-
         dispatch({
           type: SIGN_IN,
           payload: {
@@ -466,8 +463,9 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
         return { authen, user, checkRole, refreshId: tokenData.refreshID };
       }
     } catch (error: any) {
-      console.log(error?.message);
-      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
+      
+      const cutErr = error?.message?.replace(/(ApolloError: )?Error: /, "");
+      errorMessage(manageGraphqlError.handleErrorMessage(cutErr) || "", 3000);
       if (cutErr === "USERNAME_OR_PASSWORD_INCORRECT") {
         errorMessage("Username or password incorrect!!", 3000);
       } else if (cutErr === "YOUR_STATUS_IS_DISABLED") {
@@ -525,9 +523,12 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
   };
 
   const signOut = async () => {
-    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA_KEY);
-    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL_KEY);
+    // localStorage.removeItem("accessToken");
+    // localStorage.removeItem("permission");
+    // localStorage.removeItem("userData");
+    localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_USER_DATA);
+    localStorage.removeItem(ENV_KEYS.VITE_APP_PERMISSION_LOCAL);
     oAuthLogOut();
     dispatch({ type: SIGN_OUT });
   };
