@@ -115,8 +115,8 @@ export default function VoteDetails({ topVote }: IPropsType) {
   }, [newVoteData, handleIntersection]);
 
   useEffect(() => {
-    setNewVoteData(voteFiles);
-  }, [voteFiles]);
+    setNewVoteData(voteResultFiles);
+  }, [voteResultFiles]);
 
   const handleSelecte = (data: IVoteResultDataType) => {
     setNewVoteData((prev: IVoteResultType) => {
@@ -237,6 +237,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
         type: filter.ACTION_TYPE.SEARCH,
         payload: search,
       });
+      refetchResult()
       refetch();
     }
   };
@@ -290,10 +291,10 @@ export default function VoteDetails({ topVote }: IPropsType) {
                     Latest upload
                   </MenuItem>
                   <MenuItem sx={{ fontSize: "1rem" }} value="score_DESC">
-                    Max vote
+                    Highest vote
                   </MenuItem>
                   <MenuItem sx={{ fontSize: "1rem" }} value="score_ASC">
-                    Min vote
+                    Lowest vote
                   </MenuItem>
                 </Select>
               </FormControl>

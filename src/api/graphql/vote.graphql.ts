@@ -43,6 +43,7 @@ export const QUERY_VOTE_RESULT = gql`
             filename
             newFilename
             fileType
+            score
             size
             totalDownloadFaild
             totalDownload

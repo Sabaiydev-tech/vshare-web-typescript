@@ -62,7 +62,7 @@ export default function UploadVote({ handleClose, hideClose }: TypeProps) {
   const UA = new UAParser();
   const result = UA.getResult();
   const [optional, setOptional] = useState("");
-
+  const [optionEror, setOptionEror] = useState(false);
   const onDrop = useCallback(
     (acceptedFiles: any[]) => {
       const previewFiles = acceptedFiles.map((file) => {
@@ -114,7 +114,10 @@ export default function UploadVote({ handleClose, hideClose }: TypeProps) {
     if (!isToken) {
       return;
     }
-
+    if (!optional) {
+      setOptionEror(true);
+      return;
+    }
     try {
       setIsSumitting(true);
       const responseIp = await axios.get(LOAD_GET_IP_URL);
@@ -338,7 +341,10 @@ export default function UploadVote({ handleClose, hideClose }: TypeProps) {
                 <TextField
                   fullWidth
                   variant="outlined"
-                  placeholder="Enter optional"
+                  error
+                  id="outlined-error-helper-text"
+                  placeholder={optionEror ? "Option is required" : ""}
+                  helperText="Incorrect entry."
                   InputProps={{
                     sx: {
                       height: "40px",
@@ -350,6 +356,7 @@ export default function UploadVote({ handleClose, hideClose }: TypeProps) {
                   value={optional}
                   onChange={(e) => setOptional(e.target.value)}
                 />
+
                 <InputLabel sx={{ mt: 5, mb: 1, fontSize: "14px" }}>
                   Answer Options
                 </InputLabel>

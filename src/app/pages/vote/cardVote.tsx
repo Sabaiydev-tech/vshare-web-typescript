@@ -94,7 +94,6 @@ export default function CardVote({ item, data }: TypeProps) {
             overflow: "hidden",
             whiteSpace: "nowrap",
           }}
-          title={data?.voteData?.topic}
           subtitle={
             <span style={{ fontSize: "12px" }}>
               {item.filename.includes(".")
