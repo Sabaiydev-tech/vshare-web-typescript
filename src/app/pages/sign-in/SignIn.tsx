@@ -216,55 +216,7 @@ function SignIn() {
               Login
             </Typography>
 
-            {/* Social Media */}
-            {!hideLogin && (
-              <MUI.BoxShowSocialMediaLogin>
-                {showGoogle && (
-                  <IconButton
-                    // onClick={() => googleOauth.googleButton.click()}
-                    onClick={() => SocialMediaAuths("google")}
-                    sx={{
-                      border: "1px solid gray",
-                      width: mobileScreen ? "30px" : "50px",
-                      height: mobileScreen ? "30px" : "50px",
-                      margin: "0 1rem",
-                    }}
-                  >
-                    <GoogleIcon />
-                  </IconButton>
-                )}
-
-                {showFacebook && (
-                  <IconButton
-                    // onClick={() => facebookOauth.signIn()}
-                    onClick={() => SocialMediaAuths("facebook")}
-                    sx={{
-                      border: "1px solid gray",
-                      width: mobileScreen ? "30px" : "50px",
-                      height: mobileScreen ? "30px" : "50px",
-                      margin: "0 1rem",
-                    }}
-                  >
-                    <FacebookIcon />
-                  </IconButton>
-                )}
-
-                {showGithub && (
-                  <IconButton
-                    // onClick={() => githubOauth.handleGithubSignIn()}
-                    onClick={() => SocialMediaAuths("github")}
-                    sx={{
-                      border: "1px solid gray",
-                      width: mobileScreen ? "30px" : "50px",
-                      height: mobileScreen ? "30px" : "50px",
-                      margin: "0 1rem",
-                    }}
-                  >
-                    <GitHubIcon />
-                  </IconButton>
-                )}
-              </MUI.BoxShowSocialMediaLogin>
-            )}
+           
 
             {hideLogin && (
               <MUI.LeftBoxRowAuthenticationLimit>

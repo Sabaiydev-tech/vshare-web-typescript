@@ -25,7 +25,6 @@ import useManageSetting from "hooks/useManageSetting";
 import { errorMessage, warningMessage } from "utils/alert.util";
 import { LeftBoxRowAuthenticationLimit } from "./style";
 import { v4 as uuidv4 } from "uuid";
-import useVoteAuth from "hooks/useVoteAuth";
 
 function SignUp() {
   const theme = useTheme();
@@ -46,11 +45,8 @@ function SignUp() {
       navigate(-1);
     }
   }, [voteParams, navigate]);
-  console.log(voteParams);
 
   const { oauthLogin }: any = useAuth();
-  // const [signUpWithFacebook] = useMutation(MUTATION_FACEBOOK_OAUTH);
-  // const [loginWithGithub] = useMutation(MUTATION_SOCIAL_AUTH);
   const useDataSetting = useManageSetting();
 
   const authWindowRef = useRef<Window | null>(null);
@@ -220,49 +216,7 @@ function SignUp() {
               >
                 Create Account
               </Typography>
-              <MUI.BoxShowSocialMediaSignUp>
-                {showGoogle && (
-                  <IconButton
-                    onClick={() => SocialMediaAuths("google")}
-                    sx={{
-                      border: "1px solid gray",
-                      width: mobileScreen ? "30px" : "50px",
-                      height: mobileScreen ? "30px" : "50px",
-                      margin: "0 1rem",
-                    }}
-                  >
-                    <GoogleIcon />
-                  </IconButton>
-                )}
-
-                {showFacebook && (
-                  <IconButton
-                    onClick={() => SocialMediaAuths("facebook")}
-                    sx={{
-                      border: "1px solid gray",
-                      width: mobileScreen ? "30px" : "50px",
-                      height: mobileScreen ? "30px" : "50px",
-                      margin: "0 1rem",
-                    }}
-                  >
-                    <FacebookIcon />
-                  </IconButton>
-                )}
-
-                {showGithub && (
-                  <IconButton
-                    onClick={() => SocialMediaAuths("github")}
-                    sx={{
-                      border: "1px solid gray",
-                      width: mobileScreen ? "30px" : "50px",
-                      height: mobileScreen ? "30px" : "50px",
-                      margin: "0 1rem",
-                    }}
-                  >
-                    <GitHubIcon />
-                  </IconButton>
-                )}
-              </MUI.BoxShowSocialMediaSignUp>
+              
               <Typography
                 sx={{
                   fontSize: "1.5rem",
