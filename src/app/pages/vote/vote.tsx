@@ -659,7 +659,7 @@ export default function Vote() {
                 </Box>
               </Card>
             )}
-            <VoteDetails topVote={topVote} />
+            <VoteDetails/>
             <ShareVote data={data} />
             <VoteDialog handleClose={handleClose} isOpen={isUploadOpen} />
           </Box>

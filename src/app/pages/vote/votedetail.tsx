@@ -33,14 +33,7 @@ import CardVote from "./cardVote";
 import VoteDialog from "components/vote/VoteDialog";
 import DialogShare from "components/dialog/DialogShare.SocialMedia";
 
-interface IPropsType {
-  topVote: {
-    topVotes: ITopVoteType[];
-    hotVotes: ITopVoteType[];
-  };
-  shareLink?: string;
-}
-export default function VoteDetails({ shareLink, topVote }: IPropsType) {
+export default function VoteDetails() {
   const theme = createTheme();
   const [isOpenShare, setIsOpenShare] = useState(false);
   const filter = useFilter();
@@ -455,7 +448,7 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
                   <DialogShare
                     onClose={() => setIsOpenShare(!isOpenShare)}
                     isOpen={isOpenShare}
-                    url={shareLink || window.location.href}
+                    // url={shareLink || window.location.href}
                   />
                 </Box>
               )}
