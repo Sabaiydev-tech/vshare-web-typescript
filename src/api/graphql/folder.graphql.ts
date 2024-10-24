@@ -96,6 +96,7 @@ export const QUERY_FOLDER_PUBLIC_LINK_V1 = gql`
         total_size
         access_password
         folder_type
+        downloadAt
         checkFolder
         newFolder_name
         url
@@ -167,6 +168,7 @@ export const QUERY_SUB_FOLDER_V1 = gql`
         _id
         folder_name
         total_size
+        downloadAt
         folder_type
         checkFolder
         newFolder_name
