@@ -9,7 +9,7 @@ import {
   MenuItem,
   Select,
   Typography,
-  createTheme,
+  createTheme
 } from "@mui/material";
 import { MUTION_VOTE_FILE } from "api/graphql/vote.graphql";
 import { VoteEnum } from "components/vote/voteOption";
@@ -24,15 +24,19 @@ import { ITopVoteType, IVoteResultType, IVoteWithFile } from "types/voteType";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { decryptDataLink } from "utils/secure.util";
 import CardVote from "./cardVote";
+import DialogShare from "components/dialog/DialogShare.SocialMedia";
+import StickyShareButton from "./sticky.share.button";
 
 interface IPropsType {
   topVote: {
     topVotes: ITopVoteType[];
     hotVotes: ITopVoteType[];
   };
+  shareLink?: string;
 }
-export default function VoteDetails({ topVote }: IPropsType) {
+export default function VoteDetails({  shareLink }: IPropsType) {
   const theme = createTheme();
+  const [isOpenShare, setIsOpenShare] = useState(false);
   const filter = useFilter();
   const params = new URLSearchParams(location.search);
   const voteParams = params.get("lc");
@@ -92,6 +96,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
       if (observerRef.current) observerRef.current.disconnect();
     };
   }, [newVoteData, handleIntersection]);
+
 
   useEffect(() => {
     setNewVoteData(voteFiles);
@@ -186,67 +191,11 @@ export default function VoteDetails({ topVote }: IPropsType) {
       errorMessage("You have already voted", 2000);
     }
   };
+
   return (
     <React.Fragment>
       <Card sx={{ my: 5, boxShadow: "rgba(149, 157, 165, 0.2) 5px 8px 24px" }}>
         <Box sx={{ m: 4 }}>
-          {topVote?.topVotes?.length == 0 && topVote?.topVotes?.length == 0 && (
-            <Box sx={{ bgcolor: "#D9D9D942", py: 3, borderRadius: "5px" }}>
-              <Box sx={{ mx: 5 }}>
-                <Typography
-                  component="h6"
-                  sx={{
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    color: theme.palette.grey[700],
-                  }}
-                >
-                  Title
-                </Typography>
-                <Typography
-                  component="h6"
-                  sx={{
-                    fontSize: "1rem",
-                    fontWeight: 400,
-                    color: theme.palette.grey[600],
-                  }}
-                >
-                  Description
-                </Typography>
-                <Typography
-                  component="h6"
-                  sx={{
-                    fontSize: "1rem",
-                    fontWeight: 400,
-                    color: theme.palette.grey[600],
-                  }}
-                >
-                  Expired
-                </Typography>
-                <Box
-                  sx={{
-                    mt: 3,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "start",
-                    gap: 2,
-                  }}
-                >
-                  <IoHelpCircleSharp size={20} />
-                  <Typography
-                    component="h6"
-                    sx={{
-                      fontSize: "1rem",
-                      fontWeight: 500,
-                      color: theme.palette.grey[600],
-                    }}
-                  >
-                    One vote
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          )}
           <Box
             sx={{
               my: 5,
@@ -401,14 +350,32 @@ export default function VoteDetails({ topVote }: IPropsType) {
                 Vote
               </Button>
             </Box>
-            <Button
-              type="button"
-              variant="outlined"
-              sx={{ borderRadius: "8px", fontSize: "14px" }}
-              startIcon={<BsFillShareFill size={18} />}
-            >
-              Share
-            </Button>
+            <Box>
+              <Button
+                type="button"
+                variant={'outlined'}
+                sx={{ borderRadius: "8px", fontSize: "14px" }}
+                startIcon={<BsFillShareFill size={18} />}
+                onClick={()=>setIsOpenShare(!isOpenShare)}
+              >
+                Share
+              </Button>
+              {isOpenShare && (
+                  <Box
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsOpenShare(!isOpenShare);
+                    }}
+                  >
+                    <DialogShare
+                      onClose={() => setIsOpenShare(!isOpenShare)}
+                      isOpen={isOpenShare}
+                      url={shareLink || window.location.href}
+                    />
+                  </Box>
+                )}
+            </Box>
+            {/* <StickyShareButton shareLink={shareLink || ""}/> */}
           </Box>
         </Box>
       </Card>

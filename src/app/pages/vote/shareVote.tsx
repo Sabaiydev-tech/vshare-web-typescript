@@ -146,7 +146,7 @@ export default function ShareVote({ data }: VoteResultProps) {
               <TextField
                 fullWidth
                 variant="outlined"
-                value={data?.voteData?.voteLink}
+                value={data?.voteData?.voteLink || ""}
                 sx={{
                   ".MuiOutlinedInput-root": {
                     height: "45px",
@@ -170,7 +170,7 @@ export default function ShareVote({ data }: VoteResultProps) {
                       >
                         <Box sx={{ ml: 1 }}>
                           <CopyToClipboard
-                            text={data?.voteData?.voteLink}
+                            text={data?.voteData?.voteLink || ""}
                             onCopy={handleCopy}
                           >
                             <span>

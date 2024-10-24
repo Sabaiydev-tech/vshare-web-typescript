@@ -32,8 +32,9 @@ import LinearProgressWithLabel from "./progress";
 
 interface TypeProps {
   handleClose: () => void;
+  hideClose?: boolean;
 }
-export default function UploadVote({ handleClose }: TypeProps) {
+export default function UploadVote({ handleClose, hideClose }: TypeProps) {
   const theme = createTheme();
   const navigate = useNavigate();
   const { user }: any = useAuth();
@@ -282,26 +283,28 @@ export default function UploadVote({ handleClose }: TypeProps) {
                     </Box>
                   </Box>
                 </Box>
-                <Box
-                  sx={{ display: "flex", justifyContent: "flex-end", mr: 5 }}
-                >
-                  <Button
-                    variant="contained"
-                    type="button"
-                    sx={{
-                      borderRadius: "6px",
-                      border: `1px solid ${theme.palette.grey[400]}`,
-                      bgcolor: "white !important",
-                      color: theme.palette.grey[600],
-                      "&hover": {
-                        bgcolor: theme.palette.grey[300],
-                      },
-                    }}
-                    onClick={() => handleClose()}
+                {!hideClose && (
+                  <Box
+                    sx={{ display: "flex", justifyContent: "flex-end", mr: 5 }}
                   >
-                    Close
-                  </Button>
-                </Box>
+                    <Button
+                      variant="contained"
+                      type="button"
+                      sx={{
+                        borderRadius: "6px",
+                        border: `1px solid ${theme.palette.grey[400]}`,
+                        bgcolor: "white !important",
+                        color: theme.palette.grey[600],
+                        "&hover": {
+                          bgcolor: theme.palette.grey[300],
+                        },
+                      }}
+                      onClick={() => handleClose()}
+                    >
+                      Close
+                    </Button>
+                  </Box>
+                )}
               </Box>
             ) : (
               <Box sx={{ mx: 4 }}>

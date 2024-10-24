@@ -1365,15 +1365,17 @@ function FileUploader() {
                   />
                 )}
               </MUI.FileListContainer>
+              
+              {/* <FeedCard /> */}
             </>
           ) : (
+            (!isLoading && !isPassword && !openInputPasswod) &&
             <NotFound />
           )}
 
           <GoogleAdsenseFooter />
         </Box>
       </MUI.ContainerHome>
-
       <BaseDeeplinkDownload
         selectionData={
           dataSelector?.selectionFileAndFolderData?.length > 0 && true
