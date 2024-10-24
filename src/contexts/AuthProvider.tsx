@@ -25,7 +25,7 @@ import { ENV_KEYS } from "constants/env.constant";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
 import { jwtDecode } from "jwt-decode";
 import moment from "moment";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { UAParser } from "ua-parser-js";
 import { errorMessage, successMessage, warningMessage } from "utils/alert.util";
 import {
@@ -446,10 +446,8 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
       );
 
       if (enable2FA === 0) {
-        const userDataEncrypt = encryptData(
-          JSON.stringify(user),
-        );
-        
+        const userDataEncrypt = encryptData(JSON.stringify(user));
+
         checkAccessToken(checkRole);
         localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA, userDataEncrypt);
         dispatch({

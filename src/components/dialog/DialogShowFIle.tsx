@@ -53,10 +53,7 @@ import { errorMessage, successMessage } from "utils/alert.util";
 import { cutFileName, getFileType } from "utils/file.util";
 import { encryptDownloadData } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
-import { FindSettingKey } from "utils/findSetting.util";
-import { calculateTime, FormatTime } from "utils/date.util";
-import useManageSetting from "hooks/useManageSetting";
-import { useFetchLandingSetting } from "hooks/useFetchLandingSetting";
+import { FormatTime } from "utils/date.util";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -179,26 +176,8 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   const [uploadStatus, setUploadStatus] = useState({});
   const UA = new UAParser();
   const result = UA.getResult();
-  const useDataSetting = useManageSetting();
-  const settingData = useFetchLandingSetting();
   const [incrementTime, setIncrementTime] = useState(0);
   const intervalRef = React.useRef<any>(null);
-
-  const settingKeys = {
-    uploadPerday: "MUPFAPD",
-    uploadMaxSize: "MXULDFE",
-    uploadPerTime: "MUPEAPD",
-    allowFileType: "ALWFTUD",
-  };
-
-  const maxFileSizeKey = FindSettingKey({
-    action: settingKeys.uploadMaxSize,
-    settings: settingData?.data,
-  });
-  const maxFileUploadKey = FindSettingKey({
-    action: settingKeys.uploadPerTime,
-    settings: settingData?.data,
-  });
 
   const autoProductKey = "AEADEFO";
 

@@ -50,6 +50,7 @@ import GoogleAdsenseFooter from "components/presentation/GoogleAdsenseFooter";
 import { IEncryptDataLink } from "models/encryptDataLink.model";
 import { SETTING_KEYS } from "constants/setting.constant";
 import { formatDateTime } from "utils/date.util";
+import { IFile } from "models/file.model";
 
 const DATA_LIST_SIZE = 10;
 
@@ -697,10 +698,13 @@ function FileUploader() {
           },
         },
         onCompleted: (resData) => {
-          const fileData = resData?.filesPublicV1?.data?.[0];
+          const fileData = resData?.filesPublicV1?.data?.[0] as IFile;
           document.title = fileData?.filename;
-
-          setLinkExpirdAt(fileData?.expired);
+          
+          if (fileData?.expired) {
+            const linkValue = formatDateTime(fileData.expired)
+            setLinkExpirdAt(linkValue);
+          }
           setDescription(`${fileData?.filename} on vshare.net`);
           setGetDataRes(resData?.filesPublicV1?.data || []);
         },
