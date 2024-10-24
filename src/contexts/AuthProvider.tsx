@@ -427,6 +427,7 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
             username: username || "",
             password: password || "",
             ip: responseIp.data || "",
+            captcha: window.__reCaptcha! || "",
           },
         },
       });
