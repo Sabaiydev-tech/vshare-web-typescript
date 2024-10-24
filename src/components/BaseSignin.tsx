@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { Formik } from "formik";
 import React, { Fragment, useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import * as MUI from "styles/baseSignin.style";
 import * as Yup from "yup";
 
@@ -34,11 +34,26 @@ const TitleContainer = styled("div")({
   justifyContent: "flex-end",
 });
 
-function BaseSignin(props) {
+function BaseSignin(props: any) {
   const theme = createTheme();
+  const navigate = useNavigate();
+  const voteParams = useParams<{ id: string }>();
+
+  useEffect(() => {
+    if (!voteParams) {
+      navigate(-1);
+    }
+  }, [voteParams, navigate]);
+
   const { signInCaptcha, handleLoginFailure } = props;
-  const { signIn, authentication2FA }: any = useAuth();
-  const [open, setOpen] = React.useState(false);
+  const {
+    signIn,
+    authentication2FA,
+    open2Factor,
+    handleOpen2Factor,
+    user: userSocial,
+    token: dataToken,
+  }: any = useAuth();
   const [captchaKey, setCaptchaKey] = useState(false);
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [verifyCode, setVerifyCode] = React.useState("");
@@ -47,30 +62,40 @@ function BaseSignin(props) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const mobileScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [verify2FA] = useMutation(MUTATION_VERIFY_2FA);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleClose = () => {
-    setOpen(false);
+    handleOpen2Factor(false);
   };
 
   const verifyAuthentication = async () => {
     try {
       const codeVerify = await verify2FA({
         variables: {
-          id: parseInt(data?._id),
+          id: parseInt(data?._id) || "",
           input: {
             code: verifyCode,
           },
+          token: token || dataToken,
         },
       });
+
       if (codeVerify?.data?.validate2FA?._id) {
-        await authentication2FA(data, token);
+        const userData = data?._id ? data : userSocial;
+        const tokenData = token ? token : dataToken;
+
+        await authentication2FA(userData, tokenData);
       }
     } catch (error: any) {
       if (error) {
-        const message = error.message;
-        const verificationFailed = message.split(":")[1].trim();
+        const message = error?.message;
+        const verificationFailed = message?.split(":")[1]?.trim();
         if (verificationFailed === "Verification failed") {
           errorMessage("Your verify code not correct!", 2000);
+        } else if (error?.message === "VERIFICATION_FAILED") {
+          errorMessage("Your two factor code is not correct", 3000);
+        } else {
+          errorMessage(error?.message || "Something went wrong", 3000);
         }
       } else {
         errorMessage("Something went wrong! Please try again!", 2000);
@@ -79,7 +104,10 @@ function BaseSignin(props) {
   };
 
   const handleData = (value) => {
-    if (value) setCaptchaKey(false);
+    if (value) {
+      window.__reCaptcha = value;
+      setCaptchaKey(false);
+    }
   };
 
   useEffect(() => {
@@ -108,21 +136,34 @@ function BaseSignin(props) {
           password: Yup.string().max(255).required("Password is required"),
         })}
         onSubmit={async (values, { setStatus }) => {
+          setIsLoading(true);
+
           try {
             if (!captchaKey) {
-              const enabled2FA = await signIn(values.username, values.password);
+              const enabled2FA = await signIn(
+                values.username,
+                values.password,
+                voteParams?.id,
+              );
+              setIsLoading(false);
+
+              /* reset captcha and button */
+              if (window.grecaptcha) {
+                window.grecaptcha?.reset();
+                setCaptchaKey(true);
+              }
+
               if (enabled2FA) {
-                setOpen(enabled2FA.authen);
+                handleOpen2Factor(enabled2FA.authen);
                 setData(enabled2FA.user);
                 setToken(enabled2FA.checkRole);
               }
             }
           } catch (error: any) {
             setCaptchaKey(false);
+            setIsLoading(false);
             handleLoginFailure(error);
-            const _message = error.message || "Something went wrong";
             setStatus({ success: false });
-            /* setErrors({ submit: message }); */
           }
         }}
       >
@@ -215,7 +256,6 @@ function BaseSignin(props) {
               </Box>
             )}
 
-            {/* {!hideLogin && ( */}
             <MUI.ButtonLogin
               type="submit"
               variant="contained"
@@ -229,13 +269,12 @@ function BaseSignin(props) {
             >
               Login
             </MUI.ButtonLogin>
-            {/* )} */}
           </form>
         )}
       </Formik>
 
       <Dialog
-        open={open}
+        open={open2Factor || false}
         sx={{
           border: 0,
           backdropFilter: "blur(5px) sepia(5%)",

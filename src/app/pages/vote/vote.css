@@ -1,0 +1,89 @@
+.ribbon {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    
+    --s: 1em;
+    --d: .2em;
+    --c: .5em;
+   
+    padding: 0 calc(var(--s) + 1.25em) var(--d);
+    line-height: 1.5;
+    background:
+        conic-gradient(at left var(--s) bottom var(--d),
+            #0000 25%, #0008 0 37.5%, #0004 0) 0 / 50% 100% no-repeat,
+        conic-gradient(at right var(--s) bottom var(--d),
+            #0004 62.5%, #0008 0 75%, #0000 0) 100% / 50% 100% no-repeat;
+    clip-path: polygon(0 var(--d),
+            var(--s) var(--d),
+            var(--s) 0,
+            calc(100% - var(--s)) 0,
+            calc(100% - var(--s)) var(--d),
+            100% var(--d),
+            calc(100% - var(--c)) calc(50% + var(--d)/2),
+            100% 100%,
+            calc(100% - var(--s) - var(--d)) 100%,
+            calc(100% - var(--s) - var(--d)) calc(100% - var(--d)),
+            calc(var(--s) + var(--d)) calc(100% - var(--d)),
+            calc(var(--s) + var(--d)) 100%,
+            0 100%,
+            var(--c) calc(50% + var(--d)/2));
+    background-color: #30998C;
+    width: fit-content;
+}
+
+@media (max-width: 600px) {
+    .ribbon {
+        font-size: 12px; 
+        padding: 0 calc(var(--s) + 0.9em) var(--d); 
+        line-height: 1.3; 
+        --s: 0.8em; 
+        --d: 0.1em; 
+        --c: 0.4em;
+    }
+}
+.ribbon23 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    
+    --s: 1em;
+    --d: .1em;
+    --c: .5em;
+   
+    padding: 0 calc(var(--s) + 1em) var(--d);
+    line-height: 1.2;
+    background:
+        conic-gradient(at left var(--s) bottom var(--d),
+            #0000 25%, #0008 0 37.5%, #0004 0) 0 / 50% 100% no-repeat,
+        conic-gradient(at right var(--s) bottom var(--d),
+            #0004 62.5%, #0008 0 75%, #0000 0) 100% / 50% 100% no-repeat;
+    clip-path: polygon(0 var(--d),
+            var(--s) var(--d),
+            var(--s) 0,
+            calc(100% - var(--s)) 0,
+            calc(100% - var(--s)) var(--d),
+            100% var(--d),
+            calc(100% - var(--c)) calc(50% + var(--d)/2),
+            100% 100%,
+            calc(100% - var(--s) - var(--d)) 100%,
+            calc(100% - var(--s) - var(--d)) calc(100% - var(--d)),
+            calc(var(--s) + var(--d)) calc(100% - var(--d)),
+            calc(var(--s) + var(--d)) 100%,
+            0 100%,
+            var(--c) calc(50% + var(--d)/2));
+    background-color: #30998C;
+    width: fit-content;
+}
+
+
+@media (max-width: 600px) {
+    .ribbon23 {
+        font-size: 12px; 
+        padding: 0 calc(var(--s) + 0.9em) var(--d); /* Adjust padding for mobile */
+        line-height: 0.8; /* Adjust line height for better readability */
+        --s: 0.8em; /* Reduce size for mobile */
+        --d: 0.1em; /* Adjust depth for mobile */
+        --c: 0.4em; /* Adjust cutout for mobile */
+    }
+}

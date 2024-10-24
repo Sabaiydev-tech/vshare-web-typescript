@@ -32,7 +32,6 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import * as MUI from "styles/presentation/showFileDialog.style";
 import { UAParser } from "ua-parser-js";
-// react animate component
 
 import { useMutation } from "@apollo/client";
 import {
@@ -47,8 +46,6 @@ import {
 } from "@mui/material";
 import { CREATE_FILE_PUBLIC } from "api/graphql/file.graphql";
 import { ENV_KEYS } from "constants/env.constant";
-import { useFetchLandingSetting } from "hooks/useFetchLandingSetting";
-import useManageSetting from "hooks/useManageSetting";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import { Id } from "types";
@@ -56,8 +53,6 @@ import { errorMessage, successMessage } from "utils/alert.util";
 import { cutFileName, getFileType } from "utils/file.util";
 import { encryptDownloadData } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
-import { FindSettingKey } from "utils/findSetting.util";
-import { calculateTime, FormatTime } from "utils/date.util";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -156,8 +151,9 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   const [isDialogQRCodeOpen, setIsDialogQRCodeOpen] = useState(false);
   const [numUploadedFiles, _setNumUploadedFiles] = useState(0);
   const [fileMaxSize, setFileMaxSize] = useState("");
+  const [fileSizeValue, setFileSizeValue] = useState(0);
   const [uploadSpeed, setUploadSpeed] = useState(0);
-  const [overallProgress, setOverallProgress] = useState(0);
+  const [_overallProgress, setOverallProgress] = useState(0);
   const [checkUpload, setCheckUpload] = useState(false);
   const isRunningRef = React.useRef(true);
   // const [passwordCopied, setPasswordCompied] = useState(false);
@@ -170,36 +166,15 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   window.location.protocol === "http:"
     ? (link = ENV_KEYS.VITE_APP_DOWNLOAD_URL_SERVER)
     : (link = ENV_KEYS.VITE_APP_DOWNLOAD_URL_SERVER);
-  // const LOAD_GET_IP_URL = ENV_KEYS.VITE_APP_LOAD_GETIP_URL;
+  const LOAD_GET_IP_URL = ENV_KEYS.VITE_APP_LOAD_GETIP_URL;
   const LOAD_UPLOAD_URL = ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL;
+  const [totalProgress, setTotalProgress] = useState(0);
 
   const [value, setValue] = useState<string | null>(link);
   const [copied, setCopied] = useState(false);
   const [uploadStatus, setUploadStatus] = useState({});
   const UA = new UAParser();
   const result = UA.getResult();
-  const useDataSetting = useManageSetting();
-  const settingData = useFetchLandingSetting();
-  const [incrementTime, setIncrementTime] = useState(0);
-  const intervalRef = React.useRef<any>(null);
-
-
-
-  const settingKeys = {
-    uploadPerday: "MUPFAPD",
-    uploadMaxSize: "MXULDFE",
-    uploadPerTime: "MUPEAPD",
-    allowFileType: "ALWFTUD",
-  };
-
-  const maxFileSizeKey = FindSettingKey({
-    action: settingKeys.uploadMaxSize,
-    settings: settingData?.data,
-  });
-  const maxFileUploadKey = FindSettingKey({
-    action: settingKeys.uploadPerTime,
-    settings: settingData?.data,
-  });
 
   const autoProductKey = "AEADEFO";
 
@@ -232,9 +207,12 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   }, [dataPasswordLink]);
 
   useEffect(() => {
-    const maxSize = convertBytetoMBandGB(dataMaxSize?.action);
-    setFileMaxSize(maxSize);
-  }, [dataMaxSize]);
+    if (dataMaxSize?.action) {
+      const maxSize = convertBytetoMBandGB(dataMaxSize?.action);
+      setFileSizeValue(parseInt(dataMaxSize?.action || "0"));
+      setFileMaxSize(maxSize);
+    }
+  }, [dataMaxSize?.action]);
 
   useEffect(() => {
     if (dataSubPasswordLink?.status === "on") {
@@ -297,13 +275,16 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
     };
   });
 
-  let isLargeFile = false;
-  for (let i = 0; i < files?.length; i++) {
-    if (files[i].file?.sizeFile > dataMaxSize.action) {
-      isLargeFile = true;
-      break;
+  const isLargeFile = React.useMemo(() => {
+    let isMax = false;
+    for (let i = 0; i < files?.length; i++) {
+      if (files[i].file?.sizeFile > dataMaxSize?.action) {
+        isMax = true;
+        break;
+      }
     }
-  }
+    return isMax;
+  }, [files]);
 
   const dataSizeAll = filesArray.reduce((total: number, obj: any) => {
     return total + obj.size;
@@ -325,6 +306,9 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
       setPasswords((prevPasswords) => {
         const { ...restPasswords } = prevPasswords;
         return restPasswords;
+      });
+      setPasswords({
+        d: "",
       });
       setMainPassword("");
     } else {
@@ -456,14 +440,16 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
     let uploadedSize = 0;
     let currentUploadPercentage: number | string = 0;
     let getUrlAllWhenReturn: any = [];
+    let completedUploads = 0;
 
     try {
-      // const responseIp = await axios.get(LOAD_GET_IP_URL);
+      const responseIp = await axios.get(LOAD_GET_IP_URL);
       const alphabet =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
       const nanoid = customAlphabet(alphabet, 6);
       const generateID = nanoid();
       const urlAllFile = generateID;
+      const totalFiles = files.length;
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -502,8 +488,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
               filePassword: file?.password,
               fileType: file?.type,
               filename: String(`${file?.name}`),
-              // ip: String(responseIp?.data),
-              ip: String("12"),
+              ip: String(responseIp?.data),
               newFilename: String(newNameFile),
               passwordUrlAll: file?.URLpassword,
               size: String(file?.size),
@@ -537,6 +522,15 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                 encryptedHeaders: encryptedData,
               },
               onUploadProgress: (progressEvent: any) => {
+                const { loaded, total } = progressEvent;
+                const percent = Math.round((loaded / total) * 100);
+
+                const newTotalProgress = Math.round(
+                  (completedUploads * 100 + percent) / totalFiles,
+                );
+
+                setTotalProgress(newTotalProgress);
+
                 const currentFileUploadedSize =
                   (progressEvent.loaded * dataFile[i].size) /
                     progressEvent.total || 0;
@@ -575,6 +569,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                 [i]: true,
               }));
             }
+            completedUploads++;
           } catch (error) {
             errorMessage("Error uploading file. Please try againn later", 3000);
           }
@@ -882,7 +877,13 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                           <Typography sx={{ fontSize: "0.8rem !important" }}>
                             {cutFileName(item.name, 10)}
                           </Typography>
-                          <Typography sx={{ fontSize: "0.7rem !important" }}>
+                          <Typography
+                            sx={{
+                              fontSize: "0.7rem !important",
+                              color:
+                                item.size > fileSizeValue ? "#d33" : "#17766B",
+                            }}
+                          >
                             ({convertBytetoMBandGB(item.size)})
                           </Typography>
                         </Box>
@@ -908,7 +909,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                       <Typography
                         sx={{
                           fontSize: "0.7rem !important",
-                          color: "#17766B",
+                          color: item.size > fileSizeValue ? "#d33" : "#17766B",
                         }}
                       >
                         ({convertBytetoMBandGB(item.size)})
@@ -944,7 +945,13 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                         >
                           {cutFileName(item.name, 10)}
                         </Typography>
-                        <Typography sx={{ fontSize: "0.7rem !important" }}>
+                        <Typography
+                          sx={{
+                            fontSize: "0.7rem !important",
+                            color:
+                              item.size > fileSizeValue ? "#d33" : "#17766B",
+                          }}
+                        >
                           ({convertBytetoMBandGB(item.size)})
                         </Typography>
                       </Box>
@@ -1038,7 +1045,7 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
             <MUI.BoxUploadAndReset sx={{ padding: "0.2rem 0.8rem" }}>
               <Button
                 disabled={
-                  isLargeFile || filesArray?.length > dataUploadPerTime.action
+                  isLargeFile || filesArray?.length > dataUploadPerTime?.action
                     ? true
                     : false
                 }
@@ -1076,11 +1083,11 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
               flexDirection: "column",
             }}
           >
-            {filesArray?.length > dataUploadPerTime.action || isLargeFile ? (
+            {filesArray?.length > dataUploadPerTime?.action || isLargeFile ? (
               <Alert severity="error" sx={{ width: "100%", mx: 2, my: 2 }}>
                 {isLargeFile
-                  ? `Some files are larger than  ${fileMaxSize}.`
-                  : `Upload is limited ${dataUploadPerTime.action}
+                  ? `Some files are larger than ${fileMaxSize}.`
+                  : `Upload is limited ${dataUploadPerTime?.action}
                  files per time.`}
               </Alert>
             ) : (
@@ -1152,8 +1159,10 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
               <MUI.BoxUploadProgress>
                 <div style={{ marginLeft: 8, width: 100, height: 100 }}>
                   <CircularProgressbar
-                    value={overallProgress}
-                    text={`${overallProgress}%`}
+                    // value={overallProgress}
+                    // text={`${overallProgress}%`}
+                    value={totalProgress}
+                    text={`${totalProgress}%`}
                     styles={buildStyles({
                       strokeLinecap: "butt",
                       textSize: "12px",

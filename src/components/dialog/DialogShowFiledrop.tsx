@@ -22,23 +22,28 @@ import { styled } from "@mui/material/styles";
 // react animate component
 
 import { useLazyQuery, useMutation } from "@apollo/client";
-import { Box, CircularProgress, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { CREATE_FILE_DROP_PUBLIC } from "api/graphql/fileDrop.graphql";
 import { ENV_KEYS } from "constants/env.constant";
 import { useState } from "react";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import { UAParser } from "ua-parser-js";
 import { errorMessage, successMessage } from "utils/alert.util";
-import { calculateTime } from "utils/date.util";
 import {
   cutFileName,
   getFileNameExtension,
   getFileType,
 } from "utils/file.util";
-import { encryptData, encryptDownloadData } from "utils/secure.util";
+import { encryptDownloadData } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
-import { IGeneralSetting } from "models/general-setting.model";
+import { SETTING_KEYS } from "constants/setting.constant";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -108,14 +113,13 @@ export default function CustomizedDialogs(props) {
   const [country, setCountry] = useState<any>("");
   const [currentURL, setCurrentURL] = useState<any>(null);
 
-  // presign v2
-  const [fileStates, setFileStates] = useState<Record<number, any>>({});
-  const [startUpload, setStartUpload] = useState(false);
-  const [presignUploadSuccess, setPresignUploadSuccess] = useState(false);
-  const [uploadComplete, setUploadComplete] = useState(false);
-  const chunkSize = 100 * 1024 * 1024; // 250 mb
+  const [fileMaxSize, setFileMaxSize] = useState("");
+  const [valueSize, setValueSize] = useState(0);
+  const [fileUploadPerTime, setFileUploadPerTime] = useState(0);
 
-  const [generalData, setGeneralData] = useState<IGeneralSetting>({});
+  const [getMaxFilePertime] = useLazyQuery(QUERY_SETTING, {
+    fetchPolicy: "cache-and-network",
+  });
 
   const [getMaxFileSize] = useLazyQuery(QUERY_SETTING, {
     fetchPolicy: "cache-and-network",
@@ -142,15 +146,31 @@ export default function CustomizedDialogs(props) {
   }, [files]);
 
   React.useEffect(() => {
-    getMaxFileSize({
+    getMaxFilePertime({
       variables: {
         where: {
-          productKey: "MXULDFE",
+          productKey: SETTING_KEYS.UPLOAD_PER_TIME,
         },
       },
       onCompleted: (data) => {
         const res = data.general_settings?.data || [];
-        setGeneralData(res?.[0]);
+        setFileUploadPerTime(parseInt(res?.[0]?.action || "0"));
+      },
+    });
+  }, []);
+
+  React.useEffect(() => {
+    getMaxFileSize({
+      variables: {
+        where: {
+          productKey: SETTING_KEYS.MAX_FILE_SIZE_UPLOAD,
+        },
+      },
+      onCompleted: (data) => {
+        const res = data.general_settings?.data || [];
+        const maxSize = convertBytetoMBandGB(res?.[0]?.action || "0", true);
+        setValueSize(parseInt(res?.[0]?.action || "0"));
+        setFileMaxSize(maxSize);
       },
     });
   }, []);
@@ -198,6 +218,17 @@ export default function CustomizedDialogs(props) {
     };
   });
 
+  const isLargeFile = React.useMemo(() => {
+    let isMax = false;
+    for (let i = 0; i < filesArray?.length; i++) {
+      if (filesArray[i].size > valueSize) {
+        isMax = true;
+        break;
+      }
+    }
+    return isMax;
+  }, [filesArray, valueSize]);
+
   const dataSizeAll = filesArray.reduce((total, obj) => {
     return total + obj.size;
   }, 0);
@@ -221,11 +252,6 @@ export default function CustomizedDialogs(props) {
     setIsUploading(true);
 
     handleUpload(mergedArray);
-    // if (userId > 0 && folderId > 0) {
-    //   handleUploadPresign(mergedArray);
-    // } else {
-    //   handleUpload(mergedArray);
-    // }
   };
 
   const handleUpload = async (files) => {
@@ -359,10 +385,7 @@ export default function CustomizedDialogs(props) {
       const indexRemote = str?.indexOf("IS_NOT_ALLOWED");
       const finalResult = str?.substring(0, indexRemote);
       if (error?.message?.includes("Can not upload more than")) {
-        const maxSize = convertBytetoMBandGB(
-          parseInt(generalData.action!) || 0,
-        );
-        errorMessage(`The maximum upload size is ${maxSize}`, 3000);
+        errorMessage(`The maximum upload size is ${fileMaxSize}`, 3000);
       } else if (cutError == "FILE_NAME_CONTAINS_A_SINGLE_QUOTE(')") {
         errorMessage("Sorry We Don't Allow File Name Include (')", 3000);
       } else if (cutError == "UPLOAD_LIMITED") {
@@ -381,462 +404,10 @@ export default function CustomizedDialogs(props) {
     }
   };
 
-  const handleUploadPresign = async (files: File[]) => {
-    let getUrlAllWhenReturn: any = [];
-
-    try {
-      const responseIp = await axios.get(LOAD_GET_IP_URL);
-      const alphabet =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-      const nanoid = customAlphabet(alphabet, 6);
-      const generateID = nanoid();
-      const urlAllFile = generateID;
-
-      const fileStateEntries = await Promise.all(
-        files.map(async (file, index) => {
-          if (!isRunningRef.current) {
-            return;
-          }
-          const randomName = Math.floor(1111111111 + Math.random() * 99999999);
-          const newFilename = randomName + getFileNameExtension(file?.name);
-          const newFilePath = String(
-            `${newPath}/${randomName + getFileNameExtension(file?.name)}`,
-          );
-          const { data: _createFilePublic } = await createFilePublic({
-            variables: {
-              data: {
-                fileExpired: [
-                  {
-                    typeDate: "days",
-                    amount: 1,
-                  },
-                ],
-                fileType: file?.type,
-                filename: String(`${file?.name}`),
-                ip: String(responseIp.data),
-                newFilename,
-                size: String(file?.size),
-                urlAll: String(urlAllFile),
-                dropUrl: currentURL,
-                path: String(`${path}/${file?.name}`) || "",
-                newPath: newFilePath || "",
-                country: country,
-                device: result.os.name || "" + result.os.version || "",
-                folder_id: folderId,
-              },
-            },
-          });
-          getUrlAllWhenReturn = _createFilePublic.createFilesPublic;
-
-          const dataFile = file as any;
-          dataFile.createdBy = String(userId);
-          dataFile.newFilename = newFilename;
-          dataFile.path = newFilePath;
-          if (_createFilePublic) {
-            const initialUpload = await initiateUpload(index, dataFile);
-            return initialUpload || {};
-          }
-        }),
-      );
-
-      const newFileStates = fileStateEntries.reduce(
-        (acc, fileState) => ({
-          ...acc,
-          ...fileState,
-        }),
-        {},
-      ) as any;
-      setFileStates(newFileStates);
-      setStartUpload(true);
-      setValue(`${value}${getUrlAllWhenReturn?.urlAll}`);
-    } catch (error: any) {
-      const cutError = error.message.replace(/(ApolloError: )?Error: /, "");
-      const str = getFileType(cutError);
-      const indexRemote = str?.indexOf("IS_NOT_ALLOWED");
-      const finalResult = str?.substring(0, indexRemote);
-      if (cutError == "FILE_NAME_CONTAINS_A_SINGLE_QUOTE(')") {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
-        errorMessage("Sorry We Don't Allow File Name Include (')", 3000);
-      } else if (cutError == "UPLOAD_LIMITED") {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
-        errorMessage("Upload Is Limited! Pleaes Try Again Tomorrow!", 3000);
-      } else if (cutError == "NONE_URL") {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
-        errorMessage("Your Upload Link Is Incorrect!", 3000);
-      } else if (finalResult) {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
-        errorMessage(`File ${finalResult} is not allowed`, 3000);
-      } else {
-        setUploadSpeed(0);
-        setOverallProgress(0);
-        setIsUploading(false);
-        errorMessage("Something Wrong Please Try Again Later!", 3000);
-      }
-    }
-  };
-
-  const initiateUpload = async (fileIndex: number, file: File | any) => {
-    try {
-      const headers = {
-        createdBy: file.createdBy,
-        FILENAME: file.newFilename,
-        PATH: file.path,
-      };
-
-      const _encryptHeader = await encryptData(headers);
-      const initiateResponse = await axios.post<{ uploadId: string }>(
-        `${ENV_KEYS.VITE_APP_LOAD_URL}initiate-multipart-upload`,
-        {},
-        {
-          headers: {
-            encryptedheaders: _encryptHeader!,
-          },
-        },
-      );
-
-      const data = await initiateResponse.data;
-      const uploadId = data.uploadId;
-
-      return {
-        [fileIndex]: {
-          file,
-          uploadId,
-          parts: [],
-          retryParts: [],
-          uploadFinished: false,
-          progress: 0,
-          startTime: Date.now(),
-          timeElapsed: "",
-          duration: "",
-          isHide: true,
-          uploadSpeed: "",
-
-          cancel: false,
-        },
-      };
-    } catch (error: any) {
-      console.error("Error initiating upload:", error);
-    }
-  };
-
-  const uploadFileParts = async (fileIndex: number, file: File) => {
-    const numParts = Math.ceil(file.size / chunkSize);
-
-    for (let partNumber = 1; partNumber <= numParts; partNumber++) {
-      const start = (partNumber - 1) * chunkSize;
-      const end = Math.min(start + chunkSize, file.size);
-      const blob = file.slice(start, end);
-
-      try {
-        await uploadPart(fileIndex, partNumber, blob);
-      } catch (error) {
-        console.error(`Error uploading part ${partNumber}:`, error);
-        setFileStates((prev) => ({
-          ...prev,
-          [fileIndex]: {
-            ...prev[fileIndex],
-            retryParts: [
-              ...prev[fileIndex].retryParts,
-              { partNumber, start, end },
-            ],
-          },
-        }));
-      }
-    }
-
-    setFileStates((prev) => ({
-      ...prev,
-      [fileIndex]: { ...prev[fileIndex], uploadFinished: true },
-    }));
-  };
-
-  const uploadPart = async (
-    fileIndex: number,
-    partNumber: number,
-    blob: Blob,
-  ) => {
-    const { uploadId, file } = fileStates[fileIndex];
-    const numParts = Math.ceil(file.size / chunkSize);
-
-    try {
-      const formData = new FormData();
-      formData.append("partNumber", partNumber.toString());
-      formData.append("uploadId", uploadId);
-
-      const headers = {
-        createdBy: userId,
-        PATH: file.path,
-        FILENAME: file.newFilename,
-      };
-
-      const _encryptHeader = await encryptData(headers);
-      const presignedResponse = await axios.post<{ url: string }>(
-        `${ENV_KEYS.VITE_APP_LOAD_URL}generate-presigned-url`,
-        formData,
-        {
-          headers: {
-            encryptedheaders: _encryptHeader!,
-          },
-        },
-      );
-
-      const { url } = await presignedResponse.data;
-      setPresignUploadSuccess(true);
-
-      return new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", url, true);
-        xhr.setRequestHeader("Content-Type", blob.type);
-
-        setFileStates((prev) => ({
-          ...prev,
-          [fileIndex]: {
-            ...prev[fileIndex],
-            xhr,
-          },
-        }));
-
-        xhr.onload = () => {
-          const endTime = Date.now();
-          const timeTaken = (endTime - fileStates[fileIndex].startTime) / 1000;
-          const uploadSpeed = convertBytetoMBandGB(blob.size / timeTaken);
-
-          if (xhr.status >= 200 && xhr.status < 300) {
-            const endDurationTime = Date.now();
-            const duration = calculateTime(
-              endDurationTime - fileStates[fileIndex].startTime,
-            );
-
-            setFileStates((prev) => ({
-              ...prev,
-              [fileIndex]: {
-                ...prev[fileIndex],
-                duration,
-                uploadSpeed,
-                parts: [
-                  ...prev[fileIndex].parts,
-                  {
-                    ETag: xhr.getResponseHeader("ETag"),
-                    PartNumber: partNumber,
-                  },
-                ],
-              },
-            }));
-
-            const percentComplete = Math.round((partNumber * 100) / numParts);
-            setFileStates((prev) => ({
-              ...prev,
-              [fileIndex]: { ...prev[fileIndex], progress: percentComplete },
-            }));
-
-            if (percentComplete >= 100) {
-              const endTime = Date.now();
-              const timeTaken =
-                (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
-
-              setFileStates((prev) => ({
-                ...prev,
-                [fileIndex]: {
-                  ...prev[fileIndex],
-                  timeElapsed: `${(timeTaken / 60).toFixed(2)} minutes`,
-                },
-              }));
-            }
-            setUploadComplete(true);
-            resolve();
-          } else {
-            reject(
-              new Error(
-                `Error uploading part ${partNumber}: ${xhr.statusText}`,
-              ),
-            );
-          }
-        };
-
-        xhr.onerror = () =>
-          reject(
-            new Error(`Error uploading part ${partNumber}: ${xhr.statusText}`),
-          );
-
-        xhr.send(blob);
-      });
-    } catch (error) {
-      if (axios.isCancel(error)) {
-        successMessage("Upload cancelled", 2000);
-      } else {
-        errorMessage("Upload failed", 3000);
-      }
-    }
-  };
-
-  const tryCompleteMultipartUpload = async (
-    fileIndex: number,
-    parts: any,
-    uploadId: string,
-    file: File | any,
-  ) => {
-    // if (fileStates[fileIndex]?.cancel) return;
-
-    setUploadComplete(false);
-
-    const formData = new FormData();
-    formData.append("parts", JSON.stringify(parts));
-    formData.append("uploadId", uploadId);
-
-    const headers = {
-      createdBy: file.createdBy,
-      FILENAME: file.newFilename,
-      PATH: file.path,
-    };
-
-    const _encryptHeader = encryptData(headers);
-
-    try {
-      await axios.post(
-        `${ENV_KEYS.VITE_APP_LOAD_URL}complete-multipart-upload`,
-        formData,
-        {
-          headers: {
-            encryptedheaders: _encryptHeader!,
-          },
-        },
-      );
-
-      const endTime = Date.now();
-      const timeTaken = (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
-      setFileStates((prev) => ({
-        ...prev,
-        [fileIndex]: {
-          ...prev[fileIndex],
-          parts: [],
-          uploadFinished: true,
-          timeElapsed: `${(timeTaken / 60).toFixed(2)}`,
-        },
-      }));
-
-      // mvc
-    } catch (error: any) {
-      console.error("Error completing multipart upload:", error);
-      // alert(`Error completing multipart upload: ${error.message}`);
-    }
-  };
-
-  const retryFailedParts = async () => {
-    if (!navigator.onLine) return;
-    const promises = Object.keys(fileStates).map(async (fileIndex) => {
-      const { retryParts, file } = fileStates[parseInt(fileIndex)];
-
-      setFileStates((prev) => ({
-        ...prev,
-        [fileIndex]: { ...prev[parseInt(fileIndex)], retryParts: [] },
-      }));
-
-      for (const { partNumber, start, end } of retryParts) {
-        const blob = file.slice(start, end);
-        try {
-          await uploadPart(parseInt(fileIndex), partNumber, blob);
-        } catch (error) {
-          console.error(`Error retrying part ${partNumber}: `, error);
-          setFileStates((prev) => ({
-            ...prev,
-            [fileIndex]: {
-              ...prev[parseInt(fileIndex)],
-              retryParts: [
-                ...prev[parseInt(fileIndex)].retryParts,
-                { partNumber, start, end },
-              ],
-            },
-          }));
-        }
-      }
-    });
-
-    await Promise.all(promises);
-  };
-
   const handleCloseAndDeleteFile = async () => {
     isRunningRef.current = false;
   };
   const isMobile = useMediaQuery("(max-width: 600px)");
-
-  React.useEffect(() => {
-    const startUploads = async () => {
-      for (const fileIndex of Object.keys(fileStates)) {
-        if (
-          !fileStates[parseInt(fileIndex)]?.uploadFinished &&
-          !fileStates[fileIndex]?.cancel
-        ) {
-          uploadFileParts(
-            parseInt(fileIndex),
-            fileStates[parseInt(fileIndex)]?.file,
-          );
-        }
-      }
-    };
-    if (startUpload) {
-      startUploads();
-    }
-  }, [startUpload]);
-
-  React.useEffect(() => {
-    const completeFunction = async () => {
-      if (Object.values(fileStates).length === files.length) {
-        Object.values(fileStates).map(async (fileState, fileIndex) => {
-          if (
-            fileState?.progress >= 100 &&
-            fileState?.retryParts?.length <= 0 &&
-            fileState?.parts?.length > 0 &&
-            !fileState?.cancel &&
-            uploadComplete
-          ) {
-            // console.log("start complete:: ", fileIndex, { fileState });
-            await tryCompleteMultipartUpload(
-              fileIndex,
-              [...(fileState?.parts || [])],
-              fileState?.uploadId,
-              files[fileIndex],
-            );
-          }
-        });
-      }
-    };
-
-    completeFunction();
-  }, [fileStates, uploadComplete]);
-
-  React.useEffect(
-    () => {
-      // const newFileStates = Object.values(fileStates);
-      // const cancelState = newFileStates.map((file) => file?.cancel);
-      // const cancellAll = cancelState.filter(Boolean).length;
-      // if (cancellAll === filesArray?.length && presignUploadSuccess) {
-      // }
-    },
-    // fileStates, data, presignUploadSuccess
-    [fileStates, filesArray, presignUploadSuccess],
-  );
-
-  React.useEffect(() => {
-    window.addEventListener("online", retryFailedParts);
-    window.addEventListener("offline", () =>
-      console.error("Network connection lost"),
-    );
-
-    return () => {
-      window.removeEventListener("online", retryFailedParts);
-      window.removeEventListener("offline", () =>
-        console.error("Network connection lost"),
-      );
-    };
-  }, [fileStates]);
 
   return (
     <React.Fragment>
@@ -847,14 +418,30 @@ export default function CustomizedDialogs(props) {
             sx={{ border: "1px solid #ffffff" }}
           >
             <MUI.BoxUploadTitle>
-              <Typography
+              <Box
                 sx={{
-                  marginTop: isMobile ? "0.5rem" : "",
-                  fontSize: "1rem",
+                  display: "flex",
+                  alignItems: "start",
+                  justifyContent: "center",
+                  flexDirection: "column",
                 }}
               >
-                Upload files
-              </Typography>
+                <Typography variant="h5" component="h4">
+                  Upload files
+                </Typography>
+                <Typography
+                  variant="h6"
+                  component="span"
+                  sx={{
+                    mt: 3,
+                    fontSize: "0.8rem !important",
+                    fontWeight: 300,
+                    color: "balck",
+                  }}
+                >
+                  Max file size {fileMaxSize}/file available for unlimited time
+                </Typography>
+              </Box>
             </MUI.BoxUploadTitle>
           </BootstrapDialogTitle>
           <DialogContent
@@ -881,11 +468,18 @@ export default function CustomizedDialogs(props) {
                     </MUI.BoxShowFileIcon>
                   )}
                   {!isMobile && (
-                    <MUI.BoxShowFileName>
-                      <Typography sx={{ fontSize: "0.8rem" }}>
+                    <MUI.BoxShowFileName
+                      sx={{ display: "flex", alignItems: "center" }}
+                    >
+                      <Typography sx={{ fontSize: "0.8rem", mr: 1 }}>
                         {cutFileName(item.name, 10)}
                       </Typography>
-                      <Typography sx={{ fontSize: "0.7rem", color: "#17766B" }}>
+                      <Typography
+                        sx={{
+                          fontSize: "0.7rem",
+                          color: item.size > valueSize ? "#f33" : "#17766B",
+                        }}
+                      >
                         ({convertBytetoMBandGB(item.size)})
                       </Typography>
                     </MUI.BoxShowFileName>
@@ -903,10 +497,15 @@ export default function CustomizedDialogs(props) {
                         />
                       </MUI.BoxShowFileIcon>
                       &nbsp;&nbsp;
-                      <Typography sx={{ fontSize: "0.8rem" }}>
+                      <Typography sx={{ fontSize: "0.8rem", mr: 1 }}>
                         {cutFileName(item.name, 10)}
                       </Typography>
-                      <Typography sx={{ fontSize: "0.7rem", color: "#17766B" }}>
+                      <Typography
+                        sx={{
+                          fontSize: "0.7rem",
+                          color: item.size > valueSize ? "#f33" : "#17766B",
+                        }}
+                      >
                         ({convertBytetoMBandGB(item.size)})
                       </Typography>
                     </MUI.BoxShowFileName>
@@ -933,6 +532,7 @@ export default function CustomizedDialogs(props) {
                 sx={{
                   color: "#17766B",
                   fontSize: "0.8rem",
+                  mr: 3,
                 }}
                 {...selectMore}
                 size="small"
@@ -960,26 +560,46 @@ export default function CustomizedDialogs(props) {
               justifyContent: "center",
             }}
           >
-            <Button
-              startIcon={<Upload sx={{}} />}
-              autoFocus
-              sx={{
-                background: "#17766B",
-                color: "#ffffff",
-                fontSize: "14px",
-                padding: "2px 30px",
-                borderRadius: "6px",
-                border: "1px solid #17766B",
-                "&:hover": { border: "1px solid #17766B", color: "#17766B" },
-                margin: "1rem 0",
-              }}
-              onClick={() => {
-                handlePrepareToUpload();
-                setIsDone(0);
-              }}
-            >
-              Upload
-            </Button>
+            {filesArray?.length > fileUploadPerTime ? (
+              <Alert severity="error" sx={{ width: "100%", mx: 2, my: 2 }}>
+                Upload is limited {fileUploadPerTime} files per time.
+              </Alert>
+            ) : (
+              <>
+                {isLargeFile ? (
+                  <Alert severity="error" sx={{ width: "100%", mx: 2, my: 2 }}>
+                    {fileMaxSize
+                      ? "Some files are larger than " + fileMaxSize
+                      : `Upload is limited ${"dataUploadPerTime.action"}
+                 files per time.`}
+                  </Alert>
+                ) : (
+                  <Button
+                    startIcon={<Upload />}
+                    autoFocus
+                    sx={{
+                      background: "#17766B",
+                      color: "#ffffff",
+                      fontSize: "14px",
+                      padding: "2px 30px",
+                      borderRadius: "6px",
+                      border: "1px solid #17766B",
+                      "&:hover": {
+                        border: "1px solid #17766B",
+                        color: "#17766B",
+                      },
+                      margin: "1rem 0",
+                    }}
+                    onClick={() => {
+                      handlePrepareToUpload();
+                      setIsDone(0);
+                    }}
+                  >
+                    Upload
+                  </Button>
+                )}
+              </>
+            )}
           </DialogActions>
         </BootstrapDialog>
       ) : isDone === 0 ? (

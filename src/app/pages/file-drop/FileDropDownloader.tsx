@@ -40,6 +40,7 @@ import useManageFiles from "hooks/useManageFile";
 import DialogPreviewQRcode from "components/dialog/DialogPreviewQRCode";
 import DropGridData from "./DropGridData";
 import DeepLink from "components/presentation/DeepLink";
+import { IFileDrop } from "models/file-drop";
 
 const FiledropContainer = styled(Container)({
   // marginTop: "5rem",
@@ -125,7 +126,7 @@ function FileDropDownloader() {
   const [isHide, setIsHide] = useState<any>(false);
   const [isSuccess, setIsSuccess] = useState<any>(false);
   const isMobile = useMediaQuery("(max-width: 600px)");
-  const [dataFromUrl, setDataFromUrl] = useState<any>({});
+  const [dataFromUrl, setDataFromUrl] = useState<IFileDrop>({});
   const manageFile = useManageFiles();
   const [showQrCode, setShowQrCode] = useState(false);
   const [dataForEvent, setDataForEvent] = useState<any>({
@@ -542,7 +543,7 @@ function FileDropDownloader() {
       });
       if (_createDetailAdvertisement?.data?.createDetailadvertisements?._id) {
         let httpData = "";
-        if (!randomAd.url.match(/^https?:\/\//i || /^http?:\/\//i)) {
+        if (!randomAd.url.match(/^https?:\/\//i)) {
           httpData = "http://" + randomAd.url;
         } else {
           httpData = randomAd.url;
@@ -717,13 +718,7 @@ function FileDropDownloader() {
               fontWeight: 500,
             }}
           >
-            You do not have permission to view this page using the credentials
-            that you have provided while login.
-          </Box>
-          <Box
-            sx={{ textAlign: "center", fontSize: "0.9rem", fontWeight: 500 }}
-          >
-            Please contact your site administrator.
+            The link you're trying to access is no longer valid.
           </Box>
           <Button
             variant="contained"
@@ -776,7 +771,7 @@ function FileDropDownloader() {
                           fontWeight: "300 !important",
                         }}
                       >
-                        Admin has not enable to upload file
+                        File upload not supported through this link.
                       </Typography>
                     )}
                   </Typography>
@@ -882,6 +877,7 @@ function FileDropDownloader() {
                           }}
                         >
                           <DropGridData
+                            dropId=""
                             queryFile={queryFile}
                             dataFromUrl={dataFromUrl}
                             multipleIds={multiId}

@@ -940,19 +940,19 @@ export const FileListContainer = styled(Box)(({ theme }) => ({
 }));
 
 export const NotFoundData = styled(Box)(({ theme }) => ({
-  display:'flex',
+  display: "flex",
   flex: 1,
-  justifyContent:'end',
-  alignItems:'center',
-  minHeight: '43vh',
-  fontSize: '1.5rem',
-  borderRadius:'10px',
-  paddingRight: '4rem',
-  color: 'grey',
-  [theme.breakpoints.down('sm')]: {
+  justifyContent: "end",
+  alignItems: "center",
+  minHeight: "43vh",
+  fontSize: "1.5rem",
+  borderRadius: "10px",
+  paddingRight: "4rem",
+  color: "grey",
+  [theme.breakpoints.down("sm")]: {
     paddingRight: 0,
-    justifyContent:'center'
-  }
+    justifyContent: "center",
+  },
 }));
 
 export const FileBoxDownload = styled("div")({
@@ -1024,7 +1024,7 @@ export const FileBoxHeader = styled("div")({
 
 ////Ads
 export const AdsContainer = styled(Box)({
-  // marginBottom: "1rem",
+  marginBottom: "1rem",
 });
 
 export const AdsContent = styled(Box)(({ theme }) => ({

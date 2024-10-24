@@ -2,6 +2,7 @@ import {
   Box,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   IconButton,
   Typography,
@@ -9,7 +10,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { FileBoxDownload } from "app/pages/file-uploader/styles/fileUploader.style";
 import NormalButton from "components/NormalButton";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import ResponsivePagination from "react-responsive-pagination";
 import "styles/pagination.style.css";
@@ -30,7 +31,9 @@ import {
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
 import { cutFileName } from "utils/file.util";
-import moment from "moment";
+import { IFolder } from "models/folder.model";
+import { encryptDataLink } from "utils/secure.util";
+import { formatDateTime } from "utils/date.util";
 
 const IconFolderContainer = styled("div")({
   width: "28px",
@@ -44,7 +47,9 @@ type Props = {
   isFile?: boolean;
   toggle?: string;
   total?: number;
+  manageLinkId?: string;
   linkExpired?: string;
+  selectionFileAndFolderData?: any[];
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -57,6 +62,7 @@ type Props = {
   handleDownloadFileGetLink?: () => void;
   handleClearGridSelection?: () => void;
   handleDownloadAsZip?: () => void;
+  handleSelection?: (str: string) => void;
 
   handleDownloadFolderAsZip?: () => void;
   handleDownloadFolder?: () => void;
@@ -66,21 +72,53 @@ type Props = {
 function ListFolderData(props: Props) {
   const [expireDate, setExpireDate] = useState("");
 
-  const columns: any = [
-    {
-      field: "filename",
-      headerName: "Name",
-      flex: 1,
-      headerAlign: "left",
-      renderCell: (params) => {
-        const dataFile = params?.row;
-        const filename = dataFile?.folder_name;
+  const columns = useMemo(() => {
+    const data: any = [
+      {
+        field: "checkboxAction",
+        headerName: "",
+        editable: false,
+        sortable: false,
+        maxWidth: 50,
+        renderCell: (params: { row: any }) => {
+          const { _id, status } = params?.row || {};
 
-        const password = dataFile?.access_password;
-        return (
-          <Fragment>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              {!props.isFile && (
+          if (status !== "active") {
+            return <Fragment></Fragment>;
+          }
+
+          const isChecked = !!props?.selectionFileAndFolderData?.find(
+            (el) => el?.id === _id,
+          );
+
+          return (
+            <div>
+              <Checkbox
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                checked={isChecked}
+                aria-label={"checkbox" + _id}
+                onClick={() => props?.handleSelection?.(_id)}
+              />
+            </div>
+          );
+        },
+      },
+      {
+        field: "filename",
+        headerName: "Name",
+        flex: 1,
+        headerAlign: "left",
+        renderCell: (params) => {
+          const dataFile = params?.row;
+          const filename = dataFile?.folder_name;
+
+          const password = dataFile?.access_password;
+          return (
+            <Fragment>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Fragment>
                   <IconFolderContainer>
                     {dataFile?.total_size && dataFile.total_size > 0 ? (
@@ -90,82 +128,101 @@ function ListFolderData(props: Props) {
                     )}
                   </IconFolderContainer>
                 </Fragment>
-              )}
-              <Typography title={dataFile?.filename} component={"span"}>
-                {cutFileName(filename || "", 20)}
-              </Typography>
-              {password && (
-                <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
-              )}
-            </Box>
-          </Fragment>
-        );
+                <Typography title={dataFile?.filename} component={"span"}>
+                  {cutFileName(filename || "", 20)}
+                </Typography>
+                {password && (
+                  <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
+                )}
+              </Box>
+            </Fragment>
+          );
+        },
       },
-    },
-    {
-      field: "size",
-      headerName: "Size",
-      width: 70,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        const size = params?.row?.total_size;
-        return <span>{convertBytetoMBandGB(size || 0)}</span>;
+      {
+        field: "size",
+        headerName: "Size",
+        width: 70,
+        headerAlign: "center",
+        align: "center",
+        renderCell: (params) => {
+          const size = params?.row?.total_size;
+          return <span>{convertBytetoMBandGB(size || 0)}</span>;
+        },
       },
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      headerAlign: "center",
-      width: 70,
-      align: "center",
-      renderCell: (params) => {
-        const status = params?.row?.status || "Inactive";
-        return (
-          <Chip
-            sx={{
-              backgroundColor:
-                status?.toLowerCase() === "active" ? "#DCF6E8" : "#dcf6e8",
-              color: status?.toLowerCase() === "active" ? "#4BD087" : "#29c770",
-              fontWeight: "bold",
-            }}
-            label={
-              status?.toLowerCase() === "active" ? "" + "Active" : "Inactive"
-            }
-            size="small"
-          />
-        );
+      {
+        field: "status",
+        headerName: "Status",
+        headerAlign: "center",
+        width: 70,
+        align: "center",
+        renderCell: (params) => {
+          const status = params?.row?.status || "Inactive";
+          return (
+            <Chip
+              sx={{
+                backgroundColor:
+                  status?.toLowerCase() === "active" ? "#DCF6E8" : "#dcf6e8",
+                color:
+                  status?.toLowerCase() === "active" ? "#4BD087" : "#29c770",
+                fontWeight: "bold",
+              }}
+              label={
+                status?.toLowerCase() === "active" ? "" + "Active" : "Inactive"
+              }
+              size="small"
+            />
+          );
+        },
       },
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        const dataFile = params.row;
+      {
+        field: "action",
+        headerName: "Action",
+        flex: 1,
+        headerAlign: "center",
+        align: "center",
+        renderCell: (params) => {
+          const dataFile = params.row;
 
-        return (
-          <IconButton
-            onClick={(e: any) => {
-              props.handleQRGeneration?.(e, dataFile, dataFile?.longUrl || "");
-            }}
-          >
-            <QrCodeIcon />
-          </IconButton>
-        );
+          return (
+            <IconButton
+              onClick={(e: any) => {
+                handleOpenQRCode(e, dataFile);
+              }}
+            >
+              <QrCodeIcon />
+            </IconButton>
+          );
+        },
       },
-    },
-  ];
+    ];
+
+    return data || [];
+  }, [props.selectionFileAndFolderData]);
+
+  function handleOpenQRCode(event: HTMLFormElement, data: IFolder) {
+    // const url = data?.longUrl || "";
+    // props.handleQRGeneration?.(event, data, url);
+
+    const dataPrepared = {
+      _id: data._id,
+      type: "folder",
+      manageLinkId: props.manageLinkId,
+    };
+
+    const url = `${window.location.origin}/df?lc=`;
+    const encodeData = encryptDataLink(dataPrepared);
+
+    const longUrl = url + encodeData;
+    props.handleQRGeneration?.(event, data, longUrl);
+  }
 
   useEffect(() => {
     if (props?.linkExpired || props?.dataLinks?.[0]?.expired) {
-      setExpireDate(
-        props?.linkExpired ||
-          moment(props?.dataLinks?.[0]?.expired).format("DD/MM/YYYY HH:MM A") ||
-          "",
+      const dateTime = formatDateTime(
+        props?.linkExpired || props?.dataLinks?.[0]?.expired,
       );
+      setExpireDate(dateTime);
     }
   }, [props]);
 
@@ -216,11 +273,9 @@ function ListFolderData(props: Props) {
                 color: "rgba(0, 0, 0, 0.3)",
               },
             }}
-            selectionModel={props?.multipleIds}
             onCellDoubleClick={(value) => {
               props.handleDoubleClick?.(value.row || {});
             }}
-            checkboxSelection={true}
             autoHeight
             getRowId={(row) => row?._id}
             rows={props?.dataLinks || []}
@@ -229,9 +284,6 @@ function ListFolderData(props: Props) {
             disableColumnFilter
             disableColumnMenu
             hideFooter
-            onSelectionModelChange={(ids) => {
-              props?.setMultipleIds?.(ids);
-            }}
           />
 
           {props.total! > 10 && (
@@ -282,8 +334,8 @@ function ListFolderData(props: Props) {
                     >
                       <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
                       <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
-                        This link is expired. Please access the document before
-                        this date
+                        This link will be expired. Please access the document
+                        before this date
                       </Typography>
                     </Box>
                   </>
@@ -307,11 +359,12 @@ function ListFolderData(props: Props) {
                   )}
                   <NormalButton
                     onClick={() => {
-                      if (props.isFile) {
-                        props.handleDownloadFileGetLink?.();
-                      } else {
-                        props.handleDownloadFolder?.();
-                      }
+                      props.handleDownloadFileGetLink?.();
+                      // if (props.isFile) {
+                      //   //
+                      // } else {
+                      //   props.handleDownloadFolder?.();
+                      // }
                     }}
                     disabled={props?.multipleIds?.length > 0 ? false : true}
                     sx={{

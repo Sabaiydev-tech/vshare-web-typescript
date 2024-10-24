@@ -1,8 +1,8 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   IconButton,
   Typography,
@@ -11,6 +11,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { FileBoxDownload } from "app/pages/file-uploader/styles/fileUploader.style";
 import NormalButton from "components/NormalButton";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import ResponsivePagination from "react-responsive-pagination";
 import "styles/pagination.style.css";
@@ -18,33 +19,31 @@ import "styles/pagination.style.css";
 // Icons
 import InfoIcon from "@mui/icons-material/Info";
 
-import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import LockIcon from "@mui/icons-material/Lock";
+import QrCodeIcon from "@mui/icons-material/QrCodeOutlined";
 import { convertBytetoMBandGB } from "utils/storage.util";
 
-import { formatDate } from "utils/date.util";
+import { IFile } from "models/file.model";
 import {
   BoxAdsAction,
   BoxAdsContainer,
   BoxBottomDownload,
 } from "styles/presentation/presentation.style";
+import { formatDateTime } from "utils/date.util";
 import { cutFileName } from "utils/file.util";
-import FolderNotEmptyIcon from "assets/images/folder-not-empty.svg?react";
-import FolderEmptyIcon from "assets/images/folder-empty.svg?react";
-import { styled } from "@mui/system";
-
-const IconFolderContainer = styled("div")({
-  width: "28px",
-});
+import { encryptDataLink } from "utils/secure.util";
 
 type Props = {
   _description?: string;
   dataLinks?: any[];
-  multipleIds: any[];
+  multipleIds?: any[];
+  manageLinkId?: string;
   countAction: number;
   isFile?: boolean;
   toggle?: string;
   total?: number;
+  selectionFileAndFolderData?: any[];
+
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -63,131 +62,159 @@ type Props = {
 
   handleClearGridSelection?: () => void;
   handleClearFileSelection?: () => void;
+  handleSelection?: (id: string) => void;
 };
 
 function ListFileData(props: Props) {
   const [expireDate, setExpireDate] = useState("");
   const isMobile = useMediaQuery(`(max-width: 768px)`);
 
-  const columns: any = [
-    {
-      field: "filename",
-      headerName: "Name",
-      flex: 1,
-      headerAlign: "left",
-      renderCell: (params) => {
-        const dataFile = params?.row;
-        const size = props?.isFile
-          ? params?.row?.size
-          : params?.row?.total_size;
+  const columns = useMemo(() => {
+    const data: any = [
+      {
+        field: "checkboxAction",
+        headerName: "",
+        editable: false,
+        sortable: false,
+        maxWidth: isMobile ? 40 : 50,
+        flex: 1,
+        renderCell: (params: { row: any }) => {
+          const { _id, status } = params?.row || {};
 
-        const filename = props.isFile
-          ? dataFile?.filename
-          : dataFile?.folder_name;
+          if (status !== "active") {
+            return <Fragment></Fragment>;
+          }
 
-        const password = props.isFile
-          ? dataFile?.filePassword
-          : dataFile?.access_password;
-        return (
-          <Fragment>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              {!props.isFile && (
-                <Fragment>
-                  <IconFolderContainer>
-                    {dataFile?.total_size && dataFile.total_size > 0 ? (
-                      <FolderNotEmptyIcon />
-                    ) : (
-                      <FolderEmptyIcon />
-                    )}
-                  </IconFolderContainer>
-                </Fragment>
-              )}
+          const isChecked = !!props?.selectionFileAndFolderData?.find(
+            (el) => el?.id === _id,
+          );
 
-              <Box sx={{ display: "flex", flexDirection: "column" }}>
-                <Typography
-                  title={dataFile?.filename}
-                  component={"span"}
-                  sx={{ fontSize: isMobile ? 12 : 14 }}
-                >
-                  {cutFileName(filename || "", isMobile ? 8 : 20)}
-                </Typography>
-                {isMobile && (
+          return (
+            <div>
+              <Checkbox
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                checked={isChecked}
+                aria-label={"checkbox" + _id}
+                onClick={() => props?.handleSelection?.(_id)}
+              />
+            </div>
+          );
+        },
+      },
+      {
+        field: "filename",
+        headerName: "Name",
+        flex: 1,
+        headerAlign: "left",
+        renderCell: (params) => {
+          const dataFile = params?.row;
+          const size = props?.isFile
+            ? params?.row?.size
+            : params?.row?.total_size;
+
+          const filename = props.isFile
+            ? dataFile?.filename
+            : dataFile?.folder_name;
+
+          const password = props.isFile
+            ? dataFile?.filePassword
+            : dataFile?.access_password;
+
+          return (
+            <Fragment>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                {password && (
+                  <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
+                )}
+
+                <Box sx={{ display: "flex", flexDirection: "column" }}>
                   <Typography
                     title={dataFile?.filename}
                     component={"span"}
-                    sx={{ fontSize: isMobile ? 10 : 12 }}
+                    sx={{ fontSize: isMobile ? 12 : 14 }}
                   >
-                    {convertBytetoMBandGB(size || 0)}
+                    {cutFileName(filename || "", isMobile ? 8 : 20)}
                   </Typography>
-                )}
+                  {isMobile && (
+                    <Typography
+                      title={dataFile?.filename}
+                      component={"span"}
+                      sx={{ fontSize: isMobile ? 10 : 12 }}
+                    >
+                      {convertBytetoMBandGB(size || 0)}
+                    </Typography>
+                  )}
+                </Box>
               </Box>
-              {password && (
-                <LockIcon sx={{ color: "#666", fontSize: "1.2rem" }} />
-              )}
-            </Box>
-          </Fragment>
-        );
+            </Fragment>
+          );
+        },
       },
-    },
-    {
-      field: "size",
-      headerName: "Size",
-      width: 70,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        const size = props?.isFile
-          ? params?.row?.size
-          : params?.row?.total_size;
-        return <span>{convertBytetoMBandGB(size || 0)}</span>;
+      {
+        field: "size",
+        headerName: "Size",
+        width: 70,
+        headerAlign: "center",
+        align: "center",
+        renderCell: (params) => {
+          const size = props?.isFile
+            ? params?.row?.size
+            : params?.row?.total_size;
+          return <span>{convertBytetoMBandGB(size || 0)}</span>;
+        },
       },
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      headerAlign: "center",
-      width: 70,
-      align: "center",
-      renderCell: (params) => {
-        const status = params?.row?.status || "Inactive";
-        return (
-          <Chip
-            sx={{
-              backgroundColor:
-                status?.toLowerCase() === "active" ? "#DCF6E8" : "#dcf6e8",
-              color: status?.toLowerCase() === "active" ? "#4BD087" : "#29c770",
-              fontWeight: "bold",
-            }}
-            label={
-              status?.toLowerCase() === "active" ? "" + "Active" : "Inactive"
-            }
-            size="small"
-          />
-        );
+      {
+        field: "status",
+        headerName: "Status",
+        headerAlign: "center",
+        width: 70,
+        align: "center",
+        renderCell: (params) => {
+          const status = params?.row?.status || "Inactive";
+          return (
+            <Chip
+              sx={{
+                backgroundColor:
+                  status?.toLowerCase() === "active" ? "#DCF6E8" : "#dcf6e8",
+                color:
+                  status?.toLowerCase() === "active" ? "#4BD087" : "#29c770",
+                fontWeight: "bold",
+              }}
+              label={
+                status?.toLowerCase() === "active" ? "" + "Active" : "Inactive"
+              }
+              size="small"
+            />
+          );
+        },
       },
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        const dataFile = params.row;
+      {
+        field: "action",
+        headerName: "Action",
+        flex: 1,
+        headerAlign: "center",
+        align: "center",
+        renderCell: (params) => {
+          const dataFile = params.row;
 
-        return (
-          <IconButton
-            onClick={(e: any) => {
-              const url = dataFile?.longUrl || "";
-              props.handleQRGeneration?.(e, dataFile, url);
-            }}
-          >
-            <QrCodeIcon />
-          </IconButton>
-        );
+          return (
+            <IconButton
+              onClick={(e: any) => {
+                handleOpenQRCode(e, dataFile);
+              }}
+            >
+              <QrCodeIcon />
+            </IconButton>
+          );
+        },
       },
-    },
-  ];
+    ];
+
+    return data || [];
+  }, [isMobile, props.selectionFileAndFolderData]);
 
   const columnData = useMemo(() => {
     if (isMobile) {
@@ -196,19 +223,35 @@ function ListFileData(props: Props) {
     }
 
     return columns;
-  }, [isMobile]);
+  }, [isMobile, columns]);
 
   function handleClearSelection() {
-    if (props.isFile) {
-      props.handleClearFileSelection?.();
-    }
+    props.handleClearFileSelection?.();
+  }
+
+  function handleOpenQRCode(event: HTMLFormElement, data: IFile) {
+    // const url = data?.longUrl || "";
+    // props.handleQRGeneration?.(event, data, url);
+
+    const dataPrepared = {
+      _id: data._id,
+      type: "file",
+      manageLinkId: props.manageLinkId,
+    };
+
+    const url = `${window.location.origin}/df?lc=`;
+    const encodeData = encryptDataLink(dataPrepared);
+
+    const longUrl = url + encodeData;
+    props.handleQRGeneration?.(event, data, longUrl);
   }
 
   useEffect(() => {
     if (props?.dataLinks?.[0]?.expired) {
-      setExpireDate(props?.dataLinks?.[0]?.expired || "");
+      const dateTime = formatDateTime(props?.dataLinks?.[0]?.expired);
+      setExpireDate(dateTime);
     }
-  }, [props]);
+  }, [props.dataLinks]);
 
   return (
     <FileBoxDownload className="box-download">
@@ -265,11 +308,6 @@ function ListFileData(props: Props) {
                 color: "rgba(0, 0, 0, 0.3)",
               },
             }}
-            selectionModel={props?.multipleIds}
-            onCellDoubleClick={(value) => {
-              props.handleDoubleClick?.(value.row || {});
-            }}
-            checkboxSelection={true}
             autoHeight
             getRowId={(row) => row?._id}
             rows={props?.dataLinks || []}
@@ -278,9 +316,6 @@ function ListFileData(props: Props) {
             disableColumnFilter
             disableColumnMenu
             hideFooter
-            onSelectionModelChange={(ids) => {
-              props?.setMultipleIds?.(ids);
-            }}
           />
 
           {props.total! > 10 && (
@@ -314,31 +349,33 @@ function ListFileData(props: Props) {
                 >
                   <Typography component={"p"}>Expiration Date</Typography>
                   <Chip
-                    label={expireDate ? formatDate(expireDate) : "Never"}
+                    label={expireDate ? expireDate : "Never"}
                     size="small"
                     sx={{ padding: "0 1rem" }}
                   />
                 </Box>
                 {expireDate && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#FF9F43",
-                    }}
-                  >
-                    <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
-                    <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
-                      This link is expired. Please access the document before
-                      this date
-                    </Typography>
-                  </Box>
+                  <>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: "#FF9F43",
+                      }}
+                    >
+                      <InfoIcon sx={{ fontSize: "0.9rem", mr: 1 }} />
+                      <Typography variant="h4" sx={{ fontSize: "0.8rem" }}>
+                        This link will be expired. Please access the document
+                        before this date
+                      </Typography>
+                    </Box>
+                  </>
                 )}
               </Box>
 
               <BoxBottomDownload>
                 <Box sx={{ position: "relative" }}>
-                  {props.multipleIds?.length > 0 && (
+                  {props.selectionFileAndFolderData!.length > 0 && (
                     <Fragment>
                       {props.countAction > 0 && (
                         <BoxAdsContainer sx={{ top: "-8px", right: "-1.6rem" }}>
@@ -359,21 +396,29 @@ function ListFileData(props: Props) {
                         props.handleDownloadFolder?.();
                       }
                     }}
-                    disabled={props?.multipleIds?.length > 0 ? false : true}
+                    disabled={
+                      props.selectionFileAndFolderData!.length > 0
+                        ? false
+                        : true
+                    }
                     sx={{
                       padding: (theme) =>
                         `${theme.spacing(1.6)} ${theme.spacing(5)}`,
                       borderRadius: (theme) => theme.spacing(1.5),
                       color:
-                        props?.multipleIds?.length > 0
+                        props.selectionFileAndFolderData!.length > 0
                           ? "#fff"
                           : "#828282 !important",
                       fontWeight: "bold",
                       border: "1px solid",
                       backgroundColor:
-                        props?.multipleIds?.length > 0 ? "#17766B" : "#fff",
+                        props.selectionFileAndFolderData!.length > 0
+                          ? "#17766B"
+                          : "#fff",
                       borderColor:
-                        props?.multipleIds?.length > 0 ? "#17766B" : "#ddd",
+                        props.selectionFileAndFolderData!.length > 0
+                          ? "#17766B"
+                          : "#ddd",
                       width: "inherit",
                       outline: "none",
 
@@ -394,15 +439,19 @@ function ListFileData(props: Props) {
                       `${theme.spacing(1.6)} ${theme.spacing(5)}`,
                     borderRadius: (theme) => theme.spacing(1.5),
                     color:
-                      props?.multipleIds?.length > 0
+                      props.selectionFileAndFolderData!.length > 0
                         ? "#fff"
                         : "#828282 !important",
                     fontWeight: "bold",
                     border: "1px solid",
                     backgroundColor:
-                      props?.multipleIds?.length > 0 ? "#17766B" : "#fff",
+                      props.selectionFileAndFolderData!.length > 0
+                        ? "#17766B"
+                        : "#fff",
                     borderColor:
-                      props?.multipleIds?.length > 0 ? "#17766B" : "#ddd",
+                      props.selectionFileAndFolderData!.length > 0
+                        ? "#17766B"
+                        : "#ddd",
                     width: "inherit",
                     outline: "none",
 

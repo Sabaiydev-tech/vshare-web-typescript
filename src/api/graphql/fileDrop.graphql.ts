@@ -26,11 +26,9 @@ export const QUERY_FILE_DROP_PUBLIC = gql`
         newFilename
         size
         status
-        checkFile
         newPath
         url
         urlAll
-        ip
         dropUrl
         longUrl
         dropStatus

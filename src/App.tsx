@@ -4,12 +4,15 @@ import { CacheProvider } from "@emotion/react";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { QUERY_SEO } from "api/graphql/ad.graphql";
 import routes from "app/routes";
+import { ClientVoteProvider } from "contexts/ClientVoteProvider";
 import useTheme from "hooks/useTheme";
 import { useEffect, useState } from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { useLocation, useRoutes } from "react-router-dom";
 import createTheme from "theme";
 import { getRouteName } from "utils/url.util";
+import ImageIcon from "assets/images/vshare-black-logo.png";
+import { AuthProvider } from "contexts/AuthProvider";
 
 const emotionCache = createCache({ key: "css" });
 
@@ -78,28 +81,26 @@ function App() {
             <meta name="description" content={SEOData?.[0]?.description} />
           )}
           <meta name="keywords" content={SEOData?.[0]?.keywords} />
-          <meta name="author" content={"vSHARE"} />
-          <meta name="publisher" content={"vSHARE TECHNOLOGY"} />
+          {/* <meta name="author" content={"vSHARE"} />
+          <meta name="publisher" content={"vSHARE TECHNOLOGY"} /> */}
           <link rel="canonical" href={canonicalUrl} />
 
           <meta property="og:title" content={SEOData?.[0]?.title} />
           <meta property="og:description" content={SEOData?.[0]?.description} />
           <meta property="og:url" content={canonicalUrl} />
           <meta property="og:type" content="website" />
+          <meta property="og:image" content={ImageIcon} />
           <meta name="twitter:title" content={SEOData?.[0]?.title} />
           <meta
             name="twitter:description"
             content={SEOData?.[0]?.description}
           />
           <meta name="twitter:url" content={canonicalUrl} />
-          <script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7931814511159648"
-            crossOrigin="anonymous"
-          />
         </Helmet>
         <MuiThemeProvider theme={createTheme(theme)}>
-          {content}
+          <AuthProvider>
+            <ClientVoteProvider>{content}</ClientVoteProvider>
+          </AuthProvider>
         </MuiThemeProvider>
       </HelmetProvider>
     </CacheProvider>

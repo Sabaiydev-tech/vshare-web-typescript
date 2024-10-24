@@ -1,7 +1,5 @@
 import { Formik } from "formik";
-import { useEffect, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 
 // component and functions
 import * as MUI from "styles/baseSignUp.style";
@@ -17,29 +15,38 @@ import {
   TextField as MuiTextField,
 } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { createTheme, spacing } from "@mui/system";
+import { createTheme, spacing, width } from "@mui/system";
+import useVoteAuth from "hooks/useVoteAuth";
+import { useEffect, useState } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 import { ENV_KEYS } from "constants/env.constant";
 import useAuth from "hooks/useAuth";
 
 const Alert = styled(MuiAlert)(spacing);
 const TextField = styled(MuiTextField)(spacing);
 
-function BaseSignUp(props) {
-  const theme = createTheme();
+function BaseSignUp(props: any) {
+  const [isLoading, setIsLoading] = useState(false);
   const { signUpCaptcha, hideSignUp, handleSignUpFailure } = props;
-  const { signUp }: any = useAuth();
+  const theme = createTheme();
   const [captcha, setCaptcha] = useState(false);
-  const [showCaptcha, setShowCaptcha] = useState(false);
+  const { signUp }: any = useAuth();
   const mobileScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const navigate = useNavigate();
+  const voteParams = useParams<{ id: string }>();
 
-  const captchaStyle = {
-    width: "100%",
-  };
-
-  function handleData(data) {
-    if (data) setCaptcha(false);
+  useEffect(() => {
+    if (!voteParams) {
+      navigate(-1);
+    }
+  }, [voteParams, navigate]);
+  function handleData(data: any) {
+    if (data) {
+      window.__reCaptcha = data;
+      setCaptcha(false);
+    }
   }
-
   useEffect(() => {
     function getDataSetting() {
       if (signUpCaptcha) {
@@ -85,21 +92,19 @@ function BaseSignUp(props) {
       })}
       onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
         try {
-          if (!captcha) {
-            await signUp(
-              values.firstName,
-              values.lastName,
-              values.username,
-              values.email,
-              values.password,
-            );
-          }
+          await signUp(
+            values.firstName,
+            values.lastName,
+            values.username,
+            values.email,
+            values.password,
+            voteParams?.id,
+          );
         } catch (error: any) {
           const message = error.message || "Something went wrong";
           setStatus({ success: false });
           setErrors({ submit: message });
           setSubmitting(false);
-          handleSignUpFailure();
         }
       }}
     >
@@ -261,17 +266,15 @@ function BaseSignUp(props) {
               </Grid>
             </Grid>
           </Grid>
-
           {showCaptcha && (
             <Box sx={{ display: "table", margin: "auto", mt: 4, mb: 3 }}>
               <ReCAPTCHA
                 sitekey={ENV_KEYS.VITE_APP_RECAPTCHA}
                 onChange={handleData}
-                style={captchaStyle}
+                style={{ width: "100%" }}
               />
             </Box>
           )}
-
           <Box
             sx={{ padding: "0", margin: "0", fontSize: "0.9rem" }}
             display={{ sm: "none", xs: "block" }}
@@ -293,6 +296,7 @@ function BaseSignUp(props) {
               variant="contained"
               color="primary"
               disabled={captcha}
+              // loading={isLoading}
               size={mobileScreen ? "small" : "medium"}
             >
               Register
