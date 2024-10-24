@@ -336,15 +336,15 @@ export default function UploadVote({ handleClose, hideClose }: TypeProps) {
                   Description: {dataVote?.voteData?.description}
                 </Typography>
                 <InputLabel sx={{ mt: 5, fontSize: "14px" }}>
-                  Optional
+                  Full name
                 </InputLabel>
                 <TextField
                   fullWidth
                   variant="outlined"
                   error
                   id="outlined-error-helper-text"
-                  placeholder={optionEror ? "Option is required" : ""}
-                  helperText="Incorrect entry."
+                  placeholder="Full name"
+                  helperText={optionEror?"Option is required":""}
                   InputProps={{
                     sx: {
                       height: "40px",
