@@ -257,7 +257,6 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
             }}
           >
             <Box sx={{ display: "flex", gap: 2 }}>
-              {topVote?.topVotes?.length == 0 && (
                 <Button
                   sx={{ mt: 3, height: 40 }}
                   variant="contained"
@@ -271,7 +270,6 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
                 >
                   Upload
                 </Button>
-              )}
               <FormControl sx={{ mt: 3 }}>
                 <Select
                   sx={{ height: 40, fontSize: "1rem" }}
