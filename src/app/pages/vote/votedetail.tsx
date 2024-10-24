@@ -58,7 +58,6 @@ export default function VoteDetails({ topVote }: IPropsType) {
     maxLength = newVoteData?.voteData?.voteOption.value[1];
   }
 
-
   const handleIntersection = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
@@ -248,8 +247,14 @@ export default function VoteDetails({ topVote }: IPropsType) {
               </Box>
             </Box>
           )}
-          <Box sx={{ my: 5, display: "flex", justifyContent: "space-between" }}>
-            <FormControl sx={{ mt: 3, minWidth: 150 }}>
+          <Box
+            sx={{
+              my: 5,
+              display: { lg: "flex", sm: "block" },
+              justifyContent: "space-between",
+            }}
+          >
+            <FormControl sx={{ mt: 3 }}>
               <Select
                 sx={{ height: 40, fontSize: "1rem" }}
                 value={filter.data.select}
@@ -286,7 +291,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
                   style={{
                     marginTop: "4px",
                     height: "40px",
-                    width: "200px",
+                    width: "150px",
                     fontSize: "1rem",
                     padding: "0 8px",
                     fontFamily: "inherit",
@@ -310,7 +315,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
                   style={{
                     marginTop: "4px",
                     height: "40px",
-                    width: "200px",
+                    width: "150px",
                     fontSize: "1rem",
                     padding: "0 8px",
                     fontFamily: "inherit",
@@ -355,7 +360,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
               ref={gridRef}
               container
               spacing={2}
-              sx={{ overflow: "auto", height: "500px" }}
+              sx={{ overflowX: "auto", height: "500px" }}
             >
               {newVoteData?.filesData?.data &&
                 newVoteData?.filesData?.data?.map(
@@ -367,6 +372,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
                         xs={6}
                         sm={4}
                         md={3}
+                        lg={3}
                         onClick={() => handleSelecte(item)}
                       >
                         <CardVote item={item} data={newVoteData} />
@@ -405,7 +411,6 @@ export default function VoteDetails({ topVote }: IPropsType) {
             </Button>
           </Box>
         </Box>
-        
       </Card>
     </React.Fragment>
   );
