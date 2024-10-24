@@ -140,8 +140,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
             }),
           },
         };
-      }
-      if (selectedFilesCount < maxExtract) {
+      } else if (selectedFilesCount < maxExtract) {
         return {
           ...prev,
           filesData: {
@@ -149,6 +148,19 @@ export default function VoteDetails({ topVote }: IPropsType) {
             data: prev.filesData.data.map((file) => {
               if (file._id === data._id) {
                 return { ...file, isSelected: true };
+              }
+              return file;
+            }),
+          },
+        };
+      }else{
+        return {
+          ...prev,
+          filesData: {
+            ...prev.filesData,
+            data: prev.filesData.data.map((file) => {
+              if (file._id === data._id) {
+                return { ...file, isSelected: !file?.isSelected };
               }
               return file;
             }),
