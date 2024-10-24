@@ -34,7 +34,7 @@ interface IPropsType {
   };
   shareLink?: string;
 }
-export default function VoteDetails({ topVote, shareLink }: IPropsType) {
+export default function VoteDetails({  shareLink }: IPropsType) {
   const theme = createTheme();
   const [isOpenShare, setIsOpenShare] = useState(false);
   const filter = useFilter();

@@ -1366,7 +1366,7 @@ function FileUploader() {
                 )}
               </MUI.FileListContainer>
               
-              <FeedCard />
+              {/* <FeedCard /> */}
             </>
           ) : (
             (!isLoading && !isPassword && !openInputPasswod) &&

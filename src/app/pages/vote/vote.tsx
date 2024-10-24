@@ -641,22 +641,18 @@ export default function Vote() {
                 )}
               </Box>
             </Card>
-            <VoteDetails topVote={topVote} />
+            <VoteDetails
+              topVote={topVote}
+              shareLink={data?.voteData?.voteLink}
+            />
             <ShareVote data={data} />
             <VoteDialog handleClose={handleClose} isOpen={isUploadOpen} />
           </Box>
-<<<<<<< HEAD
         ) : (
           <Box>
             <UploadVote hideClose={true} handleClose={handleClose} />
           </Box>
         )}
-=======
-        </Card>
-        <VoteDialog handleClose={handleClose} isOpen={isUploadOpen} />
-        <VoteDetails topVote={topVote} shareLink={data?.voteData?.voteLink} />
-        <ShareVote data={data} />
->>>>>>> origin/dev_sai
       </Box>
     </React.Fragment>
   );

@@ -38,7 +38,7 @@ import { SETTING_KEYS } from "constants/setting.constant";
 // import useGoogleOauth from "hooks/useGoogleOauth";
 // import useManageGraphqlError from "hooks/useManageGraphqlError";
 import useManageSetting from "hooks/useManageSetting";
-import useVoteAuth from "hooks/useVoteAuth";
+// import useVoteAuth from "hooks/useVoteAuth";
 import moment from "moment";
 import { errorMessage, warningMessage } from "utils/alert.util";
 import { v4 as uuidv4 } from "uuid";
