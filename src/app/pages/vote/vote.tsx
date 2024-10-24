@@ -18,6 +18,7 @@ import { ENV_KEYS } from "constants/env.constant";
 import { useFetchTopVote, useFetchVoteResult } from "hooks/vote/useFetchVote";
 import useFilter from "hooks/vote/useFilter";
 import React from "react";
+import { IoFilter } from "react-icons/io5";
 import { ITopVoteType } from "types/voteType";
 import { decryptDataLink } from "utils/secure.util";
 import { SubstringFilename, SubstringFilenameCard } from "utils/substr";
@@ -644,11 +645,18 @@ export default function Vote() {
             <ShareVote data={data} />
             <VoteDialog handleClose={handleClose} isOpen={isUploadOpen} />
           </Box>
+<<<<<<< HEAD
         ) : (
           <Box>
             <UploadVote hideClose={true} handleClose={handleClose} />
           </Box>
         )}
+=======
+        </Card>
+        <VoteDialog handleClose={handleClose} isOpen={isUploadOpen} />
+        <VoteDetails topVote={topVote} shareLink={data?.voteData?.voteLink} />
+        <ShareVote data={data} />
+>>>>>>> origin/dev_sai
       </Box>
     </React.Fragment>
   );

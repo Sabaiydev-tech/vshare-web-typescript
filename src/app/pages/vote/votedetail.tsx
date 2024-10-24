@@ -9,7 +9,7 @@ import {
   MenuItem,
   Select,
   Typography,
-  createTheme,
+  createTheme
 } from "@mui/material";
 import { MUTION_VOTE_FILE } from "api/graphql/vote.graphql";
 import { VoteEnum } from "components/vote/voteOption";
@@ -24,15 +24,19 @@ import { ITopVoteType, IVoteResultType, IVoteWithFile } from "types/voteType";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { decryptDataLink } from "utils/secure.util";
 import CardVote from "./cardVote";
+import DialogShare from "components/dialog/DialogShare.SocialMedia";
+import StickyShareButton from "./sticky.share.button";
 
 interface IPropsType {
   topVote: {
     topVotes: ITopVoteType[];
     hotVotes: ITopVoteType[];
   };
+  shareLink?: string;
 }
-export default function VoteDetails({ topVote }: IPropsType) {
+export default function VoteDetails({ topVote, shareLink }: IPropsType) {
   const theme = createTheme();
+  const [isOpenShare, setIsOpenShare] = useState(false);
   const filter = useFilter();
   const params = new URLSearchParams(location.search);
   const voteParams = params.get("lc");
@@ -92,6 +96,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
       if (observerRef.current) observerRef.current.disconnect();
     };
   }, [newVoteData, handleIntersection]);
+
 
   useEffect(() => {
     setNewVoteData(voteFiles);
@@ -345,14 +350,32 @@ export default function VoteDetails({ topVote }: IPropsType) {
                 Vote
               </Button>
             </Box>
-            <Button
-              type="button"
-              variant="outlined"
-              sx={{ borderRadius: "8px", fontSize: "14px" }}
-              startIcon={<BsFillShareFill size={18} />}
-            >
-              Share
-            </Button>
+            <Box>
+              <Button
+                type="button"
+                variant={'outlined'}
+                sx={{ borderRadius: "8px", fontSize: "14px" }}
+                startIcon={<BsFillShareFill size={18} />}
+                onClick={()=>setIsOpenShare(!isOpenShare)}
+              >
+                Share
+              </Button>
+              {isOpenShare && (
+                  <Box
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsOpenShare(!isOpenShare);
+                    }}
+                  >
+                    <DialogShare
+                      onClose={() => setIsOpenShare(!isOpenShare)}
+                      isOpen={isOpenShare}
+                      url={shareLink || window.location.href}
+                    />
+                  </Box>
+                )}
+            </Box>
+            {/* <StickyShareButton shareLink={shareLink || ""}/> */}
           </Box>
         </Box>
       </Card>

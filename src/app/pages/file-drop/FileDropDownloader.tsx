@@ -448,11 +448,6 @@ function FileDropDownloader() {
           setFolderNewName(item?.folderId?.newFolder_name);
         }
 
-        ///check permission allow to upload/upload multi
-        // if (!item?.allowUpload) {
-        //   setStatus("locked");
-        // }
-
         if (item?.allowMultiples) {
           setIsUploadMultiples(item?.allowMultiples);
         }
@@ -679,7 +674,7 @@ function FileDropDownloader() {
       }
     }
   }, [dataFromUrl]);
-
+  
   return (
     <React.Fragment>
       {status == "expired" || status === "locked" ? (
