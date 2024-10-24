@@ -26,6 +26,7 @@ import { errorMessage, successMessage } from "utils/alert.util";
 import { decryptDataLink } from "utils/secure.util";
 import CardVote from "./cardVote";
 import VoteDialog from "components/vote/VoteDialog";
+import DialogShare from "components/dialog/DialogShare.SocialMedia";
 
 interface IPropsType {
   topVote: {
@@ -142,8 +143,7 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
             }),
           },
         };
-      }
-      if (selectedFilesCount < maxExtract) {
+      } else if (selectedFilesCount < maxExtract) {
         return {
           ...prev,
           filesData: {
@@ -151,6 +151,19 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
             data: prev.filesData.data.map((file) => {
               if (file._id === data._id) {
                 return { ...file, isSelected: true };
+              }
+              return file;
+            }),
+          },
+        };
+      }else{
+        return {
+          ...prev,
+          filesData: {
+            ...prev.filesData,
+            data: prev.filesData.data.map((file) => {
+              if (file._id === data._id) {
+                return { ...file, isSelected: !file?.isSelected };
               }
               return file;
             }),
