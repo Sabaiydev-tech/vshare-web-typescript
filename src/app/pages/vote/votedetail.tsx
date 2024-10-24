@@ -8,8 +8,9 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  TextField,
   Typography,
-  createTheme
+  createTheme,
 } from "@mui/material";
 import { MUTION_VOTE_FILE } from "api/graphql/vote.graphql";
 import { VoteEnum } from "components/vote/voteOption";
@@ -24,8 +25,7 @@ import { ITopVoteType, IVoteResultType, IVoteWithFile } from "types/voteType";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { decryptDataLink } from "utils/secure.util";
 import CardVote from "./cardVote";
-import DialogShare from "components/dialog/DialogShare.SocialMedia";
-import StickyShareButton from "./sticky.share.button";
+import VoteDialog from "components/vote/VoteDialog";
 
 interface IPropsType {
   topVote: {
@@ -34,7 +34,7 @@ interface IPropsType {
   };
   shareLink?: string;
 }
-export default function VoteDetails({  shareLink }: IPropsType) {
+export default function VoteDetails({ shareLink, topVote }: IPropsType) {
   const theme = createTheme();
   const [isOpenShare, setIsOpenShare] = useState(false);
   const filter = useFilter();
@@ -49,6 +49,7 @@ export default function VoteDetails({  shareLink }: IPropsType) {
   });
   const [newVoteData, setNewVoteData] = useState(voteFiles);
   const [eventVote, setEventVote] = useState<string[]>([]);
+  const [isUploadOpen, setIsUploadOpen] = React.useState(false);
 
   const gridRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -61,6 +62,10 @@ export default function VoteDetails({  shareLink }: IPropsType) {
     minLength = newVoteData?.voteData?.voteOption.value[0];
     maxLength = newVoteData?.voteData?.voteOption.value[1];
   }
+
+  const handleClose = () => {
+    setIsUploadOpen(false);
+  };
 
   const handleIntersection = useCallback(
     (entries: IntersectionObserverEntry[]) => {
@@ -96,7 +101,6 @@ export default function VoteDetails({  shareLink }: IPropsType) {
       if (observerRef.current) observerRef.current.disconnect();
     };
   }, [newVoteData, handleIntersection]);
-
 
   useEffect(() => {
     setNewVoteData(voteFiles);
@@ -203,35 +207,61 @@ export default function VoteDetails({  shareLink }: IPropsType) {
               justifyContent: "space-between",
             }}
           >
-            <FormControl sx={{ mt: 3 }}>
-              <Select
-                sx={{ height: 40, fontSize: "1rem" }}
-                value={filter.data.select}
-                onChange={(e) =>
-                  filter.dispatch({
-                    type: filter.ACTION_TYPE.SELECT,
-                    payload: e.target.value,
-                  })
-                }
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.2)",
+            <Box sx={{ display: "flex", gap: 2 }}>
+              {(topVote?.hotVotes?.length > 0 ||
+                topVote?.hotVotes?.length > 0) && (
+                <Button
+                  sx={{ mt: 3, height: 40 }}
+                  variant="contained"
+                  onClick={() => setIsUploadOpen(true)}
+                >
+                  Upload
+                </Button>
+              )}
+              <FormControl sx={{ mt: 3 }}>
+                <Select
+                  sx={{ height: 40, fontSize: "1rem" }}
+                  value={filter.data.select}
+                  onChange={(e) =>
+                    filter.dispatch({
+                      type: filter.ACTION_TYPE.SELECT,
+                      payload: e.target.value,
+                    })
+                  }
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.2)",
+                      },
                     },
+                  }}
+                >
+                  <MenuItem sx={{ fontSize: "1rem" }} value="createdAt_DESC">
+                    Latest upload
+                  </MenuItem>
+                  <MenuItem sx={{ fontSize: "1rem" }} value="score_DESC">
+                    Max vote
+                  </MenuItem>
+                  <MenuItem sx={{ fontSize: "1rem" }} value="score_ASC">
+                    Min vote
+                  </MenuItem>
+                </Select>
+              </FormControl>
+              {/* <TextField
+                placeholder="Search..."
+                sx={{
+                  mt: 3,
+                  ".MuiInputBase-root": {
+                    height: "40px",
+                  },
+                  ".MuiOutlinedInput-input": {
+                    padding: "10px 14px",
+                    fontSize:"14px"
                   },
                 }}
-              >
-                <MenuItem sx={{ fontSize: "1rem" }} value="createdAt_DESC">
-                  Latest upload
-                </MenuItem>
-                <MenuItem sx={{ fontSize: "1rem" }} value="score_DESC">
-                  Max vote
-                </MenuItem>
-                <MenuItem sx={{ fontSize: "1rem" }} value="score_ASC">
-                  Min vote
-                </MenuItem>
-              </Select>
-            </FormControl>
+              /> */}
+            </Box>
+
             <Box sx={{ display: "flex", gap: 2 }}>
               <Box>
                 <InputLabel>Start Date</InputLabel>
@@ -353,32 +383,33 @@ export default function VoteDetails({  shareLink }: IPropsType) {
             <Box>
               <Button
                 type="button"
-                variant={'outlined'}
+                variant={"outlined"}
                 sx={{ borderRadius: "8px", fontSize: "14px" }}
                 startIcon={<BsFillShareFill size={18} />}
-                onClick={()=>setIsOpenShare(!isOpenShare)}
+                onClick={() => setIsOpenShare(!isOpenShare)}
               >
                 Share
               </Button>
               {isOpenShare && (
-                  <Box
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsOpenShare(!isOpenShare);
-                    }}
-                  >
-                    <DialogShare
-                      onClose={() => setIsOpenShare(!isOpenShare)}
-                      isOpen={isOpenShare}
-                      url={shareLink || window.location.href}
-                    />
-                  </Box>
-                )}
+                <Box
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsOpenShare(!isOpenShare);
+                  }}
+                >
+                  <DialogShare
+                    onClose={() => setIsOpenShare(!isOpenShare)}
+                    isOpen={isOpenShare}
+                    url={shareLink || window.location.href}
+                  />
+                </Box>
+              )}
             </Box>
             {/* <StickyShareButton shareLink={shareLink || ""}/> */}
           </Box>
         </Box>
       </Card>
+      <VoteDialog handleClose={handleClose} isOpen={isUploadOpen} />
     </React.Fragment>
   );
 }
