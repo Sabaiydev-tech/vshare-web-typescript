@@ -247,18 +247,16 @@ function FileDrop() {
         </ConditionArea>
 
         <Fragment>
-          {captchaSetting === "on" && (
-            <Box sx={{ margin: "auto", mt: 6, mb: 5, display: "table" }}>
-              <ReCAPTCHA
-                ref={captchaRef}
-                sitekey={ENV_KEYS.VITE_APP_RECAPTCHA}
-                onChange={handleData}
-                onExpired={() => {
-                  setCaptchaKey(false);
-                }}
-              />
-            </Box>
-          )}
+          <Box sx={{ margin: "auto", mt: 6, mb: 5, display: "table" }}>
+            <ReCAPTCHA
+              ref={captchaRef}
+              sitekey={ENV_KEYS.VITE_APP_RECAPTCHA}
+              onChange={handleData}
+              onExpired={() => {
+                setCaptchaKey(false);
+              }}
+            />
+          </Box>
           <Button
             variant="contained"
             onClick={generateFileDropLink}

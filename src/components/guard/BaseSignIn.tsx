@@ -9,8 +9,8 @@ import {
 } from "@mui/material";
 import { Formik } from "formik";
 import React, { Fragment, useEffect, useState } from "react";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
-import * as MUI from "styles/baseSignin.style";
+import { NavLink } from "react-router-dom";
+import * as MUI from "./baseStyle";
 import * as Yup from "yup";
 
 import { useMutation } from "@apollo/client";
@@ -34,17 +34,8 @@ const TitleContainer = styled("div")({
   justifyContent: "flex-end",
 });
 
-function BaseSignin(props: any) {
+function BaseSignin(props) {
   const theme = createTheme();
-  const navigate = useNavigate();
-  const voteParams = useParams<{ id: string }>();
-
-  useEffect(() => {
-    if (!voteParams) {
-      navigate(-1);
-    }
-  }, [voteParams, navigate]);
-
   const { signInCaptcha, handleLoginFailure } = props;
   const {
     signIn,
@@ -137,14 +128,9 @@ function BaseSignin(props: any) {
         })}
         onSubmit={async (values, { setStatus }) => {
           setIsLoading(true);
-
           try {
             if (!captchaKey) {
-              const enabled2FA = await signIn(
-                values.username,
-                values.password,
-                voteParams?.id,
-              );
+              const enabled2FA = await signIn(values.username, values.password);
               setIsLoading(false);
 
               /* reset captcha and button */
@@ -256,6 +242,7 @@ function BaseSignin(props: any) {
               </Box>
             )}
 
+            {/* {!hideLogin && ( */}
             <MUI.ButtonLogin
               type="submit"
               variant="contained"
@@ -266,9 +253,11 @@ function BaseSignin(props: any) {
                 my: touched.username && errors.username ? 0 : 2,
               }}
               disabled={captchaKey}
+              loading={isLoading}
             >
               Login
             </MUI.ButtonLogin>
+            {/* )} */}
           </form>
         )}
       </Formik>
