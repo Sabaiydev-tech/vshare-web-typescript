@@ -462,7 +462,9 @@ function AuthProvider({ children }: ClientVoteProviderProps) {
         return { authen, user, checkRole, refreshId: tokenData.refreshID };
       }
     } catch (error: any) {
+      
       const cutErr = error?.message?.replace(/(ApolloError: )?Error: /, "");
+      errorMessage(manageGraphqlError.handleErrorMessage(cutErr) || "", 3000);
       if (cutErr === "USERNAME_OR_PASSWORD_INCORRECT") {
         errorMessage("Username or password incorrect!!", 3000);
       } else if (cutErr === "YOUR_STATUS_IS_DISABLED") {

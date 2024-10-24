@@ -25,7 +25,7 @@ const ACTION_TYPE = {
 const reducer = (state: any, action: any) => {
   switch (action.type) {
     case ACTION_TYPE.PAGE_LIMIT:
-      return { ...state, pageLimit: action.payload || 10 };
+      return { ...state, pageLimit: action.payload || 3 };
     case ACTION_TYPE.STATUS:
       return { ...state, status: action.payload || null, page: 0 };
 

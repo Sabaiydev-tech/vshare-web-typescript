@@ -76,10 +76,10 @@ const useFetchVoteFiles = ({ id, filter }: { id: string; filter: any }) => {
 const useFetchTopVote = ({ id, filter }: { id: string; filter: any }) => {
   const [fetchTopVote, { data, loading, refetch }] =
     useLazyQuery(QUERY_TOP_VOTE);
-  const { offset } = filter;
+  const limit = filter.offset;
 
   const fetchVariables = {
-    limit: parseInt(offset),
+    limit: parseInt(limit),
     where: {
       id,
     },
@@ -91,9 +91,12 @@ const useFetchTopVote = ({ id, filter }: { id: string; filter: any }) => {
     });
   };
   React.useEffect(() => {
+    if (!isNaN(limit) && limit > 0) {
+      fetchTopVotes();
+    }
     refetch();
     fetchTopVotes();
-  }, [filter]);
+  }, [filter, limit]);
 
   return {
     data: data?.getTopHotVotes?.data,
