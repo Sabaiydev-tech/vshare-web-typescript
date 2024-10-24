@@ -20,7 +20,6 @@ interface TypeProps {
 }
 export default function CardVote({ item, data }: TypeProps) {
   const theme = createTheme();
-  const { user }: any = useAuth();
   const sourcePath = `${data?.voteData?.createdBy?.newName}-${data?.voteData?.createdBy?._id}/${item?.newFilename}`;
   const newUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}preview?path=`;
 
@@ -43,7 +42,8 @@ export default function CardVote({ item, data }: TypeProps) {
           loading="lazy"
           style={{
             width: "100%",
-            height: "200px",
+            minHeight: "200px",
+            maxHeight: "200px",
             borderRadius: "12px",
             objectFit: "contain",
             padding: "6px",
@@ -54,9 +54,20 @@ export default function CardVote({ item, data }: TypeProps) {
             marginTop: "2px",
             borderBottom: `1px solid ${theme.palette.grey[400]}`,
           }}
-        ></div>
+        />
         <ImageListItemBar
-          sx={{ px: 2, textOverflow: "ellipsis", maxWidth: "200px" }}
+          sx={{
+            px: 2,
+            textOverflow: "ellipsis",
+            maxWidth: {
+              xs: "180px",
+              sm: "200px",
+              md: "300px",
+              lg: "400px",
+            },
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+          }}
           title={data?.voteData?.topic}
           subtitle={
             <span style={{ fontSize: "12px" }}>

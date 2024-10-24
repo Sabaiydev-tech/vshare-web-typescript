@@ -591,6 +591,8 @@ function FileDropDownloader() {
       };
     });
 
+    console.log(multipleData);
+
     setTotalClickCount((prevCount) => prevCount + 1);
     if (totalClickCount >= getActionButton) {
       setTotalClickCount(0);

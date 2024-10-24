@@ -6,6 +6,7 @@ export interface IFile {
   filePassword: string;
   fileType: string;
   size: string;
+  expired: string;
   status: string;
   isPublic: string;
   path: string;

@@ -39,8 +39,6 @@ const useManageFiles = () => {
         };
       });
 
-      console.log(newMoldelData);
-
       const headers = {
         accept: "*/*",
         lists: newMoldelData,
