@@ -6,6 +6,7 @@ import {
   Grid,
   ImageListItem,
   ImageListItemBar,
+  styled,
   Typography,
 } from "@mui/material";
 import VoteAction from "components/vote/VoteAction";
@@ -19,7 +20,6 @@ import { ITopVoteType } from "types/voteType";
 import { decryptDataLink } from "utils/secure.util";
 import ShareVote from "./shareVote";
 import VoteDetails from "./votedetail";
-import { styled, useMediaQuery } from "@mui/material";
 
 const CardTopContainer = styled(Box)(({}) => ({
   display: "flex",
@@ -55,7 +55,7 @@ const TopItem = styled(Box)(({}) => ({
   height: "270px",
   zIndex: 2,
 }));
-const TopItemBlur = styled(Box)(({  }) => ({
+const TopItemBlur = styled(Box)(({}) => ({
   backgroundColor: "gray",
   position: "absolute",
   top: 0,
