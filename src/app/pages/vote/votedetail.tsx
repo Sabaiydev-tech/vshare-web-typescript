@@ -21,7 +21,12 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BsFillShareFill } from "react-icons/bs";
 import { HiOutlineArrowNarrowRight } from "react-icons/hi";
 import { IoHelpCircleSharp } from "react-icons/io5";
-import { ITopVoteType, IVoteResultDataType, IVoteResultType, IVoteWithFile } from "types/voteType";
+import {
+  ITopVoteType,
+  IVoteResultDataType,
+  IVoteResultType,
+  IVoteWithFile,
+} from "types/voteType";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { decryptDataLink } from "utils/secure.util";
 import CardVote from "./cardVote";
@@ -52,7 +57,6 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
     id: decryptedData?._id,
     filter: filter,
   });
-
 
   const [newVoteData, setNewVoteData] = useState(voteResultFiles);
   const [eventVote, setEventVote] = useState<string[]>([]);
@@ -169,8 +173,6 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
         };
       }
       if (selectedFilesCount < maxExtract) {
-        console.log("extrant");
-
         return {
           ...prev,
           filesData: {
@@ -211,6 +213,7 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
     });
 
     if (created?.voteFiles?.code == 200) {
+      setEventVote([]);
       successMessage("Vote success", 2000);
     } else if (created?.voteFiles?.code == 403) {
       errorMessage("You have already voted", 2000);
@@ -255,8 +258,11 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
                   sx={{ mt: 3, height: 40 }}
                   variant="contained"
                   onClick={() => {
-                    window.location.href = `${ENV_KEYS.VITE_APP_URL_REDIRECT_LANDING_PAGE}auth/sign-in/${voteParams}`;
-                    setIsUploadOpen(true);
+                    if (isToken) {
+                      window.location.href = `${ENV_KEYS.VITE_APP_URL_REDIRECT_LANDING_PAGE}auth/sign-in/${voteParams}`;
+                    } else {
+                      setIsUploadOpen(true);
+                    }
                   }}
                 >
                   Upload
