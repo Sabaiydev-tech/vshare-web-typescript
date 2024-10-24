@@ -15,12 +15,11 @@ import {
   TextField as MuiTextField,
 } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { createTheme, spacing, width } from "@mui/system";
-import useVoteAuth from "hooks/useVoteAuth";
-import { useEffect, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+import { createTheme, spacing } from "@mui/system";
 import { ENV_KEYS } from "constants/env.constant";
 import useAuth from "hooks/useAuth";
+import { useEffect, useState } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const Alert = styled(MuiAlert)(spacing);
 const TextField = styled(MuiTextField)(spacing);

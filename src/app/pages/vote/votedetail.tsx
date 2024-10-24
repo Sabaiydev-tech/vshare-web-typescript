@@ -32,13 +32,7 @@ import { decryptDataLink } from "utils/secure.util";
 import CardVote from "./cardVote";
 import VoteDialog from "components/vote/VoteDialog";
 
-interface IPropsType {
-  topVote: {
-    topVotes: ITopVoteType[];
-    hotVotes: ITopVoteType[];
-  };
-}
-export default function VoteDetails({ topVote }: IPropsType) {
+export default function VoteDetails() {
   const theme = createTheme();
   const filter = useFilter();
   const params = new URLSearchParams(location.search);
