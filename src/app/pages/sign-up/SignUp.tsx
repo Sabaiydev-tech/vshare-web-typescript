@@ -25,7 +25,7 @@ import useManageSetting from "hooks/useManageSetting";
 import { errorMessage, warningMessage } from "utils/alert.util";
 import { LeftBoxRowAuthenticationLimit } from "./style";
 import { v4 as uuidv4 } from "uuid";
-import useVoteAuth from "hooks/useVoteAuth";
+// import useVoteAuth from "hooks/useVoteAuth";
 
 function SignUp() {
   const theme = useTheme();

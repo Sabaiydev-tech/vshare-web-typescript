@@ -21,6 +21,10 @@ export function formatDate(date: string): string {
   return dateString;
 }
 
+export function formatDateTime(date: string) {
+  const dateTime = moment(date).format("DD/MM/YYYY HH:MM A") || "";
+  return dateTime;
+}
 export const FormatTime = (time: number) => {
   if (time < 1000) {
     return `${time} mi`; 
@@ -38,7 +42,3 @@ export const FormatTime = (time: number) => {
     return `${hours} h ${minutes} m ${seconds} s`;
   }
 };
-export function formatDateTime(date: string) {
-  const dateTime = moment(date).format("DD/MM/YYYY HH:MM A") || "";
-  return dateTime;
-}

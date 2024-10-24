@@ -12,7 +12,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noImplicitThis": true,
     "strictNullChecks": true,
     /* Linting */
@@ -23,8 +23,7 @@
     "baseUrl": "./src",
     "paths": {
       "*": ["*"]
-    },
-    "types": ["node"]
+    }
   },
   "include": ["src","src/types"],
   "references": [

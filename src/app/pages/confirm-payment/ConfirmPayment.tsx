@@ -32,7 +32,7 @@ const ConfirmPayment = () => {
             <Typography variant="h2">Thank you !</Typography>
 
             <MUI.BodyInline>
-              <img src={VerifyIcon} alt="verify-icon" />
+              <img loading="lazy" src={VerifyIcon} alt="verify-icon" />
               <Typography component={`p`}>Payment Successfully</Typography>
             </MUI.BodyInline>
 

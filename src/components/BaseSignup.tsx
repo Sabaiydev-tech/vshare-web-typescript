@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { createTheme, spacing, width } from "@mui/system";
-import useVoteAuth from "hooks/useVoteAuth";
+// import useVoteAuth from "hooks/useVoteAuth";
 import { useEffect, useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { ENV_KEYS } from "constants/env.constant";

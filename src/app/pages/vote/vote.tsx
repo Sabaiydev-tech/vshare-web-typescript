@@ -18,6 +18,7 @@ import { ENV_KEYS } from "constants/env.constant";
 import { useFetchTopVote, useFetchVoteResult } from "hooks/vote/useFetchVote";
 import useFilter from "hooks/vote/useFilter";
 import React from "react";
+import { IoFilter } from "react-icons/io5";
 import { ITopVoteType } from "types/voteType";
 import { decryptDataLink } from "utils/secure.util";
 import { SubstringFilename, SubstringFilenameCard } from "utils/substr";
@@ -144,7 +145,7 @@ export default function Vote() {
   });
   const newUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}preview?path=`;
 
-  let top3Items = [];
+  let top3Items: any = [];
   let currentRank = 1;
   if (Array.isArray(topVote?.topVotes)) {
     const sortedTopVotes = topVote.topVotes

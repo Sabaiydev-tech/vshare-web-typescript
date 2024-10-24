@@ -53,6 +53,7 @@ import { errorMessage, successMessage } from "utils/alert.util";
 import { cutFileName, getFileType } from "utils/file.util";
 import { encryptDownloadData } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
+import { FormatTime } from "utils/date.util";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -175,6 +176,8 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   const [uploadStatus, setUploadStatus] = useState({});
   const UA = new UAParser();
   const result = UA.getResult();
+  const [incrementTime, setIncrementTime] = useState(0);
+  const intervalRef = React.useRef<any>(null);
 
   const autoProductKey = "AEADEFO";
 
@@ -259,7 +262,6 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
   };
 
   const filesArray = files?.map((obj: any) => {
-    
     return {
       id: obj.file.id,
       path: obj.file.path,
@@ -393,9 +395,8 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
     onRemoveAll();
   };
 
- 
   useEffect(() => {
-    return () => clearInterval(intervalRef.current); 
+    return () => clearInterval(intervalRef.current);
   }, []);
 
   const handlePrepareToUpload = () => {
@@ -1086,8 +1087,8 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
             {filesArray?.length > dataUploadPerTime?.action || isLargeFile ? (
               <Alert severity="error" sx={{ width: "100%", mx: 2, my: 2 }}>
                 {isLargeFile
-                  ? `Some files are larger than ${fileMaxSize}.`
-                  : `Upload is limited ${dataUploadPerTime?.action}
+                  ? `Some files are larger than  ${fileMaxSize}.`
+                  : `Upload is limited ${dataUploadPerTime.action}
                  files per time.`}
               </Alert>
             ) : (
@@ -1264,7 +1265,8 @@ export default function DialogShowFIle(props: CustomizedDialogProps) {
                   <Typography variant="h5">
                     <CheckIcon sx={{ color: "#0F6C61" }} />
                     &nbsp;{filesArray.length} files uploaded,{" "}
-                    {convertBytetoMBandGB(dataSizeAll)} in total, {FormatTime(incrementTime)}
+                    {convertBytetoMBandGB(dataSizeAll)} in total,{" "}
+                    {FormatTime(incrementTime)}
                   </Typography>
                 </MUI.BoxUploadDoneTitle>
                 {information?.every((obj) => obj.password == "") &&

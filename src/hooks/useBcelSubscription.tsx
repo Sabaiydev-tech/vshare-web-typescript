@@ -29,7 +29,11 @@ const useBcelSubscirption = () => {
   }, [userAgent]);
 
   useEffect(() => {
-    if(packageIdData.packageId && localStorage['sessionKey'] && paymentSelector.total > 0){
+    if (
+      packageIdData.packageId &&
+      localStorage["sessionKey"] &&
+      paymentSelector.total > 0
+    ) {
       createQrAndSubscription({
         variables: {
           data: {
@@ -59,8 +63,13 @@ const useBcelSubscirption = () => {
         }
       });
     }
-  }, [paymentSelector.paymentTypeSummary,packageIdData, localStorage['sessionKey'], paymentSelector]);
-  
+  }, [
+    paymentSelector.paymentTypeSummary,
+    packageIdData,
+    localStorage["sessionKey"],
+    paymentSelector,
+  ]);
+
   return {
     qrCode,
     link,

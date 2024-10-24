@@ -105,7 +105,7 @@ function PricePayment() {
               >
                 <MUI.PricePaymentLabelCircle className="payment-circle" />
                 <MUI.PricePaymentBox>
-                  <img src={bcelIcon} alt="bcel-icon" />
+                  <img src={bcelIcon} alt="bcel-icon" loading="lazy" />
                   <Typography component={"p"}>BCEL One</Typography>
                 </MUI.PricePaymentBox>
               </MUI.PricePaymentLabel>
@@ -125,7 +125,7 @@ function PricePayment() {
                 <MUI.PricePaymentLabelCircle className="payment-circle" />
 
                 <MUI.PricePaymentBox>
-                  <img src={visaIcon} alt="visa-icon" />
+                  <img src={visaIcon} alt="visa-icon" loading="lazy" />
                   <Typography component={`p`}>Credit card</Typography>
                 </MUI.PricePaymentBox>
               </MUI.PricePaymentLabel>

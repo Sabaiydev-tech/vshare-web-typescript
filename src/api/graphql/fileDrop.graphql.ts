@@ -30,6 +30,7 @@ export const QUERY_FILE_DROP_PUBLIC = gql`
         url
         urlAll
         dropUrl
+        downloadAt
         longUrl
         dropStatus
         updatedAt
