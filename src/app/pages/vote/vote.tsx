@@ -11,6 +11,7 @@ import {
   Select,
   styled,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import Top1StartIcon from "assets/images/vote/top1StarIcon.svg?react";
 import VoteDialog from "components/vote/VoteDialog";
@@ -27,7 +28,6 @@ import "./vote.css";
 import VoteDetails from "./votedetail";
 import { IoMdRadioButtonOn } from "react-icons/io";
 import UploadVote from "./uploadVote";
-
 const CardTopContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   position: "relative",
@@ -131,6 +131,8 @@ const ImageContainer23 = styled("img")(({ theme }) => ({
 export default function Vote() {
   const theme = createTheme();
   const filter = useFilter();
+  const isMobile = useMediaQuery("(max-width: 600px)");
+
   const params = new URLSearchParams(location.search);
   const voteParams = params.get("lc");
   const decryptedData = decryptDataLink(voteParams);
@@ -143,6 +145,7 @@ export default function Vote() {
     id: decryptedData?._id,
     filter: filter.data,
   });
+  const isToken = localStorage.getItem("alBBtydfsTtW@wdVV");
   const newUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}preview?path=`;
 
   let top3Items: any = [];
@@ -280,7 +283,10 @@ export default function Vote() {
                         <Button
                           sx={{ height: 40 }}
                           variant="contained"
-                          onClick={() => setIsUploadOpen(true)}
+                          onClick={() => {
+                            window.location.href = `${ENV_KEYS.VITE_APP_URL_REDIRECT_LANDING_PAGE}auth/sign-in/${voteParams}`;
+                            setIsUploadOpen(true);
+                          }}
                         >
                           Upload
                         </Button>
@@ -570,8 +576,8 @@ export default function Vote() {
                                       borderRadius: "6px",
                                       bgcolor: "white !important",
                                       position: "relative",
-                                      minHeight: "200px",
-                                      maxHeight: "200px",
+                                      minHeight: isMobile ? "100px" : "200px",
+                                      maxHeight: isMobile ? "100px" : "200px",
                                       overflow: "hidden",
                                     }}
                                   >
@@ -580,8 +586,8 @@ export default function Vote() {
                                       alt={item.filename}
                                       loading="lazy"
                                       style={{
-                                        // width: "100%",
-                                        // minHeight: "100%",
+                                        minHeight: isMobile ? "100px" : "200px",
+                                        maxHeight: isMobile ? "100px" : "200px",
                                         objectFit: "cover",
                                       }}
                                     />

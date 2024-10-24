@@ -15,13 +15,13 @@ import {
 import { MUTION_VOTE_FILE } from "api/graphql/vote.graphql";
 import { VoteEnum } from "components/vote/voteOption";
 import { ENV_KEYS } from "constants/env.constant";
-import { useFetchVoteFiles } from "hooks/vote/useFetchVote";
+import { useFetchVoteFiles, useFetchVoteResult } from "hooks/vote/useFetchVote";
 import useFilter from "hooks/vote/useFilter";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BsFillShareFill } from "react-icons/bs";
 import { HiOutlineArrowNarrowRight } from "react-icons/hi";
 import { IoHelpCircleSharp } from "react-icons/io5";
-import { ITopVoteType, IVoteResultType, IVoteWithFile } from "types/voteType";
+import { ITopVoteType, IVoteResultDataType, IVoteResultType, IVoteWithFile } from "types/voteType";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { decryptDataLink } from "utils/secure.util";
 import CardVote from "./cardVote";
@@ -44,27 +44,35 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
   const decryptedData = decryptDataLink(voteParams);
   const isToken = localStorage.getItem("alBBtydfsTtW@wdVV");
   const [voted] = useMutation(MUTION_VOTE_FILE);
+  const { data: voteResultFiles, refetch: refetchResult } = useFetchVoteResult({
+    id: decryptedData?._id,
+    filter: filter,
+  });
   const { data: voteFiles, refetch } = useFetchVoteFiles({
     id: decryptedData?._id,
     filter: filter,
   });
-  const [newVoteData, setNewVoteData] = useState(voteFiles);
+
+
+  const [newVoteData, setNewVoteData] = useState(voteResultFiles);
   const [eventVote, setEventVote] = useState<string[]>([]);
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
+  const [search, setSearch] = useState("");
 
   const gridRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   let maxExtract = 0;
   let minLength = 0;
   let maxLength = 0;
+  let unlimited: boolean = false;
   if (newVoteData?.voteData?.voteOption?.name === VoteEnum.EXTRACT_NUMBER) {
     maxExtract = newVoteData?.voteData?.voteOption.value[0];
   } else if (newVoteData?.voteData?.voteOption?.name === VoteEnum.RANGE) {
     minLength = newVoteData?.voteData?.voteOption.value[0];
     maxLength = newVoteData?.voteData?.voteOption.value[1];
+  } else {
+    unlimited = true;
   }
-
-  console.log(maxExtract);
 
   const handleClose = () => {
     setIsUploadOpen(false);
@@ -109,7 +117,7 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
     setNewVoteData(voteFiles);
   }, [voteFiles]);
 
-  const handleSelecte = (data: IVoteWithFile) => {
+  const handleSelecte = (data: IVoteResultDataType) => {
     setNewVoteData((prev: IVoteResultType) => {
       const selectedFilesCount = prev.filesData.data.filter(
         (file) => file.isSelected,
@@ -132,33 +140,7 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
           },
         };
       }
-      if (selectedFilesCount < maxLength) {
-        return {
-          ...prev,
-          filesData: {
-            ...prev.filesData,
-            data: prev.filesData.data.map((file) => {
-              if (file._id === data._id) {
-                return { ...file, isSelected: true };
-              }
-              return file;
-            }),
-          },
-        };
-      } else if (selectedFilesCount < maxExtract) {
-        return {
-          ...prev,
-          filesData: {
-            ...prev.filesData,
-            data: prev.filesData.data.map((file) => {
-              if (file._id === data._id) {
-                return { ...file, isSelected: true };
-              }
-              return file;
-            }),
-          },
-        };
-      } else {
+      if (unlimited) {
         return {
           ...prev,
           filesData: {
@@ -172,6 +154,37 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
           },
         };
       }
+      if (selectedFilesCount < maxLength) {
+        return {
+          ...prev,
+          filesData: {
+            ...prev.filesData,
+            data: prev.filesData.data.map((file) => {
+              if (file._id === data._id) {
+                return { ...file, isSelected: true };
+              }
+              return file;
+            }),
+          },
+        };
+      }
+      if (selectedFilesCount < maxExtract) {
+        console.log("extrant");
+
+        return {
+          ...prev,
+          filesData: {
+            ...prev.filesData,
+            data: prev.filesData.data.map((file) => {
+              if (file._id === data._id) {
+                return { ...file, isSelected: true };
+              }
+              return file;
+            }),
+          },
+        };
+      }
+      return prev;
     });
     setEventVote((prev: string[]) => {
       if (!prev.includes(data._id)) {
@@ -183,10 +196,6 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
   };
 
   const handleVote = async () => {
-    if (!isToken || isToken == null) {
-      window.location.href = `${ENV_KEYS.VITE_APP_URL_REDIRECT_LANDING_PAGE}auth/sign-in/${voteParams}`;
-      return;
-    }
     if (!eventVote) {
       return;
     }
@@ -210,7 +219,25 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
     }
   };
 
-  
+  useEffect(() => {
+    if (search.trim() === "") {
+      refetch();
+      filter.dispatch({
+        type: filter.ACTION_TYPE.SEARCH,
+        payload: search,
+      });
+    }
+  }, [search]);
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      filter.dispatch({
+        type: filter.ACTION_TYPE.SEARCH,
+        payload: search,
+      });
+      refetch();
+    }
+  };
+
   return (
     <React.Fragment>
       <Card sx={{ my: 5, boxShadow: "rgba(149, 157, 165, 0.2) 5px 8px 24px" }}>
@@ -227,7 +254,10 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
                 <Button
                   sx={{ mt: 3, height: 40 }}
                   variant="contained"
-                  onClick={() => setIsUploadOpen(true)}
+                  onClick={() => {
+                    window.location.href = `${ENV_KEYS.VITE_APP_URL_REDIRECT_LANDING_PAGE}auth/sign-in/${voteParams}`;
+                    setIsUploadOpen(true);
+                  }}
                 >
                   Upload
                 </Button>
@@ -261,8 +291,11 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
                   </MenuItem>
                 </Select>
               </FormControl>
-              {/* <TextField
+              <TextField
                 placeholder="Search..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={handleKeyDown}
                 sx={{
                   mt: 3,
                   ".MuiInputBase-root": {
@@ -270,10 +303,10 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
                   },
                   ".MuiOutlinedInput-input": {
                     padding: "10px 14px",
-                    fontSize:"14px"
+                    fontSize: "14px",
                   },
                 }}
-              /> */}
+              />
             </Box>
 
             <Box sx={{ display: "flex", gap: 2 }}>
@@ -357,7 +390,7 @@ export default function VoteDetails({ shareLink, topVote }: IPropsType) {
             >
               {newVoteData?.filesData?.data &&
                 newVoteData?.filesData?.data?.map(
-                  (item: IVoteWithFile, index: number) => {
+                  (item: IVoteResultDataType, index: number) => {
                     return (
                       <Grid
                         key={index}

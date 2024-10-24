@@ -1,7 +1,9 @@
 import {
+  Box,
   Grid,
   ImageListItem,
   ImageListItemBar,
+  Typography,
   createTheme,
 } from "@mui/material";
 import { ENV_KEYS } from "constants/env.constant";
@@ -9,13 +11,14 @@ import useAuth from "hooks/useAuth";
 import useResizeImage from "hooks/useResizeImage";
 import React from "react";
 import {
+  IVoteResultDataType,
   IVoteResultFilesDataType,
   IVoteResultType,
   IVoteWithFile,
 } from "types/voteType";
 
 interface TypeProps {
-  item: IVoteWithFile;
+  item: IVoteResultDataType;
   data: IVoteResultType;
 }
 export default function CardVote({ item, data }: TypeProps) {
@@ -34,6 +37,7 @@ export default function CardVote({ item, data }: TypeProps) {
           borderRadius: "6px",
           overflow: "hidden",
           cursor: "pointer",
+          position: "relative",
         }}
       >
         <img
@@ -49,6 +53,28 @@ export default function CardVote({ item, data }: TypeProps) {
             padding: "6px",
           }}
         />
+        <Box
+          sx={{
+            bgcolor: "rgba(0, 0, 0, 0.4)",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "40px",
+            borderTopLeftRadius: "6px",
+            borderTopRightRadius: "6px",
+          }}
+        >
+          <Typography
+            sx={{
+              py: 2,
+              px: 3,
+              color: "white !important",
+            }}
+          >
+            {item.score} Votes
+          </Typography>
+        </Box>
         <div
           style={{
             marginTop: "2px",

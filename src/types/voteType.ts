@@ -21,6 +21,7 @@ export interface IVoteWithFile {
   isSelected: boolean;
 }
 export interface IVoteResultDataType {
+  isSelected: boolean;
   _id: string;
   filename: string;
   newFilename: string;
@@ -28,6 +29,7 @@ export interface IVoteResultDataType {
   size: string;
   totalDownloadFaild: number;
   totalDownload: number;
+  score:number
 }
 
 export interface IVoteDataType {
