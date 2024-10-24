@@ -283,7 +283,7 @@ export default function Vote() {
                           sx={{ height: 40 }}
                           variant="contained"
                           onClick={() => {
-                            if (isToken) {
+                            if (!isToken) {
                               window.location.href = `${ENV_KEYS.VITE_APP_URL_REDIRECT_LANDING_PAGE}auth/sign-in/${voteParams}`;
                             } else {
                               setIsUploadOpen(true);

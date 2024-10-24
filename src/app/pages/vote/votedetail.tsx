@@ -198,6 +198,9 @@ export default function VoteDetails({ topVote }: IPropsType) {
     if (!eventVote) {
       return;
     }
+    if (!isToken) {
+      window.location.href = `${ENV_KEYS.VITE_APP_URL_REDIRECT_LANDING_PAGE}auth/sign-in/${voteParams}`;
+    }
     const { data: created } = await voted({
       variables: {
         where: {
@@ -213,7 +216,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
       setEventVote([]);
       successMessage("Vote success", 2000);
     } else if (created?.voteFiles?.code == 403) {
-      errorMessage("You have already voted", 2000);
+      errorMessage(created?.voteFiles?.message, 2000);
     } else {
       errorMessage("You have already voted", 2000);
     }
@@ -255,7 +258,7 @@ export default function VoteDetails({ topVote }: IPropsType) {
                   sx={{ mt: 3, height: 40 }}
                   variant="contained"
                   onClick={() => {
-                    if (isToken) {
+                    if (!isToken) {
                       window.location.href = `${ENV_KEYS.VITE_APP_URL_REDIRECT_LANDING_PAGE}auth/sign-in/${voteParams}`;
                     } else {
                       setIsUploadOpen(true);
