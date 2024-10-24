@@ -15,11 +15,11 @@ import { useFetchTopVote, useFetchVoteResult } from "hooks/vote/useFetchVote";
 import useFilter from "hooks/vote/useFilter";
 import React from "react";
 import { IoFilter } from "react-icons/io5";
-import { ITopVoteType, IVoteDataType } from "types/voteType";
+import { ITopVoteType } from "types/voteType";
 import { decryptDataLink } from "utils/secure.util";
 import ShareVote from "./shareVote";
 import VoteDetails from "./votedetail";
-import { styled, useMediaQuery } from "@mui/material";
+import { styled } from "@mui/material";
 import Top1StartIcon from "assets/images/vote/top1StarIcon.svg?react";
 import { SubstringFilename } from "utils/substr";
 import "./vote.css";
@@ -562,7 +562,7 @@ export default function Vote() {
           </Box>
         </Card>
         <VoteDialog handleClose={handleClose} isOpen={isUploadOpen} />
-        <VoteDetails topVote={topVote} />
+        <VoteDetails topVote={topVote} shareLink={data?.voteData?.voteLink} />
         <ShareVote data={data} />
       </Box>
     </React.Fragment>
