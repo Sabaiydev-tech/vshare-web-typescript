@@ -186,67 +186,11 @@ export default function VoteDetails({ topVote }: IPropsType) {
       errorMessage("You have already voted", 2000);
     }
   };
+
   return (
     <React.Fragment>
       <Card sx={{ my: 5, boxShadow: "rgba(149, 157, 165, 0.2) 5px 8px 24px" }}>
         <Box sx={{ m: 4 }}>
-          {topVote?.topVotes?.length == 0 && topVote?.topVotes?.length == 0 && (
-            <Box sx={{ bgcolor: "#D9D9D942", py: 3, borderRadius: "5px" }}>
-              <Box sx={{ mx: 5 }}>
-                <Typography
-                  component="h6"
-                  sx={{
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    color: theme.palette.grey[700],
-                  }}
-                >
-                  Title
-                </Typography>
-                <Typography
-                  component="h6"
-                  sx={{
-                    fontSize: "1rem",
-                    fontWeight: 400,
-                    color: theme.palette.grey[600],
-                  }}
-                >
-                  Description
-                </Typography>
-                <Typography
-                  component="h6"
-                  sx={{
-                    fontSize: "1rem",
-                    fontWeight: 400,
-                    color: theme.palette.grey[600],
-                  }}
-                >
-                  Expired
-                </Typography>
-                <Box
-                  sx={{
-                    mt: 3,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "start",
-                    gap: 2,
-                  }}
-                >
-                  <IoHelpCircleSharp size={20} />
-                  <Typography
-                    component="h6"
-                    sx={{
-                      fontSize: "1rem",
-                      fontWeight: 500,
-                      color: theme.palette.grey[600],
-                    }}
-                  >
-                    One vote
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          )}
           <Box
             sx={{
               my: 5,

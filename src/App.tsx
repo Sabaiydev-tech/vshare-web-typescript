@@ -4,15 +4,14 @@ import { CacheProvider } from "@emotion/react";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { QUERY_SEO } from "api/graphql/ad.graphql";
 import routes from "app/routes";
-import { ClientVoteProvider } from "contexts/ClientVoteProvider";
+import ImageIcon from "assets/images/vshare-black-logo.png";
+import { AuthProvider } from "contexts/AuthProvider";
 import useTheme from "hooks/useTheme";
 import { useEffect, useState } from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { useLocation, useRoutes } from "react-router-dom";
 import createTheme from "theme";
 import { getRouteName } from "utils/url.util";
-import ImageIcon from "assets/images/vshare-black-logo.png";
-import { AuthProvider } from "contexts/AuthProvider";
 
 const emotionCache = createCache({ key: "css" });
 
@@ -98,9 +97,7 @@ function App() {
           <meta name="twitter:url" content={canonicalUrl} />
         </Helmet>
         <MuiThemeProvider theme={createTheme(theme)}>
-          <AuthProvider>
-            <ClientVoteProvider>{content}</ClientVoteProvider>
-          </AuthProvider>
+          <AuthProvider>{content}</AuthProvider>
         </MuiThemeProvider>
       </HelmetProvider>
     </CacheProvider>
