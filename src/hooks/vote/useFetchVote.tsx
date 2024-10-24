@@ -9,15 +9,19 @@ import React from "react";
 const useFetchVoteResult = ({ id, filter }: { id: string; filter: any }) => {
   const [fetchVoteResult, { data, loading, refetch }] =
     useLazyQuery(QUERY_VOTE_RESULT);
-  const { pageLimit, currentPageNumber } = filter;
-  const skip = (currentPageNumber - 1) * pageLimit;
+  const { pageLimit, page, startDate, endDate, select, search } = filter.data;
 
   const fetchVariables = {
-    orderBy: "createdAt_DESC",
+    orderBy: filter.data.select,
     limit: pageLimit,
-    page: currentPageNumber,
-    skip,
-    where: { id },
+    skip: page,
+    where: {
+      id,
+      ...(search && {
+        fileName: search,
+      }),
+      ...(startDate && endDate && { createdAtBetween: [startDate, endDate] }),
+    },
   };
 
   const fetchVotesResult = () => {
@@ -27,7 +31,7 @@ const useFetchVoteResult = ({ id, filter }: { id: string; filter: any }) => {
   };
   React.useEffect(() => {
     fetchVotesResult();
-  }, [pageLimit, currentPageNumber, id]);
+  },[pageLimit, id, select, filter.data]);
 
   return {
     total: data?.getVoteResults.total,
@@ -42,7 +46,7 @@ const useFetchVoteResult = ({ id, filter }: { id: string; filter: any }) => {
 const useFetchVoteFiles = ({ id, filter }: { id: string; filter: any }) => {
   const [fetchVoteFiles, { data, loading, refetch }] =
     useLazyQuery(QUERY_VOTE_FILES);
-  const { pageLimit, page, startDate, endDate, select } = filter.data;
+  const { pageLimit, page, startDate, endDate, select, search } = filter.data;
 
   const fetchVariables = {
     orderBy: filter.data.select,
@@ -50,6 +54,9 @@ const useFetchVoteFiles = ({ id, filter }: { id: string; filter: any }) => {
     skip: page,
     where: {
       id,
+      ...(search && {
+        fileName: search,
+      }),
       ...(startDate && endDate && { createdAtBetween: [startDate, endDate] }),
     },
   };
