@@ -110,6 +110,7 @@ export const QUERY_FILE_PUBLIC_V1 = gql`
         filename
         newFilename
         filePassword
+        downloadAt
         passwordUrlAll
         fileType
         size
@@ -211,6 +212,7 @@ export const QUERY_FILE_GET_LINK_V1 = gql`
         filePassword
         newFilename
         expired
+        downloadAt
         fileType
         size
         status
@@ -282,6 +284,7 @@ export const QUERY_SUB_FILEV1 = gql`
         filename
         newFilename
         filePassword
+        downloadAt
         expired
         fileType
         size

@@ -281,7 +281,7 @@ function Home() {
         const updatedFile = { file: newFile };
         return updatedFile;
       });
-      
+
       setData(fileList);
     } else {
       setData([]);
@@ -335,7 +335,7 @@ function Home() {
       >
         <MUI.ContainerHome maxWidth="lg">
           <MUI.BoxUpload>
-            <img src={vectorImage} alt="" />
+            <img src={vectorImage} alt="" loading="lazy" />
             <MUI.BoxUploadHeader sx={{ marginBottom: "1.5rem" }}>
               <Typography
                 variant="h1"
@@ -592,7 +592,7 @@ function Home() {
               </motion.div>
             </MUI.SignUpCardLeftBox>
             <MUI.SignUpCardRightBox>
-              <img src={catImage} alt="" />
+              <img src={catImage} alt="" loading="lazy" />
             </MUI.SignUpCardRightBox>
           </MUI.SignUpCardContainer>
         </MUI.BoxSignUpCard>
@@ -622,7 +622,7 @@ function Home() {
               initial="hidden"
               animate={inView3 ? "show" : "hidden"}
             >
-              <img src={showMap} alt="" />
+              <img src={showMap} alt="" loading="lazy" />
             </motion.div>
           </MUI.BoxShowNetworkMap>
 
@@ -880,7 +880,7 @@ function Home() {
               ))}
             </MUI.BoxFAQAccordion>
           </MUI.BoxFAQContainer>
-          <img src={backgroundVector} alt="background-vector" />
+          <img loading="lazy" src={backgroundVector} alt="background-vector" />
         </MUI.BoxFAQ>
 
         <MUI.BoxContactUs ref={ref7}>
