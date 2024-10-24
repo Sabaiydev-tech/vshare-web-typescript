@@ -213,7 +213,7 @@ export default function Vote() {
             {data?.voteData?.description}
           </Typography>
         </Box>
-        {data?.fileData?.length !== 0 ? (
+        {data?.filesData?.data?.length !== 0 ? (
           <Box>
             {topVote?.hotVotes?.length > 0 ||
               (topVote?.hotVotes?.length > 0 && (
