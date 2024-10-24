@@ -26,6 +26,7 @@ import { errorMessage, successMessage } from "utils/alert.util";
 import { decryptDataLink } from "utils/secure.util";
 import CardVote from "./cardVote";
 import VoteDialog from "components/vote/VoteDialog";
+import DialogShare from "components/dialog/DialogShare.SocialMedia";
 
 interface IPropsType {
   topVote: {
